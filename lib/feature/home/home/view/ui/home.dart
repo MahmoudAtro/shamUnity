@@ -14,9 +14,10 @@ class _HomePageState extends State<HomePage> {
       child: WillPopScope(
         onWillPop: () async => false,
         child: Scaffold(
+          backgroundColor: Colors.grey[200],
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.grey[200],
             elevation: 1,
             actions: [
               Padding(
@@ -38,7 +39,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Container(
                 color: Colors.white,
-                child: TabBar(
+                child: const TabBar(
                   indicatorColor: Colors.blue,
                   unselectedLabelColor: Colors.grey,
                   labelColor: Colors.blue,

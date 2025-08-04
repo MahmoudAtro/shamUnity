@@ -34,7 +34,7 @@ class PostListScreen extends StatelessWidget {
 
   Widget buildCreatePostCard(BuildContext context, UserModel user) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+      padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
       child: Card(
         color: Colors.white,
         elevation: 2,
