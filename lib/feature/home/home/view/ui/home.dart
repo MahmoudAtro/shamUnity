@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+import 'package:shamunity/feature/home/home/view/ui/post_list_view.dart';
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 5,
+      child: WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.white,
+            elevation: 1,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'Sham Unity',
+                  style: TextStyle(
+                    color: Colors.blue[800],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    letterSpacing: -1.5,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              Container(
+                color: Colors.white,
+                child: TabBar(
+                  indicatorColor: Colors.blue,
+                  unselectedLabelColor: Colors.grey,
+                  labelColor: Colors.blue,
+                  tabs: [
+                    Tab(icon: Icon(Icons.home, size: 30)),
+                    Tab(icon: Icon(Icons.chat, size: 30)),
+                    Tab(icon: Icon(Icons.library_books, size: 30)),
+                    Tab(icon: Icon(Icons.notifications_active, size: 30)),
+                    Tab(icon: Icon(Icons.menu, size: 30)),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    PostListScreen(),
+                    MarketTab(),
+                    LibraryBooksTab(),
+                    NotificationsTab(),
+                    MenuTab(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class VideoTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('الفيديوهات'));
+  }
+}
+
+class MarketTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('السوق'));
+  }
+}
+
+class NotificationsTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('الإشعارات'));
+  }
+}
+
+class MenuTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('القائمة'));
+  }
+}
+
+class LibraryBooksTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text('المكتبة'));
+  }
+}

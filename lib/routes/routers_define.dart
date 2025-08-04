@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/feature/homepage.dart';
+import 'package:shamunity/feature/home/home/view/ui/create_post_view.dart';
+import 'package:shamunity/feature/home/home/view/ui/home.dart';
+import 'package:shamunity/models/user_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
@@ -10,7 +12,11 @@ class AppRoute {
     switch (route.name) {
       case RoutesNames.homePage:
         return MaterialPageRoute(
-          builder: (_) => const HomePage(),
+          builder: (_) =>  HomePage(),
+        );
+      case RoutesNames.createPost:
+        return MaterialPageRoute(
+          builder: (_) =>  CreatePostScreen(user: route.arguments as UserModel),
         );
 
       default:

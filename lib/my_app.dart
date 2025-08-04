@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
               );
             },
             initialRoute: RoutesNames.homePage,
-            darkTheme: ThemeData.dark(),
+            // darkTheme: ThemeData.dark(),
             theme: ThemeData.light(),
             debugShowCheckedModeBanner: false,
             locale: const Locale('ar', 'SA'),
