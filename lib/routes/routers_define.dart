@@ -13,7 +13,6 @@ import 'package:shamunity/feature/auth/login/login_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
-import 'package:shamunity/feature/homepage.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
@@ -32,11 +31,11 @@ class AppRoute {
         );
       case RoutesNames.libraryHome:
         return MaterialPageRoute(
-          builder: (_) => LibraryHomeScreen(),
+          builder: (_) => const LibraryHomeScreen(),
         );
       case RoutesNames.profile:
         return MaterialPageRoute(
-          builder: (_) => ProfileScreen(),
+          builder: (_) => const ProfileScreen(),
         );
       case RoutesNames.libraryBooksTab:
         return MaterialPageRoute(
@@ -54,7 +53,6 @@ class AppRoute {
             departments: route.arguments as List<DepartmentModel>,
           ),
         );
-
       case RoutesNames.subjectsGrid:
         return MaterialPageRoute(
           builder: (_) => SubjectsGridScreen(
@@ -81,7 +79,6 @@ class AppRoute {
         return MaterialPageRoute(
           builder: (_) => const AgreementScreen(),
         );
-
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

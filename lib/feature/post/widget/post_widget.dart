@@ -135,7 +135,6 @@ class _PostAction extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.color,
-    Key? key,
   });
 
   @override
