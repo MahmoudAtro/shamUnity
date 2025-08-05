@@ -71,6 +71,7 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
         });
         widget.onChanged(value);
       },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         isDense: widget.isDense ?? true,
         contentPadding: widget.contentPadding ??

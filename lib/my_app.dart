@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
                 child: widget!,
               );
             },
-            initialRoute: RoutesNames.homePage,
+            initialRoute: RoutesNames.enterPlatform,
             darkTheme: ThemeData.dark(),
             theme: ThemeData.light(),
             debugShowCheckedModeBanner: false,

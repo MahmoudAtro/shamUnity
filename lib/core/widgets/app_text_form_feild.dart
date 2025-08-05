@@ -19,6 +19,7 @@ class AppTextFormField extends StatelessWidget {
   final bool? readOnly;
   final Widget? suffixIcon;
   final TextDirection? hintTextDirection;
+  final TextDirection? textDirection;
   final Color? backgroundColor;
   final double? borderRadius;
   final TextEditingController? controller;
@@ -43,9 +44,9 @@ class AppTextFormField extends StatelessWidget {
     this.controller,
     required this.validator,
     this.prefixIcon,
-    this.borderRadius,
-    this.readOnly,
+    this.borderRadius,this.readOnly,
     this.hintTextDirection,
+    this.textDirection,
     this.onFieldSubmitted,
     this.onChanged
   });
@@ -108,7 +109,7 @@ class AppTextFormField extends StatelessWidget {
          onFieldSubmitted!(value);
       },
       obscureText: isObscureText ?? false,
-      textDirection: TextDirection.ltr,
+      textDirection: textDirection ?? TextDirection.ltr,
       style: isDarkMode
           ? TextStyles.font14DarkBlueMedium.copyWith(color: Colors.white)
           : TextStyles.font14DarkBlueMedium,
