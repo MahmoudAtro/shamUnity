@@ -4,6 +4,8 @@ class UserModel {
   final String avatarUrl;
   final String email;
   final String phone;
+  final String university;
+  final String academicYear;
 
   UserModel({
     required this.id,
@@ -11,9 +13,10 @@ class UserModel {
     required this.avatarUrl,
     required this.email,
     required this.phone,
+    required this.university,
+    required this.academicYear,
   });
 
-  // يمكنك أيضًا إضافة factory للتحويل من JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'],
@@ -21,6 +24,8 @@ class UserModel {
       avatarUrl: json['avatarUrl'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      university: json['university'] ?? '',
+      academicYear: json['academicYear'] ?? '',
     );
   }
 
@@ -30,5 +35,7 @@ class UserModel {
         'avatarUrl': avatarUrl,
         'email': email,
         'phone': phone,
+        'university': university,
+        'academicYear': academicYear,
       };
 }

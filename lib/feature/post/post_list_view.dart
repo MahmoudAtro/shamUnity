@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/feature/home/home/view/widget/post_widget.dart';
+import 'package:shamunity/feature/post/widget/post_widget.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/user_model.dart';
 import 'package:shamunity/routes/extension.dart';
@@ -24,13 +24,17 @@ class PostListScreen extends StatelessWidget {
     // يمكنك إضافة المزيد من المنشورات...
   ];
 
-  final user = UserModel(
-    id: 'user_123',
-    name: 'محمد علي',
-    avatarUrl: 'https://i.pravatar.cc/150?img=1',
-    email: 'mohammad@example.com',
-    phone: '+966500000000',
-  );
+   final user = UserModel(
+      id: "12345678",
+      name: "أحمد محمد",
+      avatarUrl: "https://i.pravatar.cc/150?img=12",
+      email: "ahmad@email.com",
+      phone: "0999888777",
+      university: "جامعة التكنولوجيا",
+      academicYear: "السنة الثالثة",
+    );
+
+
 
   Widget buildCreatePostCard(BuildContext context, UserModel user) {
     return Padding(

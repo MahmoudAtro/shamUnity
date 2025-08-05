@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/feature/home/home/view/ui/post_list_view.dart';
+import 'package:shamunity/feature/library/library_home_screen.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/feature/profile/profile_view.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -57,9 +59,9 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     PostListScreen(),
                     MarketTab(),
-                    LibraryBooksTab(),
+                    LibraryHomeScreen(),
                     NotificationsTab(),
-                    MenuTab(),
+                    ProfileScreen(),
                   ],
                 ),
               ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/feature/home/home/view/ui/comment_view.dart';
+import 'package:shamunity/feature/comment/comment_view.dart';
 import 'package:shamunity/models/cmment_model.dart';
 import 'package:shamunity/models/post.dart';
 
