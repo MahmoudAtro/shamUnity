@@ -5,6 +5,7 @@ import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
+import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/models/college_model.dart';
 import 'package:shamunity/models/user_model.dart';
@@ -32,10 +33,6 @@ class AppRoute {
         return MaterialPageRoute(
           builder: (_) => ProfileScreen(),
         );
-      case RoutesNames.libraryBooksTab:
-        return MaterialPageRoute(
-          builder: (_) => LibraryBooksTab(),
-        );
       case RoutesNames.academicYearsGrid:
         return MaterialPageRoute(
           builder: (_) => AcademicYearsGridScreen(
@@ -54,6 +51,10 @@ class AppRoute {
           builder: (_) => SubjectsGridScreen(
             subjectModel: route.arguments as List<SubjectModel>,
           ),
+        );
+      case RoutesNames.notifications:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationsScreen(),
         );
 
       default:

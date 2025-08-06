@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shamunity/feature/chat/user_group_srcreen.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
+import 'package:shamunity/feature/menua/menua_screen.dart';
+import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/profile/profile_view.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -58,10 +60,10 @@ class _HomePageState extends State<HomePage> {
                 child: TabBarView(
                   children: [
                     PostListScreen(),
-                    MarketTab(),
+                    UsersGroupsScreen(),
                     LibraryHomeScreen(),
-                    NotificationsTab(),
-                    ProfileScreen(),
+                    NotificationsScreen(),
+                    MenuScreen(),
                   ],
                 ),
               ),
@@ -70,40 +72,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-}
-
-class VideoTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('الفيديوهات'));
-  }
-}
-
-class MarketTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('السوق'));
-  }
-}
-
-class NotificationsTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('الإشعارات'));
-  }
-}
-
-class MenuTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('القائمة'));
-  }
-}
-
-class LibraryBooksTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('المكتبة'));
   }
 }

@@ -8,4 +8,5 @@ class RoutesNames {
   static const String academicYearsGrid = "/academicYearsGrid";
   static const String subjectsGrid = "/subjectsGrid";
   static const String departmentDetails = "/departmentDetails";
+  static const String notifications = "/notifications";
 }

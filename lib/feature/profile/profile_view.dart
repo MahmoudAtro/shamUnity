@@ -35,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[100],
       body: ProfileWidget(user: user, posts: posts),
     );
   }
