@@ -61,6 +61,7 @@ dependencies:
   file_picker: ^10.2.1
   shared_preferences: ^2.5.3
   # to handle secure shared preferences
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

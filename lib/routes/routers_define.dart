@@ -9,6 +9,7 @@ import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
+import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/models/college_model.dart';
@@ -64,6 +65,11 @@ class AppRoute {
             subjectModel: route.arguments as List<SubjectModel>,
           ),
         );
+      case RoutesNames.notifications:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationsScreen(),
+        );
+
       case RoutesNames.enterPlatform:
         return MaterialPageRoute(
           builder: (_) => const EnterPlatformScreen(),

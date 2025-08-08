@@ -14,4 +14,5 @@ class RoutesNames {
   static const String universityInfo = "/university-info";
   static const String agreement = "/agreement";
   static const String verification = "/verification";
+  static const String notifications = "/notifications";
 }

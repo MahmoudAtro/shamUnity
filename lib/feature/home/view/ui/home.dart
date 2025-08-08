@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shamunity/feature/chat/user_group_srcreen.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
+import 'package:shamunity/feature/menua/menua_screen.dart';
+import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/profile/profile_view.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,27 +45,28 @@ class _HomePageState extends State<HomePage> {
             body: Column(
               children: [
                 Container(
-                  color: Colors.white,child: const TabBar(
-                  indicatorColor: Colors.blue,
-                  unselectedLabelColor: Colors.grey,
-                  labelColor: Colors.blue,
-                  tabs: [
-                    Tab(icon: Icon(Icons.home, size: 30)), 
-                    Tab(icon: Icon(Icons.people_outline, size: 30)), 
-                    Tab(icon: Icon(Icons.notifications_active, size: 30)), 
-                    Tab(icon: Icon(Icons.menu_book_outlined, size: 30)), 
-                    Tab(icon: Icon(Icons.menu, size: 30)), 
-                  ],
-                ),
+                  color: Colors.white,
+                  child: const TabBar(
+                    indicatorColor: Colors.blue,
+                    unselectedLabelColor: Colors.grey,
+                    labelColor: Colors.blue,
+                    tabs: [
+                      Tab(icon: Icon(Icons.home, size: 30)), 
+                      Tab(icon: Icon(Icons.people_outline, size: 30)), 
+                      Tab(icon: Icon(Icons.notifications_active, size: 30)), 
+                      Tab(icon: Icon(Icons.menu_book_outlined, size: 30)), 
+                      Tab(icon: Icon(Icons.menu, size: 30)), 
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: TabBarView(
                     children: [
                       PostListScreen(),
-                      const MarketTab(),
-                      const NotificationsTab(),
+                      UsersGroupsScreen(),
+                      NotificationsScreen(),
                       const LibraryHomeScreen(),
-                      const ProfileScreen(),
+                      MenuScreen(),
                     ],
                   ),
                 ),
@@ -73,42 +76,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-}
-
-class VideoTab extends StatelessWidget {
-  const VideoTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('الفيديوهات'));
-  }
-}
-
-class MarketTab extends StatelessWidget {
-  const MarketTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('السوق'));
-  }
-}
-
-class NotificationsTab extends StatelessWidget {
-  const NotificationsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('الإشعارات'));
-  }
-}
-
-class MenuTab extends StatelessWidget {
-  const MenuTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('القائمة'));
   }
 }
 
