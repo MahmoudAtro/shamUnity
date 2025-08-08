@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({super.key});
@@ -11,22 +13,19 @@ class SignupForm extends StatefulWidget {
 }
 
 class _SignupFormState extends State<SignupForm> {
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController birthDateController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
   DateTime? selectedDate;
+  bool isObscure = true;
 
   String selectedGender = 'male';
 
   @override
+  void initState() {
+    context.read<RegisterBloc>().gender.text = 'male';
+    super.initState();
+  }
+
+  @override
   void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    birthDateController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
     super.dispose();
   }
 
@@ -35,9 +34,9 @@ class _SignupFormState extends State<SignupForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end, // محاذاة للعربية
       children: [
-        _buildFormField("الاسم الأول", firstNameController),
+        _buildFormField("الاسم الأول", context.read<RegisterBloc>().firstName),
         verticalspace(15),
-        _buildFormField("الاسم الأخير", lastNameController),
+        _buildFormField("الاسم الأخير", context.read<RegisterBloc>().lastName),
         verticalspace(15),
         verticalspace(15),
         _buildGenderSelection(),
@@ -47,7 +46,7 @@ class _SignupFormState extends State<SignupForm> {
           child: AbsorbPointer(
             child: _buildFormField(
               "تاريخ الميلاد",
-              birthDateController,
+              context.read<RegisterBloc>().birthDay,
               suffixIcon: const Icon(Icons.calendar_today,
                   color: Colors.white, size: 20),
               hintText: "اليوم / الشهر / السنة",
@@ -66,17 +65,22 @@ class _SignupFormState extends State<SignupForm> {
           crossAxisAlignment:
               CrossAxisAlignment.start, // محاذاة البريد وكلمة المرور من اليسار
           children: [
-            _buildFormField("البريد الإلكتروني", emailController),
+            _buildFormField(
+                "البريد الإلكتروني", context.read<RegisterBloc>().email),
             verticalspace(15),
             _buildFormField(
               "كلمة المرور",
-              passwordController,
-              isObscureText: true,
+              context.read<RegisterBloc>().password,
+              isObscureText: isObscure ? true : false,
               suffixIcon: IconButton(
-                icon: const Icon(Icons.visibility_outlined,
-                    color: Colors.white, size: 20),
+                icon: isObscure
+                    ? const Icon(Icons.visibility, color: Colors.grey, size: 20)
+                    : const Icon(Icons.visibility_off,
+                        color: Colors.grey, size: 20),
                 onPressed: () {
-                  // Toggle password visibility
+                  setState(() {
+                    isObscure = !isObscure;
+                  });
                 },
               ),
             ),
@@ -116,7 +120,7 @@ class _SignupFormState extends State<SignupForm> {
           isObscureText: isObscureText,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
-          suffixIcon: suffixIcon,
+          prefixIcon: suffixIcon,
           readOnly: readOnly,
           hintTextDirection:
               isEmailOrPassword ? TextDirection.ltr : TextDirection.rtl,
@@ -156,9 +160,9 @@ class _SignupFormState extends State<SignupForm> {
         SizedBox(height: 12.h),
         Row(
           children: [
-            _buildGenderOption('female', 'أنثى'),
-            SizedBox(width: 30.w),
             _buildGenderOption('male', 'ذكر'),
+            SizedBox(width: 30.w),
+            _buildGenderOption('female', 'أنثى'),
           ],
         ),
       ],
@@ -174,12 +178,17 @@ class _SignupFormState extends State<SignupForm> {
           groupValue: selectedGender,
           activeColor: Colors.white,
           fillColor: WidgetStateProperty.all(Colors.white),
-          onChanged: (newValue) {},
+          onChanged: (newValue) {
+            context.read<RegisterBloc>().gender.text = newValue!;
+            setState(() {
+              selectedGender = newValue;
+            });
+          },
         ),
         Text(
           label,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 15.sp,
             color: Colors.white,
           ),
         ),
@@ -187,7 +196,6 @@ class _SignupFormState extends State<SignupForm> {
     );
   }
 
-// اختيار التاريخ - استخدام الطريقة التقليدية بدلاً من المكتبة التي قد تسبب مشاكل
   void _selectDate(BuildContext context) {
     // استخدام showDatePicker المدمج في Flutter
     showDatePicker(
@@ -211,8 +219,8 @@ class _SignupFormState extends State<SignupForm> {
     ).then((picked) {
       if (picked != null) {
         setState(() {
-          birthDateController.text = 
-              "${picked.day.toString().padLeft(2, '0')} / ${picked.month.toString().padLeft(2, '0')} / ${picked.year}";
+          context.read<RegisterBloc>().birthDay.text =
+              "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
         });
       }
     });

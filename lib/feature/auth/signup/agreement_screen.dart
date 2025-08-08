@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
-import 'package:shamunity/core/widgets/app_text_button.dart';
+import 'package:shamunity/core/widgets/custom_appbar.dart';
 import 'package:shamunity/feature/auth/signup/widgets/agreement_form.dart';
 import 'package:shamunity/feature/auth/signup/widgets/step_indicator.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
 class AgreementScreen extends StatefulWidget {
   const AgreementScreen({super.key});
@@ -14,8 +16,6 @@ class AgreementScreen extends StatefulWidget {
 }
 
 class _AgreementScreenState extends State<AgreementScreen> {
-  final formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -32,7 +32,7 @@ class _AgreementScreenState extends State<AgreementScreen> {
                         fit: BoxFit.cover)),
                 child: Column(
                   children: [
-                    verticalspace(40),
+                    const CustomAppbar(title: ""),
                     Center(
                       child: Text(
                         "إنشاء حساب",
@@ -53,18 +53,13 @@ class _AgreementScreenState extends State<AgreementScreen> {
               Container(
                 width: double.infinity, // إضافة العرض الكامل
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                color: ColorsManager.mainBlue,
+                color: ColorsManager.darkerLight,
                 child: Column(
                   children: [
                     verticalspace(25),
                     Form(
-                        key: formKey,
-                        child: const AgreementForm()
-                        ),
-                    verticalspace(30),
-                    Center(
-                      child: _buildSubmitButton(),
-                    ),
+                        key: context.read<RegisterBloc>().formkey2,
+                        child: const AgreementForm()),
                     verticalspace(20),
                   ],
                 ),
@@ -76,24 +71,4 @@ class _AgreementScreenState extends State<AgreementScreen> {
     );
   }
 
-  // زر الإرسال (Submit)
-  Widget _buildSubmitButton() {
-    return AppTextButton(
-      buttonText: "إنشاء حساب",
-      buttonHeight: 50.h,
-      buttonWidth: 150.w,
-      backgroundColor: Colors.transparent,
-      borderSide: Colors.white,
-      borderRadius: 24.r,
-      textStyle: TextStyle(
-        color: Colors.white,
-        fontSize: 16.sp,
-        fontWeight: FontWeight.w500,
-      ),
-      onPressed: () {
-        // التحقق من صحة النموذج أولاً
-        if (formKey.currentState?.validate() ?? false) {}
-      },
-    );
-  }
 }

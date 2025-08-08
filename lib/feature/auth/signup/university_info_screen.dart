@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
+import 'package:shamunity/core/widgets/custom_appbar.dart';
 import 'package:shamunity/feature/auth/signup/widgets/step_indicator.dart';
 import 'package:shamunity/feature/auth/signup/widgets/university_info_form.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class UniversityInfoScreen extends StatefulWidget {
@@ -15,9 +18,7 @@ class UniversityInfoScreen extends StatefulWidget {
 }
 
 class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
-  final formKey = GlobalKey<FormState>();
-  int currentStep = 1; // هذه الصفحة هي الخطوة الثانية (University Information)
-
+  int currentStep = 1;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -33,7 +34,7 @@ class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
                         fit: BoxFit.cover)),
                 child: Column(
                   children: [
-                    verticalspace(40),
+                    const CustomAppbar(title: ""),
                     Center(
                       child: Text(
                         "إنشاء حساب",
@@ -53,11 +54,14 @@ class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                color: ColorsManager.mainBlue,
+                color: ColorsManager.darkerLight,
                 child: Column(
                   children: [
                     verticalspace(25),
-                    Form(key: formKey, child: const UniversityInfoForm()),
+                    Form(
+                      key: context.read<RegisterBloc>().formkey1,
+                      child: const UniversityInfoForm(),
+                    ),
                     verticalspace(30),
                     // زر التالي
                     Center(
@@ -89,8 +93,9 @@ class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
         fontWeight: FontWeight.w500,
       ),
       onPressed: () {
-        if (formKey.currentState!.validate()) {
-          context.pushNamed("/agreement");
+        if (context.read<RegisterBloc>().formkey1.currentState!.validate()) {
+          context.pushNamed("/agreement",
+              arguments: BlocProvider.of<RegisterBloc>(context));
         }
       },
     );

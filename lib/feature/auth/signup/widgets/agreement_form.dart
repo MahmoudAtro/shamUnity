@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
+import 'package:shamunity/core/helpers/toast.dart';
+import 'package:shamunity/core/widgets/app_text_button.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
 class AgreementForm extends StatefulWidget {
   const AgreementForm({super.key});
@@ -48,6 +52,10 @@ class _AgreementFormState extends State<AgreementForm> {
               acceptEmail = value!;
             });
           },
+        ),
+        verticalspace(30),
+        Center(
+          child: _buildSubmitButton(),
         ),
       ],
     );
@@ -143,6 +151,32 @@ class _AgreementFormState extends State<AgreementForm> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return AppTextButton(
+      buttonText: "إنشاء حساب",
+      buttonHeight: 50.h,
+      buttonWidth: 150.w,
+      backgroundColor: Colors.transparent,
+      borderSide: Colors.white,
+      borderRadius: 24.r,
+      textStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w500,
+      ),
+      onPressed: () {
+        // التحقق من صحة النموذج أولاً
+        if (context.read<RegisterBloc>().formkey2.currentState!.validate()) {
+          if (acceptEmail && acceptTerms) {
+            context.read<RegisterBloc>().add(RegisterRequestEvent());
+          } else {
+            Toast().error(context, 'يجب الموافقة على الشروط والأحكام');
+          }
+        }
+      },
     );
   }
 }

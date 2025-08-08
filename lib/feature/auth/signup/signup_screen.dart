@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
+import 'package:shamunity/core/widgets/custom_appbar.dart';
 import 'package:shamunity/feature/auth/signup/widgets/signup_form.dart';
 import 'package:shamunity/feature/auth/signup/widgets/step_indicator.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -15,8 +18,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -32,7 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         fit: BoxFit.cover)),
                 child: Column(
                   children: [
-                    verticalspace(40),
+                    const CustomAppbar(title: ""),
                     Center(
                       child: Text(
                         "إنشاء حساب",
@@ -52,11 +53,13 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                color: ColorsManager.mainBlue,
+                color: ColorsManager.darkerLight,
                 child: Column(
                   children: [
                     verticalspace(25),
-                    Form(key: formKey, child: const SignupForm()),
+                    Form(
+                        key: context.read<RegisterBloc>().formkey,
+                        child: const SignupForm()),
                     verticalspace(30),
                     // زر التالي
                     Center(
@@ -88,8 +91,10 @@ class _SignupScreenState extends State<SignupScreen> {
         fontWeight: FontWeight.w500,
       ),
       onPressed: () {
-        // if (formKey.currentState!.validate()) {}
-        context.pushNamed("/university-info");
+        if (context.read<RegisterBloc>().formkey.currentState!.validate()) {
+          context.pushNamed("/university-info",
+              arguments: BlocProvider.of<RegisterBloc>(context));
+        }
       },
     );
   }

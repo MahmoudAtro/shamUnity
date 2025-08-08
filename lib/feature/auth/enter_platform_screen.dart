@@ -52,7 +52,9 @@ class EnterPlatformScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed("/home");
+                    },
                     child: Container(
                       width: 180.w,
                       height: 60.h,

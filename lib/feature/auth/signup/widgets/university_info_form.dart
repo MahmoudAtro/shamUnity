@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/widgets/app_drop_down_form_feild.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
 class UniversityInfoForm extends StatefulWidget {
   const UniversityInfoForm({super.key});
@@ -12,27 +14,36 @@ class UniversityInfoForm extends StatefulWidget {
 }
 
 class _UniversityInfoFormState extends State<UniversityInfoForm> {
-  final TextEditingController universityIdController = TextEditingController();
-  final TextEditingController collegeController = TextEditingController();
-  final TextEditingController majorController = TextEditingController();
-  final TextEditingController academicYearController = TextEditingController();
-
   // قوائم البيانات للقوائم المنسدلة
-  final List<String> colleges = ['كلية الهندسة', 'كلية الطب', 'كلية العلوم', 'كلية الآداب', 'كلية الحقوق'];
-  final List<String> majors = ['هندسة برمجيات', 'هندسة كهرباء', 'هندسة مدنية', 'علوم الحاسوب', 'نظم المعلومات'];
-  final List<String> academicYears = ['السنة الأولى', 'السنة الثانية', 'السنة الثالثة', 'السنة الرابعة', 'السنة الخامسة'];
+  final List<String> colleges = [
+    'كلية الهندسة',
+    'كلية الطب',
+    'كلية العلوم',
+    'كلية الآداب',
+    'كلية الحقوق'
+  ];
+  final List<String> majors = [
+    'هندسة برمجيات',
+    'هندسة كهرباء',
+    'هندسة مدنية',
+    'علوم الحاسوب',
+    'نظم المعلومات'
+  ];
+  final Map<int, String> academicYearsMap = {
+    1: 'السنة الأولى',
+    2: 'السنة الثانية',
+    3: 'السنة الثالثة',
+    4: 'السنة الرابعة',
+    5: 'السنة الخامسة',
+  };
+  int? selectedAcademicYear;
 
   // القيم المختارة
   String? selectedCollege;
   String? selectedMajor;
-  String? selectedAcademicYear;
 
   @override
   void dispose() {
-    universityIdController.dispose();
-    collegeController.dispose();
-    majorController.dispose();
-    academicYearController.dispose();
     super.dispose();
   }
 
@@ -67,7 +78,7 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
         ),
         SizedBox(height: 8.h),
         AppTextFormField(
-          controller: universityIdController,
+          controller: context.read<RegisterBloc>().universityId,
           hintText: "",
           borderRadius: 12.r,
           backgroundColor: Colors.white,
@@ -100,6 +111,7 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
         SizedBox(height: 8.h),
         AppDropdownFormField<String>(
           hintText: "اختر الكلية",
+          controller: context.read<RegisterBloc>().collage,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedCollege,
@@ -141,6 +153,7 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
         SizedBox(height: 8.h),
         AppDropdownFormField<String>(
           hintText: "اختر التخصص",
+          controller: context.read<RegisterBloc>().major,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedMajor,
@@ -180,24 +193,27 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
           ),
         ),
         SizedBox(height: 8.h),
-        AppDropdownFormField<String>(
+        AppDropdownFormField<int>(
           hintText: "اختر السنة الدراسية",
+          controller: context.read<RegisterBloc>().year,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedAcademicYear,
-          items: academicYears.map((year) {
-            return DropdownMenuItem<String>(
-              value: year,
-              child: Text(year),
+          items: academicYearsMap.entries.map((entry) {
+            return DropdownMenuItem<int>(
+              value: entry.key,
+              child: Text(entry.value),
             );
           }).toList(),
           onChanged: (value) {
             setState(() {
               selectedAcademicYear = value;
+              // خزّن النص الرقمي في الـ Bloc controller كنص (أو عدل نوعه)
+              context.read<RegisterBloc>().year.text = value?.toString() ?? '';
             });
           },
           validator: (value) {
-            if (value == null || value.isEmpty) {
+            if (value == null) {
               return "يرجى اختيار السنة الدراسية";
             }
             return null;

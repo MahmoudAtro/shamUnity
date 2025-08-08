@@ -4,6 +4,8 @@ import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -13,59 +15,60 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 5,
-      child: WillPopScope(
-        onWillPop: () async => false,
-        child: Scaffold(
-          backgroundColor: Colors.grey[200],
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
+      child: SafeArea(
+        child: WillPopScope(
+          onWillPop: () async => false,
+          child: Scaffold(
             backgroundColor: Colors.grey[200],
-            elevation: 1,
-            actions: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  'Sham Unity',
-                  style: TextStyle(
-                    color: Colors.blue[800],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    letterSpacing: -1.5,
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.grey[200],
+              elevation: 1,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Text(
+                    'Sham Unity',
+                    style: TextStyle(
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                      letterSpacing: -1.5,
+                    ),
+                    textAlign: TextAlign.end,
                   ),
-                  textAlign: TextAlign.end,
                 ),
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              Container(
-                color: Colors.white,
-                child: const TabBar(
+              ],
+            ),
+            body: Column(
+              children: [
+                Container(
+                  color: Colors.white,child: const TabBar(
                   indicatorColor: Colors.blue,
                   unselectedLabelColor: Colors.grey,
                   labelColor: Colors.blue,
                   tabs: [
-                    Tab(icon: Icon(Icons.home, size: 30)),
-                    Tab(icon: Icon(Icons.chat, size: 30)),
-                    Tab(icon: Icon(Icons.library_books, size: 30)),
-                    Tab(icon: Icon(Icons.notifications_active, size: 30)),
-                    Tab(icon: Icon(Icons.menu, size: 30)),
+                    Tab(icon: Icon(Icons.home, size: 30)), 
+                    Tab(icon: Icon(Icons.people_outline, size: 30)), 
+                    Tab(icon: Icon(Icons.notifications_active, size: 30)), 
+                    Tab(icon: Icon(Icons.menu_book_outlined, size: 30)), 
+                    Tab(icon: Icon(Icons.menu, size: 30)), 
                   ],
                 ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    PostListScreen(),
-                    MarketTab(),
-                    LibraryHomeScreen(),
-                    NotificationsTab(),
-                    ProfileScreen(),
-                  ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      PostListScreen(),
+                      const MarketTab(),
+                      const NotificationsTab(),
+                      const LibraryHomeScreen(),
+                      const ProfileScreen(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -74,36 +77,46 @@ class _HomePageState extends State<HomePage> {
 }
 
 class VideoTab extends StatelessWidget {
+  const VideoTab({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('الفيديوهات'));
+    return const Center(child: Text('الفيديوهات'));
   }
 }
 
 class MarketTab extends StatelessWidget {
+  const MarketTab({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('السوق'));
+    return const Center(child: Text('السوق'));
   }
 }
 
 class NotificationsTab extends StatelessWidget {
+  const NotificationsTab({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('الإشعارات'));
+    return const Center(child: Text('الإشعارات'));
   }
 }
 
 class MenuTab extends StatelessWidget {
+  const MenuTab({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('القائمة'));
+    return const Center(child: Text('القائمة'));
   }
 }
 
 class LibraryBooksTab extends StatelessWidget {
+  const LibraryBooksTab({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('المكتبة'));
+    return const Center(child: Text('المكتبة'));
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/routes/routers_define.dart';
 import 'package:shamunity/routes/routes_name.dart';
 import 'package:toastification/toastification.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
                 child: widget!,
               );
             },
+            navigatorKey: SingleInstanceService.navigatorKey,
             initialRoute: RoutesNames.enterPlatform,
             darkTheme: ThemeData.dark(),
             theme: ThemeData.light(),
