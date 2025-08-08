@@ -45,22 +45,36 @@ class _PostWidgetState extends State<PostWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                width: 50,
+                height: 5,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
               ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('تعديل المنشور'),
+                leading: const Icon(Icons.edit, color: Colors.blue),
+                title: const Text('تعديل المنشور',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () {
+                  Navigator.pop(context);
                   context.pushNamed(RoutesNames.editPost,
                       arguments: widget.post);
                 },
               ),
+              Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.delete),
-                title: const Text('حذف المنشور'),
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('حذف المنشور',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () {
                   postCubit.deletePost(widget.post.id);
                   Navigator.pop(context);
                 },
               ),
+              const SizedBox(height: 10),
             ],
           ),
         );
