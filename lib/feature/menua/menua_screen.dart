@@ -55,7 +55,8 @@ class MenuScreen extends StatelessWidget {
             title: 'تسجيل الخروج',
             iconColor: const Color.fromARGB(255, 52, 75, 94),
             onTap: () {
-              // تأكيد تسجيل الخروج
+              context.pushNamedAndRemoveUntil('/enterPlatform',
+                  predicate: (route) => false);
             },
           ),
         ],

@@ -54,15 +54,14 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       result.fold(
         (failure) {
           context.pop();
-          emit(RegisterFailure(message: failure.message));
           Toast().error(context, failure.message);
+          emit(RegisterFailure(message: failure.message));
         },
         (data) {
           context.pop();
           emit(RegisterSuccess(signupResponse: data));
           Toast().success(context, data.message);
-          close();
-          context.pushNamed('/verification');
+          context.pushNamed('/verification', arguments: data.email);
         },
       );
     });
