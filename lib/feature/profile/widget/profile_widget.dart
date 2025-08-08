@@ -11,10 +11,10 @@ class ProfileWidget extends StatefulWidget {
   final List<PostModel> posts;
 
   const ProfileWidget({
-    Key? key,
+    super.key,
     required this.user,
     required this.posts,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileWidget> createState() => _ProfileWidgetState();

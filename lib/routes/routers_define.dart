@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shamunity/core/service/services_locator.dart';
+import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
+import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
 import 'package:shamunity/feature/home/view/ui/create_post_view.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
@@ -7,8 +11,13 @@ import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/models/college_model.dart';
 import 'package:shamunity/models/user_model.dart';
+import 'package:shamunity/feature/auth/enter_platform_screen.dart';
+import 'package:shamunity/feature/auth/login/login_screen.dart';
+import 'package:shamunity/feature/auth/signup/signup_screen.dart';
+import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
@@ -19,7 +28,7 @@ class AppRoute {
     switch (route.name) {
       case RoutesNames.homePage:
         return MaterialPageRoute(
-          builder: (_) => HomePage(),
+          builder: (_) => const HomePage(),
         );
       case RoutesNames.createPost:
         return MaterialPageRoute(
@@ -27,11 +36,15 @@ class AppRoute {
         );
       case RoutesNames.libraryHome:
         return MaterialPageRoute(
-          builder: (_) => LibraryHomeScreen(),
+          builder: (_) => const LibraryHomeScreen(),
         );
       case RoutesNames.profile:
         return MaterialPageRoute(
-          builder: (_) => ProfileScreen(),
+          builder: (_) => const ProfileScreen(),
+        );
+      case RoutesNames.libraryBooksTab:
+        return MaterialPageRoute(
+          builder: (_) => const LibraryBooksTab(),
         );
       case RoutesNames.academicYearsGrid:
         return MaterialPageRoute(
@@ -45,7 +58,6 @@ class AppRoute {
             departments: route.arguments as List<DepartmentModel>,
           ),
         );
-
       case RoutesNames.subjectsGrid:
         return MaterialPageRoute(
           builder: (_) => SubjectsGridScreen(
@@ -57,6 +69,43 @@ class AppRoute {
           builder: (_) => const NotificationsScreen(),
         );
 
+      case RoutesNames.enterPlatform:
+        return MaterialPageRoute(
+          builder: (_) => const EnterPlatformScreen(),
+        );
+      case RoutesNames.login:
+        return MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        );
+      case RoutesNames.signup:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (BuildContext context) => getit<RegisterBloc>(),
+            child: const SignupScreen(),
+          ),
+        );
+      case RoutesNames.universityInfo:
+        final registerBloc = getit<RegisterBloc>();
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: registerBloc,
+            child: const UniversityInfoScreen(),
+          ),
+        );
+      case RoutesNames.agreement:
+        final registerBloc = getit<RegisterBloc>();
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: registerBloc,
+            child: const AgreementScreen(),
+          ),
+        );
+      case RoutesNames.verification:
+        return MaterialPageRoute(
+          builder: (_) => VerificationCodeScreen(
+            email: route.arguments as String,
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -8,5 +8,11 @@ class RoutesNames {
   static const String academicYearsGrid = "/academicYearsGrid";
   static const String subjectsGrid = "/subjectsGrid";
   static const String departmentDetails = "/departmentDetails";
+  static const String enterPlatform = "/enterPlatform";
+  static const String login = "/login";
+  static const String signup = "/signup";
+  static const String universityInfo = "/university-info";
+  static const String agreement = "/agreement";
+  static const String verification = "/verification";
   static const String notifications = "/notifications";
 }

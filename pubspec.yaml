@@ -53,8 +53,14 @@ dependencies:
   dartz: ^0.10.1
   # to handle state management 
   flutter_bloc: ^9.1.1
+  # for dependency injection
   get_it: ^8.2.0
+  # to handle date time picker
+  flutter_datetime_picker: ^1.5.1
+  # to handle file picker
   file_picker: ^10.2.1
+  shared_preferences: ^2.5.3
+  # to handle secure shared preferences
   intl: ^0.20.2
 
 dev_dependencies:
@@ -80,9 +86,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
