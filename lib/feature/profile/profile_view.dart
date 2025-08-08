@@ -1,42 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/feature/profile/widget/profile_widget.dart';
-import 'package:shamunity/models/post.dart';
-import 'package:shamunity/models/user_model.dart';
+import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
+import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_state.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = UserModel(
-      id: "12345678",
-      name: "م.محمد محمد علي",
-      avatarUrl: "https://i.pravatar.cc/150?img=12",
-      email: "ahmad@email.com",
-      phone: "0999888777",
-      university: "جامعة التكنولوجيا",
-      academicYear: "السنة الثالثة",
-    );
-
-    final posts = [
-      PostModel(
-        userName: user.name,
-        userAvatarUrl: user.avatarUrl,
-        postTime: "منذ ساعة",
-        postText: "يوم رائع في الجامعة!",
-        postImageUrl: "https://picsum.photos/400/300",
-      ),
-      PostModel(
-        userName: user.name,
-        userAvatarUrl: user.avatarUrl,
-        postTime: "منذ 3 ساعات",
-        postText: "استعداد للامتحانات النهائية.",
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: ProfileWidget(user: user, posts: posts),
+      body: BlocBuilder<PostCubit, PostCubitState>(
+        builder: (context, state) {
+          if (state is PostCubitLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is PostCubitLoaded) {
+            return ProfileWidget();
+          } else {
+            return const Center(child: Text("Error loading profile"));
+          }
+        },
+      ),
     );
   }
 }

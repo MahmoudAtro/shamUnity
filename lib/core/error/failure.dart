@@ -5,8 +5,6 @@ import 'package:shamunity/core/theming/styles.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 
-
-
 abstract class Failure {
   final String message;
 
@@ -46,19 +44,29 @@ class ServerFailure extends Failure {
 
   factory ServerFailure.fromResponse(int statuscode, dynamic response) {
     BuildContext? context = SingleInstanceService.context;
+    String errorMessage = 'Unknown error occurred';
+
+    if (response is Map<String, dynamic>) {
+      if (response['message'] is String) {
+        errorMessage = response['message'];
+      } else {
+        errorMessage = response.toString();
+      }
+    } else if (response is String) {
+      errorMessage = response;
+    }
     if (statuscode == 404) {
-      return ServerFailure(
-          message: response);
+      return ServerFailure(message: errorMessage);
     } else if (statuscode == 500) {
       return ServerFailure(
           message: 'there is a problem with server , please try later');
     } else if (statuscode == 400 || statuscode == 403) {
       // return ServerFailure(message: response['error']['message']);
-      return ServerFailure(message: response);
+      return ServerFailure(message: errorMessage);
     } else if (statuscode == 401) {
       return logout(context);
     } else {
-      return ServerFailure(message: 'there was an error , please try again');
+      return ServerFailure(message: errorMessage);
     }
   }
 }

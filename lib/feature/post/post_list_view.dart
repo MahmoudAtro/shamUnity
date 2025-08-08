@@ -1,42 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shamunity/core/helpers/shared_helpers.dart';
+import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/post/widget/post_widget.dart';
-import 'package:shamunity/models/post.dart';
+import 'package:shamunity/logic/post bloc/cubit/post_cubit_cubit.dart';
+import 'package:shamunity/logic/post bloc/cubit/post_cubit_state.dart';
 import 'package:shamunity/models/user_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
-class PostListScreen extends StatelessWidget {
-  final List<PostModel> posts = [
-    PostModel(
-      userName: "محمد علي",
-      userAvatarUrl: "https://i.pravatar.cc/150?img=3",
-      postTime: "قبل ساعة",
-      postText: "يوم جميل جداً 🌞",
-      postImageUrl: "https://picsum.photos/500/300",
-    ),
-    PostModel(
-      userName: "سارة إبراهيم",
-      userAvatarUrl: "https://i.pravatar.cc/150?img=5",
-      postTime: "قبل 3 ساعات",
-      postText: "استمتعنا اليوم في الحديقة.",
-      postImageUrl: null,
-    ),
-    // يمكنك إضافة المزيد من المنشورات...
-  ];
+class PostListScreen extends StatefulWidget {
+  @override
+  State<PostListScreen> createState() => _PostListScreenState();
+}
 
-   final user = UserModel(
-      id: "12345678",
-      name: "أحمد محمد",
-      avatarUrl: "https://i.pravatar.cc/150?img=12",
-      email: "ahmad@email.com",
-      phone: "0999888777",
-      university: "جامعة التكنولوجيا",
-      academicYear: "السنة الثالثة",
+class _PostListScreenState extends State<PostListScreen> {
+  late PostCubit postCubit;
+  String? userId;
+  String? userName;
+  String? university;
+  String? academicYear;
+  String? avatarUrl;
+  String? email;
+  String? phone;
+
+  @override
+  void initState() {
+    postCubit = BlocProvider.of<PostCubit>(context);
+    postCubit.fetchPosts();
+    _loadUserData();
+
+    super.initState();
+  }
+
+  Future<void> _loadUserData() async {
+    userId = await SecureSharedPrefHelper.getString("userId");
+    userName = await SecureSharedPrefHelper.getString("userName");
+    university = await SecureSharedPrefHelper.getString("university");
+    academicYear = await SecureSharedPrefHelper.getString("academicYear");
+    avatarUrl = await SecureSharedPrefHelper.getString("avatarUrl");
+    email = await SecureSharedPrefHelper.getString("email");
+    phone = await SecureSharedPrefHelper.getString("phone");
+    setState(() {});
+  }
+
+  // يمكنك وضع هذا في أي ملف widgets أو مباشرة في صفحة عرض البوستات
+  Widget buildPostShimmer() {
+    return ListView.builder(
+      itemCount: 5,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      itemBuilder: (context, index) => Card(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: GlobalShimmer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header shimmer
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      width: 120,
+                      height: 12,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  height: 14,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  height: 180,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
 
-
-
-  Widget buildCreatePostCard(BuildContext context, UserModel user) {
+  Widget buildCreatePostCard(
+    BuildContext context,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
       child: Card(
@@ -48,7 +112,15 @@ class PostListScreen extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            context.pushNamed(RoutesNames.createPost, arguments: user);
+            context.pushNamed(RoutesNames.createPost,
+                arguments: UserModel(
+                    id: userId!,
+                    name: userName!,
+                    avatarUrl: avatarUrl!,
+                    email: email!,
+                    phone: phone!,
+                    university: university!,
+                    academicYear: academicYear!));
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -78,13 +150,27 @@ class PostListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        itemCount: posts.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return buildCreatePostCard(context, user);
+      body: BlocBuilder<PostCubit, PostCubitState>(
+        builder: (context, state) {
+          if (state is PostCubitLoading) {
+            return buildPostShimmer();
+          } else if (state is PostCubitLoaded) {
+            final posts = state.posts;
+            return ListView.builder(
+              itemCount: posts.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return buildCreatePostCard(context);
+                }
+                return PostWidget(
+                    post: posts[index - 1], author: posts[index - 1].author);
+              },
+            );
+          } else if (state is PostCubitError) {
+            return Center(child: Text(state.message));
           }
-          return PostWidget(post: posts[index - 1]);
+          // الحالة الافتراضية
+          return const SizedBox();
         },
       ),
     );
