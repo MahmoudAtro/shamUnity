@@ -220,7 +220,7 @@ class _SignupFormState extends State<SignupForm> {
       if (picked != null) {
         setState(() {
           context.read<RegisterBloc>().birthDay.text =
-              "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
         });
       }
     });

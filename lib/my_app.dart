@@ -27,7 +27,9 @@ class MyApp extends StatelessWidget {
               );
             },
             navigatorKey: SingleInstanceService.navigatorKey,
-            initialRoute: RoutesNames.enterPlatform,
+            initialRoute: isLoggedInUser
+                ? RoutesNames.homePage
+                : RoutesNames.enterPlatform,
             darkTheme: ThemeData.dark(),
             theme: ThemeData.light(),
             debugShowCheckedModeBanner: false,
