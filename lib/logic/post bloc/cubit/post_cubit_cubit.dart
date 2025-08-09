@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/models/post.dart';
@@ -13,17 +15,19 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCubitLoading());
     final result = await apiPost.getPosts();
     result.fold(
-      (failure) => emit(PostCubitError(failure.message ?? "خطأ غير معروف")),
+      (failure) => emit(PostCubitError(failure.message)),
       (posts) => emit(PostCubitLoaded(posts)),
     );
   }
 
-  Future<void> createPost(Post post) async {
-    emit(PostCubitLoading());
-    final result = await apiPost.createPost(post);
+  Future<void> createPost(
+      {required String content, required File? image}) async {
+    emit(PostCreatedLoading());
+    final result = await apiPost.createPost(content, image);
     result.fold(
       (failure) => emit(PostCubitError(failure.message ?? "فشل إنشاء المنشور")),
       (createdPost) async {
+        emit(PostCreatedSuccess()); // حالة نجاح الإنشاء
         await fetchPosts();
       },
     );
@@ -52,11 +56,11 @@ class PostCubit extends Cubit<PostCubitState> {
   }
 
   Future<void> fetchUserPosts(String userId) async {
-    emit(PostCubitLoading());
+    emit(UserPostsLoading());
     final result = await apiPost.getUserPosts(userId);
     result.fold(
       (failure) => emit(PostCubitError(failure.message ?? "خطأ غير معروف")),
-      (posts) => emit(PostCubitLoaded(posts)),
+      (posts) => emit(UserPostsLoaded(posts)),
     );
   }
 }

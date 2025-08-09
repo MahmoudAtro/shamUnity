@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shamunity/feature/menua/widget/menua_card.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
@@ -21,14 +22,16 @@ class MenuScreen extends StatelessWidget {
             elevation: 3,
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
-              leading: const CircleAvatar(
+              leading: CircleAvatar(
                 radius: 30,
-                backgroundImage:
-                    NetworkImage('https://i.pravatar.cc/150?img=5'),
+                backgroundImage: user!.profilePictureUrl != null
+                    ? NetworkImage(user!.profilePictureUrl!)
+                    : const AssetImage('assets/images/default_avatar.jpg'),
               ),
-              title: const Text('محمد الأحمد',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              subtitle: const Text('طالب في جامعة دمشق'),
+              title: Text("${user!.firstName} ${user!.lastName}",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18)),
+              subtitle: Text(user!.college),
               onTap: () {
                 context.pushNamed(RoutesNames.profile);
               },

@@ -29,3 +29,14 @@ final class PostUpdatedError extends PostCubitState {
   final String message;
   PostUpdatedError(this.message);
 }
+
+final class PostCreatedSuccess extends PostCubitState {}
+final class PostCreatedLoading extends PostCubitState {}
+  
+
+final class UserPostsLoading extends PostCubitState {}
+
+final class UserPostsLoaded extends PostCubitState {
+  final List<Post> posts;
+  UserPostsLoaded(this.posts);
+}
