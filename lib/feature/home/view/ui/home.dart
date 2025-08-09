@@ -21,7 +21,32 @@ class _HomePageState extends State<HomePage> {
         child: WillPopScope(
           onWillPop: () async => false,
           child: Scaffold(
-            backgroundColor: Colors.grey[200],
+            // ...existing code...
+            floatingActionButton: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+                child: FloatingActionButton.extended(
+                  backgroundColor: Colors.blueAccent,
+                  elevation: 4,
+                  onPressed: () {
+                    // منطق فتح محادثة الذكاء الاصطناعي
+                  },
+                  icon: const Icon(Icons.chat, color: Colors.white, size: 26),
+                  label: const Text(
+                    'Ai',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            backgroundColor: Colors.grey[100],
             appBar: AppBar(
               automaticallyImplyLeading: false,
               backgroundColor: Colors.grey[200],

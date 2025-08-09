@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String _baseUrl =
-      "https://verbal-tones-knives-legend.trycloudflare.com/api";
+      "https://tx-ping-slovenia-nc.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://verbal-tones-knives-legend.trycloudflare.com";
+      "https://tx-ping-slovenia-nc.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
 
   /// ----------Outside Application---------
@@ -16,5 +16,11 @@ class ApiConstances {
 
   // post
   static const String postsUrl = "$_baseUrl/posts";
-  static String postsId(String userId) => '/posts/$userId';
+  static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
+  static String postDetails(int postId) => '$_baseUrl/posts/$postId';
+  static String postComments(int postId) => '$_baseUrl/posts/$postId/comments';
+  static String commentDetails(int commentId) =>
+      '$_baseUrl/comments/$commentId';
+
+  static String addLike(int postId) => '$_baseUrl/posts/$postId/like';
 }

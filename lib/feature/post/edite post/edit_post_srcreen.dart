@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_state.dart';
 import 'package:shamunity/models/post.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class EditPostScreen extends StatefulWidget {
   final Post post;
@@ -90,9 +92,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
     // إرسال التعديل للبلوك
     final updatedPost = widget.post.copyWith(
       content: text,
-      imageUrl: imageChanged && _selectedImage != null
-          ? _selectedImage!.path
-          : widget.post.imageUrl,
+      imageUrl:
+          _selectedImage != null ? _selectedImage!.path : widget.post.imageUrl,
     );
     _postCubit.updatePost(widget.post.id, updatedPost);
   }
@@ -111,15 +112,25 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
     return BlocListener<PostCubit, PostCubitState>(
       listener: (context, state) {
-        if (state is PostUpdatedSuccess) {
-          Toast().success(context, "تم تعديل المنشور بنجاح");
-          Navigator.pop(context);
+        if (state is PostUpdatedLoading) {
+          showDialog(
+            context: context,
+            builder: (context) =>
+                const Center(child: CircularProgressIndicator()),
+          );
+          // يغلق الـ Dialog
         } else if (state is PostUpdatedError) {
+          context.pop();
           Toast().error(context, state.message);
-          Navigator.pop(context);
+        } else if (state is PostUpdatedSuccess) {
+          context.pop();
+          Toast().success(context, "تم تعديل المنشور بنجاح");
+          context.pop();
+          context.pop();
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text("تعديل المنشور"),
           actions: [
@@ -139,8 +150,10 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(widget.post.author.profilePicture ?? ""),
+                      backgroundImage: widget.post.author.profilePicture != null
+                          ? NetworkImage(
+                              "${ApiConstances.baseUrlImg}${widget.post.author.profilePicture}")
+                          : null,
                       radius: 22,
                     ),
                     SizedBox(width: 10),
@@ -179,7 +192,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                                 fit: BoxFit.cover,
                               )
                             : Image.network(
-                                widget.post.imageUrl!,
+                                "${ApiConstances.baseUrlImg}${widget.post.imageUrl!}",
                                 height: 350,
                                 width: double.infinity,
                                 fit: BoxFit.cover,

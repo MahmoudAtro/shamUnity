@@ -1,5 +1,6 @@
 class Post {
   final int id;
+  bool isLiked;
   final String content;
   final String? imageUrl; // تغيير من imagePath إلى imageUrl
   final int likesCount;
@@ -8,6 +9,7 @@ class Post {
   final Author author;
 
   Post({
+    this.isLiked = false,
     required this.id,
     required this.content,
     this.imageUrl, // تغيير من imagePath إلى imageUrl
@@ -49,8 +51,10 @@ class Post {
     int? commentsCount,
     String? createdAt,
     Author? author,
+    bool? isLiked,
   }) {
     return Post(
+      isLiked: isLiked ?? this.isLiked,
       id: id ?? this.id,
       content: content ?? this.content,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -131,5 +135,4 @@ class Author {
       'created_at': createdAt, // تم تغيير النوع إلى String
     };
   }
-  
 }

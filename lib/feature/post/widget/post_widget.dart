@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/toast.dart';
+import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/comment/comment_view.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_state.dart';
-import 'package:shamunity/models/cmment_model.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
@@ -14,10 +16,8 @@ import 'package:shamunity/routes/routes_name.dart';
 class PostWidget extends StatefulWidget {
   final Post post;
   final Author author;
-  final String? currentUserId;
 
-  const PostWidget(
-      {Key? key, required this.post, required this.author, this.currentUserId})
+  const PostWidget({Key? key, required this.post, required this.author})
       : super(key: key);
 
   @override
@@ -27,11 +27,14 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   bool isLiked = false;
   late PostCubit postCubit;
+  late CommentCubit commentCubit;
 
   @override
   void initState() {
     super.initState();
     postCubit = BlocProvider.of<PostCubit>(context);
+    commentCubit = BlocProvider.of<CommentCubit>(context);
+    postCubit.listenToNewPosts();
   }
 
   void _showOptionsMenu(BuildContext context) {
@@ -59,7 +62,6 @@ class _PostWidgetState extends State<PostWidget> {
                 title: const Text('تعديل المنشور',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () {
-                  Navigator.pop(context);
                   context.pushNamed(RoutesNames.editPost,
                       arguments: widget.post);
                 },
@@ -71,7 +73,7 @@ class _PostWidgetState extends State<PostWidget> {
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () {
                   postCubit.deletePost(widget.post.id);
-                  Navigator.pop(context);
+                  context.pop();
                 },
               ),
               const SizedBox(height: 10),
@@ -84,16 +86,30 @@ class _PostWidgetState extends State<PostWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = widget.currentUserId == widget.author.id.toString();
+    final isOwner = user!.id.toString() == widget.author.id.toString();
+    print(isOwner);
+    print("=================================");
+    print(widget.author.id.toString());
+    print("=================================");
+
+    print(user!.id.toString());
 
     return BlocListener<PostCubit, PostCubitState>(
       listenWhen: (previous, current) =>
           isOwner &&
           (current is PostDeletedSuccess || current is PostDeletedError),
       listener: (context, state) {
-        if (state is PostDeletedSuccess) {
+        if (state is PostDeleteLoading) {
+          showDialog(
+            context: context,
+            builder: (context) =>
+                const Center(child: CircularProgressIndicator()),
+          );
+        } else if (state is PostDeletedSuccess) {
           Toast().success(context, "تم حذف المنشور بنجاح");
+          context.pop();
         } else if (state is PostDeletedError) {
+          context.pop();
           Toast().error(context, state.message);
         }
       },
@@ -175,65 +191,59 @@ class _PostWidgetState extends State<PostWidget> {
 
               const Divider(),
 
-              // Actions (Like / Comment)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _PostAction(
-                      color: isLiked ? Colors.blue : Colors.grey,
-                      icon: isLiked ? Icons.lightbulb : Icons.lightbulb_outline,
+                      color: widget.post.isLiked ? Colors.blue : Colors.grey,
+                      icon: widget.post.isLiked
+                          ? Icons.lightbulb
+                          : Icons.lightbulb_outline,
                       label: "${widget.post.likesCount}",
                       onTap: () {
-                        setState(() {
-                          isLiked = !isLiked;
-                        });
+                        postCubit.toggleLike(widget.post.id);
+
                         print("تم الضغط على إعجاب");
                       },
                     ),
-                    _PostAction(
-                      icon: Icons.comment_outlined,
-                      label: "${widget.post.commentsCount}",
-                      onTap: () {
-                        showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
-                            ),
-                            builder: (context) => DraggableScrollableSheet(
-                                  expand: false,
-                                  initialChildSize: 0.8,
-                                  minChildSize: 0.5,
-                                  maxChildSize: 0.9,
-                                  builder: (_, controller) =>
-                                      CommentBottomSheet(
-                                    scrollController: ScrollController(),
-                                    comments: [
-                                      CommentModel(
-                                        username: 'محمد',
-                                        text:
-                                            'هذا تعليق رائع! asdasdas      يشسيشسسسسسسش          شسيسشيشسيشيشسي                     شسيس              شيس',
-                                        timestamp: DateTime.now()
-                                            .subtract(Duration(minutes: 5)),
+                    BlocProvider(
+                      create: (context) => getit<CommentCubit>(),
+                      child: _PostAction(
+                        icon: Icons.comment_outlined,
+                        label: "${widget.post.commentsCount}",
+                        onTap: () {
+                          commentCubit.fetchComments(widget.post.id);
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.white,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (context) => BlocProvider.value(
+                                    value: commentCubit,
+                                    child: DraggableScrollableSheet(
+                                      expand: false,
+                                      initialChildSize: 0.8,
+                                      minChildSize: 0.5,
+                                      maxChildSize: 0.9,
+                                      builder: (_, controller) =>
+                                          CommentBottomSheet(
+                                        post: widget.post,
+                                        scrollController: ScrollController(),
                                       ),
-                                      CommentModel(
-                                        username: 'سارة',
-                                        text: 'أوافقك الرأي 👍',
-                                        timestamp: DateTime.now()
-                                            .subtract(Duration(hours: 1)),
-                                      ),
-                                    ],
-                                  ),
-                                ));
-                      },
+                                    ),
+                                  ));
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 8),
             ],
           ),
