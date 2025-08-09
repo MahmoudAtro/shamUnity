@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SecureSharedPrefHelper {
@@ -15,8 +18,8 @@ class SecureSharedPrefHelper {
   static logout() async {
     debugPrint('SharedPrefHelper : all data to logout has been cleared');
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.remove("userToken");
-    sharedPreferences.remove("userId");
+    await sharedPreferences.remove("userToken");
+    await sharedPreferences.remove('user');
   }
 
   /// Saves a [value] with a [key] in the SharedPreferences.
@@ -48,6 +51,21 @@ class SecureSharedPrefHelper {
     return sharedPreferences.getString(key) ?? '';
   }
 
+  static Future<void> saveUser(UserModel user) async {
+    debugPrint("SharedPrefHelper : setData with key : user and value : $user");
+    final prefs = await SharedPreferences.getInstance();
+    String userJson = jsonEncode(user.toJson());
+    await prefs.setString('user', userJson);
+  }
+
+  static Future<UserModel?> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userJson = prefs.getString('user');
+    if (userJson == null) return null;
+    Map<String, dynamic> userMap = jsonDecode(userJson);
+    return UserModel.fromJson(userMap);
+  }
+
   /// Saves the ThemeMode in SharedPreferences.
   static Future<void> setThemeMode(ThemeMode themeMode) async {
     debugPrint('SharedPrefHelper : setThemeMode to $themeMode');
@@ -58,7 +76,8 @@ class SecureSharedPrefHelper {
   /// Gets the ThemeMode from SharedPreferences.
   static Future<ThemeMode> getThemeMode() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    int themeModeIndex = sharedPreferences.getInt('themeMode') ?? 0; // Default to light theme
+    int themeModeIndex =
+        sharedPreferences.getInt('themeMode') ?? 0; // Default to light theme
     return ThemeMode.values[themeModeIndex];
   }
 }

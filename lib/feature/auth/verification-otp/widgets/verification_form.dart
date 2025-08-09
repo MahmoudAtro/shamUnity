@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
+import 'package:shamunity/logic/verification%20bloc/verification_bloc.dart';
 
 class VerificationForm extends StatefulWidget {
+  final String email;
   const VerificationForm({
     super.key,
+    required this.email,
   });
 
   @override
@@ -14,14 +18,7 @@ class VerificationForm extends StatefulWidget {
 }
 
 class _VerificationFormState extends State<VerificationForm> {
-  final TextEditingController _pinController = TextEditingController();
-
-  @override
-  void dispose() {
-    _pinController.dispose();
-    super.dispose();
-  }
-
+  VerificationBloc get bloc => BlocProvider.of(context);
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -30,7 +27,7 @@ class _VerificationFormState extends State<VerificationForm> {
         Directionality(
           textDirection: TextDirection.ltr,
           child: Pinput(
-            controller: _pinController,
+            controller: bloc.verificationCode,
             length: 6,
             defaultPinTheme: PinTheme(
               width: 70.w,
@@ -75,7 +72,9 @@ class _VerificationFormState extends State<VerificationForm> {
             fontSize: 20.sp,
             fontWeight: FontWeight.w500,
           ),
-          onPressed: () {},
+          onPressed: () {
+            bloc.add(VerifyCodeEvent(email: widget.email));
+          },
         ),
 
         SizedBox(height: 50.h),

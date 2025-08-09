@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shamunity/feature/chat/user/user_list_srcreen.dart';
 import 'package:shamunity/models/chat_item_model.dart';
 
 class ChatCardWidget extends StatelessWidget {

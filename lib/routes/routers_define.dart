@@ -28,7 +28,6 @@ class AppRoute {
   Route generateRoute(RouteSettings route) {
     // this argument to be passed in any screen like this
     // final argument = route.arguments;
-    final registerBloc = getit<RegisterBloc>();
     switch (route.name) {
       case RoutesNames.homePage:
         return MaterialPageRoute(
@@ -93,12 +92,13 @@ class AppRoute {
         );
       case RoutesNames.signup:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: registerBloc,
+          builder: (_) => BlocProvider(
+            create: (BuildContext context) => getit<RegisterBloc>(),
             child: const SignupScreen(),
           ),
         );
       case RoutesNames.universityInfo:
+        final registerBloc = getit<RegisterBloc>();
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: registerBloc,
@@ -106,6 +106,7 @@ class AppRoute {
           ),
         );
       case RoutesNames.agreement:
+        final registerBloc = getit<RegisterBloc>();
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: registerBloc,
@@ -114,7 +115,9 @@ class AppRoute {
         );
       case RoutesNames.verification:
         return MaterialPageRoute(
-          builder: (_) => const VerificationCodeScreen(),
+          builder: (_) => VerificationCodeScreen(
+            email: route.arguments as String,
+          ),
         );
       default:
         return MaterialPageRoute(

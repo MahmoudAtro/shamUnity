@@ -15,16 +15,14 @@ class ServicesLocator {
     _posts();
   }
 
-  void _register(){
+  void _register() {
     // api
     getit.registerLazySingleton<AuthApi>(
       () => AuthApi(dio: DioFactory.getDio()),
     );
     // bloc
-    getit.registerLazySingleton(() => RegisterBloc(getit()));
+    getit.registerLazySingleton<RegisterBloc>(() => RegisterBloc(getit()));
   }
-
-
 }
 
 
