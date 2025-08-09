@@ -93,13 +93,15 @@ class _VerificationFormState extends State<VerificationForm> {
           ],
         ),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            bloc.add(ResendCodeEvent(email: widget.email));
+          },
           child: Text(
             'إعادة الارسال',
             style: TextStyle(
-              fontSize: 16.sp,
-              color: Colors.amber[700],
-            ),
+                fontSize: 16.sp,
+                color: Colors.amber[700],
+                fontWeight: FontWeight.bold),
           ),
         ),
       ],
