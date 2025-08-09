@@ -64,7 +64,8 @@ class AuthApi {
       );
       await SecureSharedPrefHelper.setData(
           "userToken", response.data['token'].toString());
-      await SecureSharedPrefHelper.saveUser(UserModel.fromJson(response.data['user']));
+      await SecureSharedPrefHelper.saveUser(
+          UserModel.fromJson(response.data['user']));
       final responseData = VerifyOtpResponse.fromJson(response.data);
       return Right(responseData);
     } catch (e) {

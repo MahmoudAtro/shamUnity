@@ -1,85 +1,228 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/models/cmment_model.dart' show CommentModel;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shamunity/constants/api_constant.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/logic/cubit/comment_cubit.dart';
+import 'package:shamunity/logic/cubit/comment_state.dart';
+import 'package:shamunity/models/post.dart';
 
-class CommentBottomSheet extends StatelessWidget {
+class CommentBottomSheet extends StatefulWidget {
   final ScrollController scrollController;
-  final List<CommentModel> comments;
+  final Post post;
 
   const CommentBottomSheet({
     super.key,
     required this.scrollController,
-    required this.comments,
+    required this.post,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: comments.length,
-      itemBuilder: (context, index) {
-        final comment = comments[index];
+  State<CommentBottomSheet> createState() => _CommentBottomSheetState();
+}
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: comment.avatarUrl.isNotEmpty
-                    ? NetworkImage(comment.avatarUrl)
-                    : null,
-                child: comment.avatarUrl.isEmpty
-                    ? Text(
-                        comment.username.substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: Colors.white),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey[200],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        softWrap: true,
-                        maxLines: 1,
-                        comment.username,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(comment.text),
-                      Text(
-                        timeAgo(comment.timestamp),
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
-                      )
-                    ],
-                  ),
+class _CommentBottomSheetState extends State<CommentBottomSheet> {
+  final TextEditingController _commentController = TextEditingController();
+  late CommentCubit commentCubit;
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    commentCubit = context.read<CommentCubit>();
+    
+    _commentController.addListener(_checkText);
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _checkText() {
+    setState(() {
+      _hasText = _commentController.text.trim().isNotEmpty;
+    });
+  }
+
+  void _submitComment() {
+    if (_commentController.text.trim().isEmpty) return;
+    commentCubit.addComment(widget.post.id, _commentController.text.trim());
+    _commentController.clear();
+    FocusScope.of(context).unfocus();
+  }
+
+  void _showDeleteDialog(int commentId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("حذف التعليق"),
+        content: const Text("هل أنت متأكد أنك تريد حذف هذا التعليق؟"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("إلغاء"),
+          ),
+          TextButton(
+            onPressed: () {
+              commentCubit.deleteComment(commentId);
+              Navigator.pop(context);
+            },
+            child: const Text("حذف", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CommentCubit, CommentState>(
+      builder: (context, state) {
+        return Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: _buildCommentList(state),
                 ),
-              ),
-            ],
+                _buildCommentInputField(),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  String timeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
+  Widget _buildCommentList(CommentState state) {
+    if (state is CommentLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is CommentError) {
+      return Center(child: Text(state.failure));
+    } else if (state is CommentsLoaded) {
+      if (state.comments.isEmpty) {
+        return const Center(
+          child: Text(
+            "لا توجد تعليقات",
+            style: TextStyle(fontSize: 22),
+          ),
+        );
+      }
 
-    if (difference.inMinutes < 1) return 'الآن';
-    if (difference.inMinutes < 60) return '${difference.inMinutes} د';
-    if (difference.inHours < 24) return '${difference.inHours} س';
-    return '${difference.inDays} يوم';
+      return ListView.builder(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.all(16),
+        itemCount: state.comments.length,
+        itemBuilder: (context, index) {
+          final comment = state.comments[index];
+          return GestureDetector(
+            onLongPress: () {
+              if (user!.id.toString() == comment.author.id.toString()) {
+                _showDeleteDialog(comment.id);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: comment.author.profilePicture != null
+                        ? NetworkImage(
+                            "${ApiConstances.baseUrlImg}${comment.author.profilePicture}")
+                        : null,
+                    child: comment.author.name.isEmpty
+                        ? Text(
+                            comment.author.name,
+                            style: const TextStyle(color: Colors.white),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.grey[200],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            softWrap: true,
+                            maxLines: 1,
+                            comment.author.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(comment.content),
+                          Text(
+                            comment.createdAt,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return const Center(child: Text("لا توجد تعليقات"));
+  }
+
+  Widget _buildCommentInputField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                hintText: 'اكتب تعليقًا...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onSubmitted: (_) => _submitComment(),
+            ),
+          ),
+          if (_hasText)
+            IconButton(
+              icon: const Icon(Icons.send, color: Colors.blue),
+              onPressed: _submitComment,
+            ),
+        ],
+      ),
+    );
   }
 }
