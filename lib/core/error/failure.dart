@@ -58,8 +58,7 @@ class ServerFailure extends Failure {
     if (statuscode == 404) {
       return ServerFailure(message: errorMessage);
     } else if (statuscode == 500) {
-      return ServerFailure(
-          message: 'there is a problem with server , please try later');
+      return ServerFailure(message: errorMessage);
     } else if (statuscode == 400 || statuscode == 403) {
       // return ServerFailure(message: response['error']['message']);
       return ServerFailure(message: errorMessage);
