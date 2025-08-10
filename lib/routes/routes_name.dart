@@ -16,4 +16,5 @@ class RoutesNames {
   static const String verification = "/verification";
   static const String notifications = "/notifications";
   static const String editPost = "/editPost";
+  static const String sheikhProfile = "/sheikhProfile";
 }

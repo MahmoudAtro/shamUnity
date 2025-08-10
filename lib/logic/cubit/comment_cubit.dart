@@ -1,24 +1,68 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
+import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
 import 'package:shamunity/models/comment.dart';
 
 class CommentCubit extends Cubit<CommentState> {
   final ApiComment apiComment;
+  final PusherService _pusherService = PusherService();
   List<Comment> comments = [];
+  StreamSubscription<Map<String, dynamic>>? _commentSubscription;
 
-  CommentCubit(this.apiComment) : super(CommentInitial());
+  CommentCubit(this.apiComment) : super(CommentInitial()) {
+    _listenToCommentUpdates();
+  }
+
+  void _listenToCommentUpdates() {
+    _commentSubscription = _pusherService.commentStream.listen((commentData) {
+      if (!isClosed) {
+        _handleCommentUpdate(commentData);
+      }
+    });
+  }
+
+  void _handleCommentUpdate(Map<String, dynamic> commentData) {
+    final type = commentData['type'] as String;
+    final postId = commentData['postId'] as int;
+
+    switch (type) {
+      case 'created':
+        final newComment = Comment.fromJson(commentData['comment']);
+        comments.insert(0, newComment);
+        if (!isClosed) {
+          emit(CommentsLoaded(comments));
+        }
+        break;
+      case 'deleted':
+        final commentId = commentData['commentId'] as int;
+        comments.removeWhere((c) => c.id == commentId);
+        if (!isClosed) {
+          emit(CommentsLoaded(comments));
+        }
+        break;
+    }
+  }
 
   Future<void> fetchComments(int postId) async {
-    emit(CommentLoading());
+    if (!isClosed) {
+      emit(CommentLoading());
+    }
+
     final result = await apiComment.getComments(postId);
     result.fold(
       (failure) => emit(CommentError(failure.message)),
       (listComments) {
         comments = listComments;
-        emit(CommentsLoaded(listComments));
+        if (!isClosed) {
+          emit(CommentsLoaded(listComments));
+        }
       },
     );
   }
@@ -45,5 +89,11 @@ class CommentCubit extends Cubit<CommentState> {
         emit(CommentsLoaded(comments));
       },
     );
+  }
+
+  @override
+  Future<void> close() {
+    _commentSubscription?.cancel();
+    return super.close();
   }
 }
