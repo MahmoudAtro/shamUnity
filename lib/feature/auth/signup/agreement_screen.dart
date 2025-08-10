@@ -26,6 +26,7 @@ class _AgreementScreenState extends State<AgreementScreen> {
             children: [
               Container(
                 width: double.infinity, // إضافة العرض الكامل
+                height: MediaQuery.of(context).size.height * 0.252,
                 decoration: const BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage("assets/images/bacground_chat.png"),
@@ -54,6 +55,7 @@ class _AgreementScreenState extends State<AgreementScreen> {
                 width: double.infinity, // إضافة العرض الكامل
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 color: ColorsManager.darkerLight,
+                height: MediaQuery.of(context).size.height * 0.69,
                 child: Column(
                   children: [
                     verticalspace(25),

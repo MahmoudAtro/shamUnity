@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/theming/styles.dart';
 
-class AppDropdownFormField<T> extends StatefulWidget {
+class DropDownVisitResult<T> extends StatefulWidget {
   final List<DropdownMenuItem<T>> items;
   final T? value;
   final Function(T?) onChanged;
@@ -20,7 +20,7 @@ class AppDropdownFormField<T> extends StatefulWidget {
   final Function(T?) validator;
   final TextEditingController? controller;
 
-  const AppDropdownFormField({
+  const DropDownVisitResult({
     super.key,
     required this.items,
     required this.onChanged,
@@ -40,11 +40,10 @@ class AppDropdownFormField<T> extends StatefulWidget {
   });
 
   @override
-  _AppDropdownFormFieldState<T> createState() =>
-      _AppDropdownFormFieldState<T>();
+  _DropDownVisitResultState<T> createState() => _DropDownVisitResultState<T>();
 }
 
-class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
+class _DropDownVisitResultState<T> extends State<DropDownVisitResult<T>> {
   T? selectedValue;
 
   @override
@@ -57,6 +56,26 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
   }
 
   @override
+  void didUpdateWidget(covariant DropDownVisitResult<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.items != widget.items) {
+      if (selectedValue != null &&
+          !isValueInItems(selectedValue, widget.items)) {
+        setState(() {
+          selectedValue = null;
+          if (widget.controller != null) {
+            widget.controller!.text = ''; // تعيين نص فارغ بدلاً من clear()
+          }
+          widget.onChanged(null);
+        });
+      }
+    }
+  }
+
+  bool isValueInItems(T? value, List<DropdownMenuItem<T>> items) {
+    return items.any((item) => item.value == value);
+  }
+  @override
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return DropdownButtonFormField<T>(
@@ -66,14 +85,12 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
         setState(() {
           selectedValue = value;
           if (widget.controller != null) {
-            widget.controller!.text = value.toString();
+            widget.controller!.text = value != null ? value.toString() : '';
           }
         });
         widget.onChanged(value);
       },
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         isDense: widget.isDense ?? true,
         contentPadding: widget.contentPadding ??
             EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

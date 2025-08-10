@@ -134,7 +134,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               'assets/images/default_avatar.jpg'),
                       radius: 22,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Text(
                       "${widget.user.firstName} ${widget.user.lastName}",
                       style: const TextStyle(

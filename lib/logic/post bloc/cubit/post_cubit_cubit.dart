@@ -25,7 +25,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCreatedLoading());
     final result = await apiPost.createPost(content, image);
     result.fold(
-      (failure) => emit(PostCubitError(failure.message ?? "فشل إنشاء المنشور")),
+      (failure) => emit(PostCubitError(failure.message)),
       (createdPost) async {
         emit(PostCreatedSuccess()); // حالة نجاح الإنشاء
         await fetchPosts();
@@ -37,7 +37,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCubitLoading());
     final result = await apiPost.updatePost(postId, post);
     result.fold(
-      (failure) => emit(PostCubitError(failure.message ?? "فشل تعديل المنشور")),
+      (failure) => emit(PostCubitError(failure.message)),
       (updatedPost) async {
         await fetchPosts();
       },
@@ -48,7 +48,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCubitLoading());
     final result = await apiPost.deletePost(postId);
     result.fold(
-      (failure) => emit(PostCubitError(failure.message ?? "فشل حذف المنشور")),
+      (failure) => emit(PostCubitError(failure.message)),
       (_) async {
         await fetchPosts();
       },
@@ -59,7 +59,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(UserPostsLoading());
     final result = await apiPost.getUserPosts(userId);
     result.fold(
-      (failure) => emit(PostCubitError(failure.message ?? "خطأ غير معروف")),
+      (failure) => emit(PostCubitError(failure.message)),
       (posts) => emit(UserPostsLoaded(posts)),
     );
   }

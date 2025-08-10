@@ -64,7 +64,7 @@ class _PostWidgetState extends State<PostWidget> {
                       arguments: widget.post);
                 },
               ),
-              Divider(height: 1),
+              const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text('حذف المنشور',
@@ -114,24 +114,36 @@ class _PostWidgetState extends State<PostWidget> {
               // Header
               ListTile(
                 // ...existing code...
-                leading: GlobalShimmer(
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      image: widget.author.profilePicture != null
-                          ? DecorationImage(
-                              image: NetworkImage(
-                                "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
-                              ),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                  ),
-                ),
+                leading: widget.author.profilePicture != null
+                    ? GlobalShimmer(
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
+                                ),
+                                fit: BoxFit.cover,
+                              )),
+                        ),
+                      )
+                    : Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          image: DecorationImage(
+                            image: AssetImage(
+                              "assets/images/default_avatar.jpg",
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
 // ...existing code...
                 title: Text(widget.author.name,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -158,7 +170,7 @@ class _PostWidgetState extends State<PostWidget> {
                   child: Image.network(
                     width: double.infinity,
                     height: 220,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     "${ApiConstances.baseUrlImg}${widget.post.imageUrl}",
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -189,7 +201,7 @@ class _PostWidgetState extends State<PostWidget> {
                         setState(() {
                           isLiked = !isLiked;
                         });
-                        print("تم الضغط على إعجاب");
+                        print("تم الضغط على لمبة");
                       },
                     ),
                     _PostAction(

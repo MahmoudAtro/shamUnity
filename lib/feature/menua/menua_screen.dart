@@ -32,14 +32,14 @@ class _MenuScreenState extends State<MenuScreen> {
               contentPadding: const EdgeInsets.all(16),
               leading: CircleAvatar(
                 radius: 30,
-                backgroundImage: user!.profilePictureUrl != null
+                backgroundImage: user?.profilePictureUrl != null
                     ? NetworkImage(user!.profilePictureUrl!)
                     : const AssetImage('assets/images/default_avatar.jpg'),
               ),
-              title: Text("${user!.firstName} ${user!.lastName}",
+              title: Text("${user?.firstName} ${user?.lastName}",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 18)),
-              subtitle: Text(user!.college),
+              subtitle: Text(user?.college ?? ''),
               onTap: () {
                 context.pushNamed(RoutesNames.profile);
               },

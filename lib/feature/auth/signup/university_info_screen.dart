@@ -28,6 +28,7 @@ class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
+                height: MediaQuery.of(context).size.height * 0.252,
                 decoration: const BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage("assets/images/bacground_chat.png"),
@@ -54,6 +55,7 @@ class _UniversityInfoScreenState extends State<UniversityInfoScreen> {
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
+                height: MediaQuery.of(context).size.height * 0.69,
                 color: ColorsManager.darkerLight,
                 child: Column(
                   children: [

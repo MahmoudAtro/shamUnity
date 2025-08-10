@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
@@ -16,6 +19,47 @@ class AgreementForm extends StatefulWidget {
 class _AgreementFormState extends State<AgreementForm> {
   bool acceptTerms = false;
   bool acceptEmail = false;
+  File? _selectedImage;
+  Future<void> _pickImage() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('اختيار من المعرض'),
+              onTap: () async {
+                Navigator.pop(context);
+                final picker = ImagePicker();
+                final picked =
+                    await picker.pickImage(source: ImageSource.gallery);
+                if (picked != null) {
+                  setState(() => _selectedImage = File(picked.path));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('التقاط صورة'),
+              onTap: () async {
+                Navigator.pop(context);
+                final picker = ImagePicker();
+                final picked =
+                    await picker.pickImage(source: ImageSource.camera);
+                if (picked != null) {
+                  setState(() => _selectedImage = File(picked.path));
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,31 +110,48 @@ class _AgreementFormState extends State<AgreementForm> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        Container(
-          width: 120.w,
-          height: 120.h,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-          ),
-          child: Center(
-            child: Icon(
-              Icons.person,
-              size: 80.sp,
+        _selectedImage != null
+            ? Container(
+                width: 130.w,
+                height: 130.h,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: FileImage(_selectedImage!),
+                    )),
+              )
+            : Container(
+                width: 130.w,
+                height: 130.h,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.person,
+                    size: 90.sp,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+        GestureDetector(
+          onTap: () {
+            _pickImage();
+          },
+          child: Container(
+            width: 35.w,
+            height: 35.h,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
               color: Colors.grey,
             ),
-          ),
-        ),
-        Container(
-          width: 35.w,
-          height: 35.h,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey,
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
           ),
         ),
       ],
@@ -132,22 +193,25 @@ class _AgreementFormState extends State<AgreementForm> {
         Text(
           text,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 15.sp,
             color: Colors.white,
           ),
         ),
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          checkColor: Colors.white,
-          fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-            if (states.contains(WidgetState.selected)) {
-              return Colors.green;
-            }
-            return Colors.white;
-          }),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.r),
+        Transform.scale(
+          scale: 1.4, // قيمة المقياس، 1.5 أكبر 50% من الحجم الأصلي
+          child: Checkbox(
+            value: value,
+            onChanged: onChanged,
+            checkColor: Colors.white,
+            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.green;
+              }
+              return Colors.white;
+            }),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.r),
+            ),
           ),
         ),
       ],

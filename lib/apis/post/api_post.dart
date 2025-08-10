@@ -48,6 +48,7 @@ class ApiPost {
         options: Options(
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
             'Authorization':
                 'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
           },

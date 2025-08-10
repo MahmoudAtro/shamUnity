@@ -15,6 +15,7 @@ class DioFactory {
       dio!
         ..options.connectTimeout = timeOut
         ..options.receiveTimeout = timeOut;
+      dio?.options.followRedirects = true;
       addDioHeaders();
       addDioInterceptor();
       return dio!;

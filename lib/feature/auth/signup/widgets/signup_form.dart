@@ -197,35 +197,36 @@ class _SignupFormState extends State<SignupForm> {
   }
 
   void _selectDate(BuildContext context) {
-    // استخدام showDatePicker المدمج في Flutter
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              // primary: ColorsManager.mainBlue,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              // onSurface: ColorsManager.mainBlue,
-            ),
+  // حساب التاريخ الأقصى (15 سنة من الآن)
+  DateTime maxDate = DateTime.now().subtract(const Duration(days: 365 * 15));
+  
+  showDatePicker(
+    context: context,
+    initialDate: maxDate, 
+    firstDate: DateTime(1950),
+    lastDate: maxDate,
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            // primary: ColorsManager.mainBlue,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            // onSurface: ColorsManager.mainBlue,
           ),
-          child: child!,
-        );
-      },
-    ).then((picked) {
-      if (picked != null) {
-        setState(() {
-          context.read<RegisterBloc>().birthDay.text =
-              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-        });
-      }
-    });
-  }
-
+        ),
+        child: child!,
+      );
+    },
+  ).then((picked) {
+    if (picked != null) {
+      setState(() {
+        context.read<RegisterBloc>().birthDay.text = 
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  });
+}
   // التحقق من صحة البريد الإلكتروني
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);

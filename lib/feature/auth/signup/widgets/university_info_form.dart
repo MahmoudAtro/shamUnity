@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/widgets/app_drop_down_form_feild.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
+import 'package:shamunity/core/widgets/drop_down_visit_result.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
 class UniversityInfoForm extends StatefulWidget {
@@ -15,27 +16,40 @@ class UniversityInfoForm extends StatefulWidget {
 
 class _UniversityInfoFormState extends State<UniversityInfoForm> {
   // قوائم البيانات للقوائم المنسدلة
-  final List<String> colleges = [
-    'كلية الهندسة',
-    'كلية الطب',
-    'كلية العلوم',
-    'كلية الآداب',
-    'كلية الحقوق'
-  ];
-  final List<String> majors = [
-    'هندسة برمجيات',
-    'هندسة كهرباء',
-    'هندسة مدنية',
-    'علوم الحاسوب',
-    'نظم المعلومات'
-  ];
+  final Map<String, List<String>> collegeMajorsMap = {
+    'كلية الهندسة': [
+      'هندسة معلوماتية',
+      'هندسة مدنية',
+      'هندسة ميكاترونكس',
+      'هندسة اتصالات',
+      'هندسة كيميائية',
+      'هندسة زراعية',
+    ],
+    'كلية العلوم الصحية': [
+      'قسم التمريض',
+      'قسم الطوارئ',
+      'قسم التخدير',
+    ],
+    'كلية الاداب والعلوم الإنسانية': [
+      'قسم اللغة الانكليزية',
+      'قسم اللغة العربية',
+    ],
+    'كلية الشريعة والقانون': [],
+    'كلية التربية': [
+      'معلم صف',
+      'ارشاد نفسي',
+      'رياض اطفال',
+    ],
+    'كلية الاقتصاد والادارة': [],
+    'كلية العلوم السياسية': []
+  };
   final Map<int, String> academicYearsMap = {
     1: 'السنة الأولى',
     2: 'السنة الثانية',
     3: 'السنة الثالثة',
     4: 'السنة الرابعة',
-    5: 'السنة الخامسة',
   };
+  List<String> majorsList = [];
   int? selectedAcademicYear;
 
   // القيم المختارة
@@ -109,21 +123,25 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
           ),
         ),
         SizedBox(height: 8.h),
-        AppDropdownFormField<String>(
+        DropDownVisitResult<String>(
           hintText: "اختر الكلية",
           controller: context.read<RegisterBloc>().collage,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedCollege,
-          items: colleges.map((college) {
-            return DropdownMenuItem<String>(
-              value: college,
-              child: Text(college),
-            );
-          }).toList(),
+          items: collegeMajorsMap.keys
+              .map((college) => DropdownMenuItem(
+                    value: college,
+                    child: Text(college),
+                  ))
+              .toList(),
           onChanged: (value) {
             setState(() {
               selectedCollege = value;
+              majorsList.clear();
+              majorsList = collegeMajorsMap[value] ?? [];
+              selectedMajor = null; // إعادة تعيين التخصص
+              selectedAcademicYear = null;
             });
           },
           validator: (value) {
@@ -151,18 +169,18 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
           ),
         ),
         SizedBox(height: 8.h),
-        AppDropdownFormField<String>(
+        DropDownVisitResult<String>(
           hintText: "اختر التخصص",
           controller: context.read<RegisterBloc>().major,
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedMajor,
-          items: majors.map((major) {
-            return DropdownMenuItem<String>(
-              value: major,
-              child: Text(major),
-            );
-          }).toList(),
+          items: majorsList
+              .map((major) => DropdownMenuItem(
+                    value: major,
+                    child: Text(major),
+                  ))
+              .toList(),
           onChanged: (value) {
             setState(() {
               selectedMajor = value;
@@ -199,12 +217,14 @@ class _UniversityInfoFormState extends State<UniversityInfoForm> {
           borderRadius: 12.r,
           backgroundColor: Colors.white,
           value: selectedAcademicYear,
-          items: academicYearsMap.entries.map((entry) {
-            return DropdownMenuItem<int>(
-              value: entry.key,
-              child: Text(entry.value),
-            );
-          }).toList(),
+          items: selectedMajor != null
+              ? academicYearsMap.entries.map((entry) {
+                  return DropdownMenuItem<int>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  );
+                }).toList()
+              : [],
           onChanged: (value) {
             setState(() {
               selectedAcademicYear = value;
