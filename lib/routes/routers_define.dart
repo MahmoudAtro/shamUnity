@@ -19,8 +19,11 @@ import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
+import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
+import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
+import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 import 'package:shamunity/models/college_model.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
@@ -34,8 +37,13 @@ class AppRoute {
     switch (route.name) {
       case RoutesNames.homePage:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => getit<PostCubit>(),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                  create: (context) => getit<VisitedUserProfileCubit>()),
+              BlocProvider(create: (context) => getit<PostCubit>()),
+              BlocProvider(create: (context) => getit<CommentCubit>()),
+            ],
             child: const HomePage(),
           ),
         );
@@ -68,6 +76,18 @@ class AppRoute {
           builder: (_) => BlocProvider(
             create: (context) => getit<PostCubit>(),
             child: EditPostScreen(post: route.arguments as Post),
+          ),
+        );
+
+      case RoutesNames.sheikhProfile:
+        return MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                  create: (context) => getit<VisitedUserProfileCubit>()),
+              BlocProvider(create: (context) => getit<CommentCubit>()),
+            ],
+            child: SheikhProfileScreen(userId: route.arguments as int),
           ),
         );
 

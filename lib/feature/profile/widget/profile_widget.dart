@@ -163,9 +163,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       BlocBuilder<PostCubit, PostCubitState>(
                         builder: (context, state) {
                           if (state is UserPostsError) {
-                            print("Error fetching user posts: ${state.message}");
+                            print(
+                                "Error fetching user posts: ${state.message}");
                             return Center(child: Text(state.message));
-
                           } else if (state is UserPostsLoading) {
                             return buildPostShimmer();
                           } else if (state is UserPostsLoaded) {
@@ -174,6 +174,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                   child: Text("لا توجد منشورات لعرضها"));
                             }
                             return ListView(
+                              padding: EdgeInsets.only(bottom: 50),
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               children: state.posts

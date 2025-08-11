@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -132,7 +133,7 @@ class ApiPost {
     }
   }
 
-  Future<int> toggleLike(int postId) async {
+  Future<Post> toggleLike(int postId) async {
     try {
       final response = await _dio.post(
         ApiConstances.addLike(postId),
@@ -143,7 +144,9 @@ class ApiPost {
           },
         ),
       );
-      return response.data['likes_count'] as int;
+
+      // إرجاع المنشور المحدث بالكامل
+      return Post.fromJson(response.data['data']);
     } catch (e) {
       if (e is DioException) {
         throw ServerFailure.fromDioError(e);
@@ -210,5 +213,235 @@ class ApiPost {
     } catch (e) {
       debugPrint("Pusher Error: $e");
     }
+  }
+}
+
+class PusherService {
+  static final PusherService _instance = PusherService._internal();
+  factory PusherService() => _instance;
+  PusherService._internal();
+
+  final PusherChannelsFlutter _pusher = PusherChannelsFlutter.getInstance();
+  bool _isInitialized = false;
+
+  // Streams للبث - نرسل Map بدلاً من Post مباشرة
+  final StreamController<Map<String, dynamic>> _postStreamController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _likeStreamController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _commentStreamController =
+      StreamController.broadcast();
+
+  // Getters للـ Streams
+  Stream<Map<String, dynamic>> get postStream => _postStreamController.stream;
+  Stream<Map<String, dynamic>> get likeStream => _likeStreamController.stream;
+  Stream<Map<String, dynamic>> get commentStream =>
+      _commentStreamController.stream;
+
+  Future<void> initPusher() async {
+    if (_isInitialized) return;
+
+    try {
+      await _pusher.init(
+        apiKey: "acaead266f9e5e8e34c9",
+        cluster: "us3",
+        onConnectionStateChange: (currentState, previousState) {
+          debugPrint("Pusher: $previousState -> $currentState");
+        },
+        onError: (message, code, e) {
+          debugPrint("Pusher Error: $message, code: $code");
+        },
+        onEvent: _onEvent,
+      );
+
+      // الاشتراك في القنوات
+      await _pusher.subscribe(channelName: "posts");
+      await _pusher.subscribe(channelName: "post-likes");
+      await _pusher.subscribe(channelName: "post-comments");
+
+      await _pusher.connect();
+      _isInitialized = true;
+      debugPrint("✅ Pusher initialized successfully");
+    } catch (e) {
+      debugPrint("❌ Pusher initialization failed: $e");
+    }
+  }
+
+  void _onEvent(PusherEvent event) {
+    debugPrint("📡 Event: ${event.channelName} - ${event.eventName}");
+
+    try {
+      switch (event.channelName) {
+        case "posts":
+          _handlePostEvents(event);
+          break;
+        case "post-likes":
+          _handleLikeEvents(event);
+          break;
+        case "post-comments":
+          _handleCommentEvents(event);
+          break;
+      }
+    } catch (e) {
+      debugPrint("❌ Error handling event: $e");
+    }
+  }
+
+  void _handlePostEvents(PusherEvent event) {
+    try {
+      debugPrint("📡 Raw event data: ${event.data}");
+      debugPrint("📡 Event data type: ${event.data.runtimeType}");
+
+      // تحويل البيانات إلى النوع الصحيح
+      Map<String, dynamic> data;
+
+      if (event.data is String) {
+        // إذا كانت البيانات JSON string
+        data = jsonDecode(event.data as String);
+      } else if (event.data is Map) {
+        // إذا كانت البيانات Map
+        final rawData = event.data as Map;
+        data = Map<String, dynamic>.from(rawData);
+      } else {
+        debugPrint("❌ Unknown data type: ${event.data.runtimeType}");
+        return;
+      }
+
+      debugPrint("📡 Parsed data: $data");
+
+      switch (event.eventName) {
+        case "post.created":
+        case "App\\Events\\PostCreated":
+          if (data['post'] != null) {
+            final postData = data['post'] is Map
+                ? Map<String, dynamic>.from(data['post'] as Map)
+                : data['post'] as Map<String, dynamic>;
+            final post = Post.fromJson(postData);
+            _postStreamController.add({
+              'action': 'created',
+              'post': post,
+            });
+          }
+          break;
+
+        case "post.updated":
+        case "App\\Events\\PostUpdated":
+          if (data['post'] != null) {
+            final postData = data['post'] is Map
+                ? Map<String, dynamic>.from(data['post'] as Map)
+                : data['post'] as Map<String, dynamic>;
+            final post = Post.fromJson(postData);
+            _postStreamController.add({
+              'action': 'updated',
+              'post': post,
+            });
+          }
+          break;
+
+        case "post.deleted":
+        case "App\\Events\\PostDeleted":
+          _postStreamController.add({
+            'action': 'deleted',
+            'postId': data['post_id'] as int,
+          });
+          break;
+      }
+    } catch (e) {
+      debugPrint("❌ Error parsing post event: $e");
+      debugPrint("❌ Stack trace: ${StackTrace.current}");
+    }
+  }
+
+  void _handleLikeEvents(PusherEvent event) {
+    debugPrint("📡 Like event received: ${event.eventName}");
+
+    // التعامل مع أنواع مختلفة من like events
+    if (event.eventName == "like.updated" ||
+        event.eventName == "like.created" ||
+        event.eventName == "like.deleted" ||
+        event.eventName == "App\\Events\\LikeUpdated" ||
+        event.eventName == "App\\Events\\LikeCreated" ||
+        event.eventName == "App\\Events\\LikeDeleted") {
+      try {
+        debugPrint("📡 Raw like data: ${event.data}");
+        debugPrint("📡 Like event name: ${event.eventName}");
+
+        Map<String, dynamic> data;
+
+        if (event.data is String) {
+          data = jsonDecode(event.data as String);
+        } else if (event.data is Map) {
+          final rawData = event.data as Map;
+          data = Map<String, dynamic>.from(rawData);
+        } else {
+          debugPrint("❌ Unknown like data type: ${event.data.runtimeType}");
+          return;
+        }
+
+        debugPrint("📡 Parsed like data: $data");
+        debugPrint("📡 post_id: ${data['post_id']}");
+        debugPrint("📡 likes_count: ${data['likes_count']}");
+        debugPrint("📡 is_liked: ${data['is_liked']}");
+
+        _likeStreamController.add({
+          'postId': data['post_id'] as int,
+          'likesCount': data['likes_count'] as int,
+          'isLiked': data['is_liked'] as bool? ?? false,
+        });
+      } catch (e) {
+        debugPrint("❌ Error parsing like event: $e");
+      }
+    }
+  }
+
+  void _handleCommentEvents(PusherEvent event) {
+    try {
+      debugPrint("📡 Raw comment data: ${event.data}");
+
+      Map<String, dynamic> data;
+
+      if (event.data is String) {
+        data = jsonDecode(event.data as String);
+      } else if (event.data is Map) {
+        final rawData = event.data as Map;
+        data = Map<String, dynamic>.from(rawData);
+      } else {
+        debugPrint("❌ Unknown comment data type: ${event.data.runtimeType}");
+        return;
+      }
+
+      switch (event.eventName) {
+        case "comment.created":
+          if (data['comment'] != null) {
+            final commentData = data['comment'] is Map
+                ? Map<String, dynamic>.from(data['comment'] as Map)
+                : data['comment'] as Map<String, dynamic>;
+            _commentStreamController.add({
+              'type': 'created',
+              'postId': data['post_id'] as int,
+              'comment': commentData,
+            });
+          }
+          break;
+
+        case "comment.deleted":
+          _commentStreamController.add({
+            'type': 'deleted',
+            'postId': data['post_id'] as int,
+            'commentId': data['comment_id'] as int,
+          });
+          break;
+      }
+    } catch (e) {
+      debugPrint("❌ Error parsing comment event: $e");
+    }
+  }
+
+  void dispose() {
+    _postStreamController.close();
+    _likeStreamController.close();
+    _commentStreamController.close();
+    _pusher.disconnect();
+    _isInitialized = false;
   }
 }

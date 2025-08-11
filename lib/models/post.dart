@@ -3,7 +3,7 @@ class Post {
   bool isLiked;
   final String content;
   final String? imageUrl; // تغيير من imagePath إلى imageUrl
-  final int likesCount;
+  int likesCount; // Remove final to allow modification
   final int commentsCount;
   final String createdAt; // تغيير من DateTime إلى String (أو معالجة النص)
   final Author author;
@@ -23,11 +23,15 @@ class Post {
     return Post(
       id: json['id'],
       content: json['content'],
-      imageUrl: json['image_url'], // تغيير من image_path إلى image_url
-      likesCount: json['likes_count'],
-      commentsCount: json['comments_count'],
-      createdAt: json['created_at'], // إبقاؤه كنص أو تحويله إلى DateTime
-      author: Author.fromJson(json['author']),
+      imageUrl: json['image_url'], // This can be null
+      likesCount: json['likes_count'] ?? 0,
+      commentsCount: json['comments_count'] ?? 0,
+      createdAt: json['created_at'] ?? '',
+      author: json['author'] != null
+          ? Author.fromJson(json['author'])
+          : Author.empty(), // Handle null author
+      isLiked:
+          json['is_liked_by_user'] ?? false, // Get isLiked from API response
     );
   }
 
@@ -40,6 +44,7 @@ class Post {
       'comments_count': commentsCount,
       'created_at': createdAt, // تم تغيير النوع إلى String
       'author': author.toJson(),
+      'is_liked_by_user': isLiked, // إضافة isLiked
     };
   }
 
@@ -65,7 +70,16 @@ class Post {
     );
   }
 
-  // باقي الدوال (toJson, copyWith) تحتاج إلى تعديل مشابه
+  // Method to toggle like state - DEPRECATED: Use server response instead
+  @Deprecated('Use server response instead of local toggle')
+  void toggleLike() {
+    isLiked = !isLiked;
+    if (isLiked) {
+      likesCount++;
+    } else {
+      likesCount--;
+    }
+  }
 }
 
 class Author {
@@ -102,19 +116,38 @@ class Author {
 
   factory Author.fromJson(Map<String, dynamic> json) {
     return Author(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
       profilePicture: json['profile_picture'],
       postsCount: json['posts_count'],
       commentsCount: json['comments_count'],
       likesCount: json['likes_count'],
       gender: json['gender'],
-      birthDate: json['birth_date'], // إبقاؤه كنص أو تحويله إلى DateTime
+      birthDate: json['birth_date'],
       universityId: json['university_id'],
       college: json['college'],
       major: json['major'],
-      createdAt: json['created_at'], // إبقاؤه كنص أو تحويله إلى DateTime
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+
+  // Factory method for creating an empty author when data is not available
+  factory Author.empty() {
+    return Author(
+      id: 0,
+      name: '',
+      email: '',
+      profilePicture: null,
+      postsCount: 0,
+      commentsCount: 0,
+      likesCount: 0,
+      gender: null,
+      birthDate: null,
+      universityId: null,
+      college: null,
+      major: null,
+      createdAt: '',
     );
   }
 

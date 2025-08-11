@@ -19,4 +19,5 @@ class RoutesNames {
   static const String forgetPassword = "/forget-password";
   static const String restPassword = "/reset-password";
   static const String geminiChat = "/geminiChat";
+  static const String sheikhProfile = "/sheikhProfile";
 }

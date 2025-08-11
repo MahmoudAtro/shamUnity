@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
-import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/post/widget/post_widget.dart';
-import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/post bloc/cubit/post_cubit_state.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
@@ -25,12 +23,12 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   void initState() {
+    super.initState();
     _loadUserData();
     postCubit = BlocProvider.of<PostCubit>(context);
 
+    // لا حاجة لاستدعاء listenToNewPosts هنا لأن PostCubit يتعامل معه تلقائياً
     postCubit.fetchPosts();
-    postCubit.listenToNewPosts();
-    super.initState();
   }
 
   Future<void> _loadUserData() async {
@@ -144,38 +142,48 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getit<CommentCubit>(),
-      child: Scaffold(
-        body: Column(
-          children: [
-            if (user != null) buildCreatePostCard(context),
-            BlocBuilder<PostCubit, PostCubitState>(
-              builder: (context, state) {
-                if (state is PostCubitLoading) {
-                  return buildPostShimmer();
-                }
-                if (state is PostCubitLoaded) {
-                  final posts = state.posts;
-                  return Expanded(
+    return Scaffold(
+      body: Column(
+        children: [
+          if (user != null) buildCreatePostCard(context),
+          BlocBuilder<PostCubit, PostCubitState>(
+            builder: (context, state) {
+              if (state is PostCubitLoading) {
+                return buildPostShimmer();
+              } else if (state is PostCubitLoaded) {
+                final posts = state.posts;
+                return Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => postCubit.fetchPosts(),
                     child: ListView.builder(
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         return PostWidget(
-                            post: posts[index], author: posts[index].author);
+                          post: posts[index],
+                          author: posts[index].author,
+                        );
                       },
                     ),
-                  );
-                }
-                if (state is PostCubitError) {
-                  return Center(child: Text(state.message));
-                }
-                // الحالة الافتراضية
-                return const SizedBox();
-              },
-            ),
-          ],
-        ),
+                  ),
+                );
+              } else if (state is PostCubitError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(state.message),
+                      ElevatedButton(
+                        onPressed: () => postCubit.fetchPosts(),
+                        child: Text("إعادة المحاولة"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+        ],
       ),
     );
   }
