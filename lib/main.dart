@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/observer/app_observer.dart';
 import 'package:shamunity/core/service/services_locator.dart';
@@ -18,12 +19,28 @@ void main() async {
   ServicesLocator().init();
   await checkIfUserLogged();
   await ScreenUtil.ensureScreenSize();
+
+  // تهيئة Pusher للتطبيق
+  await _initializePusher();
+
   Bloc.observer = AppBlocObserver();
   runApp(
     MyApp(
       appRoute: AppRoute(),
     ),
   );
+}
+
+Future<void> _initializePusher() async {
+  try {
+    debugPrint("🔄 Main: Initializing Pusher...");
+    final pusherService = PusherService();
+    await pusherService.initPusher();
+    debugPrint("✅ Main: Pusher initialized successfully");
+  } catch (e) {
+    debugPrint("❌ Main: Failed to initialize Pusher: $e");
+    // لا نريد إيقاف التطبيق إذا فشل Pusher
+  }
 }
 
 checkIfUserLogged() async {

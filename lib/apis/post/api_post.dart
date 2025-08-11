@@ -224,15 +224,13 @@ class PusherService {
   final PusherChannelsFlutter _pusher = PusherChannelsFlutter.getInstance();
   bool _isInitialized = false;
 
-  // Streams للبث - نرسل Map بدلاً من Post مباشرة
-  final StreamController<Map<String, dynamic>> _postStreamController =
-      StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _likeStreamController =
-      StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _commentStreamController =
-      StreamController.broadcast();
+  final _postStreamController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _likeStreamController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _commentStreamController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  // Getters للـ Streams
   Stream<Map<String, dynamic>> get postStream => _postStreamController.stream;
   Stream<Map<String, dynamic>> get likeStream => _likeStreamController.stream;
   Stream<Map<String, dynamic>> get commentStream =>
@@ -245,195 +243,145 @@ class PusherService {
       await _pusher.init(
         apiKey: "acaead266f9e5e8e34c9",
         cluster: "us3",
-        onConnectionStateChange: (currentState, previousState) {
-          debugPrint("Pusher: $previousState -> $currentState");
+        onEvent: _onEvent,
+        onConnectionStateChange: (current, previous) {
+          debugPrint("Pusher: $previous → $current");
         },
         onError: (message, code, e) {
-          debugPrint("Pusher Error: $message, code: $code");
+          debugPrint("Pusher Error: $message");
         },
-        onEvent: _onEvent,
       );
 
-      // الاشتراك في القنوات
+      // ✅ اشتراك في القنوات العامة
       await _pusher.subscribe(channelName: "posts");
       await _pusher.subscribe(channelName: "post-likes");
-      await _pusher.subscribe(channelName: "post-comments");
 
       await _pusher.connect();
       _isInitialized = true;
-      debugPrint("✅ Pusher initialized successfully");
     } catch (e) {
-      debugPrint("❌ Pusher initialization failed: $e");
+      debugPrint("Pusher init error: $e");
+    }
+  }
+
+  // دالة للاشتراك في قناة تعليقات منشور معين
+  Future<void> subscribeToPostComments(int postId) async {
+    if (!_isInitialized) {
+      debugPrint("⚠️ Pusher not initialized, initializing first...");
+      await initPusher();
+    }
+
+    try {
+      final channelName = "post.$postId";
+      debugPrint("🔄 Subscribing to comment channel: $channelName");
+      await _pusher.subscribe(channelName: channelName);
+      debugPrint("✅ Subscribed to comment channel: $channelName");
+    } catch (e) {
+      debugPrint("❌ Failed to subscribe to comment channel: $e");
+    }
+  }
+
+  // دالة لإلغاء الاشتراك من قناة تعليقات منشور معين
+  Future<void> unsubscribeFromPostComments(int postId) async {
+    try {
+      final channelName = "post.$postId";
+      debugPrint("🔄 Unsubscribing from comment channel: $channelName");
+      await _pusher.unsubscribe(channelName: channelName);
+      debugPrint("✅ Unsubscribed from comment channel: $channelName");
+    } catch (e) {
+      debugPrint("❌ Failed to unsubscribe from comment channel: $e");
     }
   }
 
   void _onEvent(PusherEvent event) {
-    debugPrint("📡 Event: ${event.channelName} - ${event.eventName}");
-
+    debugPrint("📡 Event: ${event.channelName} | ${event.eventName}");
     try {
-      switch (event.channelName) {
-        case "posts":
-          _handlePostEvents(event);
-          break;
-        case "post-likes":
-          _handleLikeEvents(event);
-          break;
-        case "post-comments":
-          _handleCommentEvents(event);
-          break;
+      final data = event.data is String
+          ? jsonDecode(event.data as String)
+          : Map<String, dynamic>.from(event.data as Map);
+
+      // التعامل مع القنوات العامة
+      if (event.channelName == "posts") {
+        _handlePostEvents(event.eventName, data);
+      } else if (event.channelName == "post-likes") {
+        _handleLikeEvents(event.eventName, data);
+      }
+      // التعامل مع قنوات التعليقات (post.{post_id})
+      else if (event.channelName.startsWith("post.")) {
+        _handleCommentEvents(event.eventName, data, event.channelName);
       }
     } catch (e) {
-      debugPrint("❌ Error handling event: $e");
+      debugPrint("❌ Error parsing event: $e");
     }
   }
 
-  void _handlePostEvents(PusherEvent event) {
-    try {
-      debugPrint("📡 Raw event data: ${event.data}");
-      debugPrint("📡 Event data type: ${event.data.runtimeType}");
-
-      // تحويل البيانات إلى النوع الصحيح
-      Map<String, dynamic> data;
-
-      if (event.data is String) {
-        // إذا كانت البيانات JSON string
-        data = jsonDecode(event.data as String);
-      } else if (event.data is Map) {
-        // إذا كانت البيانات Map
-        final rawData = event.data as Map;
-        data = Map<String, dynamic>.from(rawData);
-      } else {
-        debugPrint("❌ Unknown data type: ${event.data.runtimeType}");
-        return;
-      }
-
-      debugPrint("📡 Parsed data: $data");
-
-      switch (event.eventName) {
-        case "post.created":
-        case "App\\Events\\PostCreated":
-          if (data['post'] != null) {
-            final postData = data['post'] is Map
-                ? Map<String, dynamic>.from(data['post'] as Map)
-                : data['post'] as Map<String, dynamic>;
-            final post = Post.fromJson(postData);
-            _postStreamController.add({
-              'action': 'created',
-              'post': post,
-            });
-          }
-          break;
-
-        case "post.updated":
-        case "App\\Events\\PostUpdated":
-          if (data['post'] != null) {
-            final postData = data['post'] is Map
-                ? Map<String, dynamic>.from(data['post'] as Map)
-                : data['post'] as Map<String, dynamic>;
-            final post = Post.fromJson(postData);
-            _postStreamController.add({
-              'action': 'updated',
-              'post': post,
-            });
-          }
-          break;
-
-        case "post.deleted":
-        case "App\\Events\\PostDeleted":
-          _postStreamController.add({
-            'action': 'deleted',
-            'postId': data['post_id'] as int,
-          });
-          break;
-      }
-    } catch (e) {
-      debugPrint("❌ Error parsing post event: $e");
-      debugPrint("❌ Stack trace: ${StackTrace.current}");
-    }
-  }
-
-  void _handleLikeEvents(PusherEvent event) {
-    debugPrint("📡 Like event received: ${event.eventName}");
-
-    // التعامل مع أنواع مختلفة من like events
-    if (event.eventName == "like.updated" ||
-        event.eventName == "like.created" ||
-        event.eventName == "like.deleted" ||
-        event.eventName == "App\\Events\\LikeUpdated" ||
-        event.eventName == "App\\Events\\LikeCreated" ||
-        event.eventName == "App\\Events\\LikeDeleted") {
-      try {
-        debugPrint("📡 Raw like data: ${event.data}");
-        debugPrint("📡 Like event name: ${event.eventName}");
-
-        Map<String, dynamic> data;
-
-        if (event.data is String) {
-          data = jsonDecode(event.data as String);
-        } else if (event.data is Map) {
-          final rawData = event.data as Map;
-          data = Map<String, dynamic>.from(rawData);
-        } else {
-          debugPrint("❌ Unknown like data type: ${event.data.runtimeType}");
-          return;
+  // 📌 معالجة أحداث المنشورات
+  void _handlePostEvents(String eventName, Map<String, dynamic> data) {
+    switch (eventName) {
+      case "post.created":
+        if (data['post'] != null) {
+          final post = Post.fromJson(data['post']);
+          _postStreamController.add({'action': 'created', 'post': post});
         }
+        break;
 
-        debugPrint("📡 Parsed like data: $data");
-        debugPrint("📡 post_id: ${data['post_id']}");
-        debugPrint("📡 likes_count: ${data['likes_count']}");
-        debugPrint("📡 is_liked: ${data['is_liked']}");
+      case "post.updated":
+        if (data['post'] != null) {
+          final post = Post.fromJson(data['post']);
+          _postStreamController.add({'action': 'updated', 'post': post});
+        }
+        break;
 
-        _likeStreamController.add({
-          'postId': data['post_id'] as int,
-          'likesCount': data['likes_count'] as int,
-          'isLiked': data['is_liked'] as bool? ?? false,
-        });
-      } catch (e) {
-        debugPrint("❌ Error parsing like event: $e");
-      }
+      case "post.deleted":
+        if (data['id'] != null) {
+          _postStreamController
+              .add({'action': 'deleted', 'postId': data['id']});
+        }
+        break;
     }
   }
 
-  void _handleCommentEvents(PusherEvent event) {
-    try {
-      debugPrint("📡 Raw comment data: ${event.data}");
+  // 📌 معالجة أحداث الإعجابات
+  void _handleLikeEvents(String eventName, Map<String, dynamic> data) {
+    if (eventName == "like.updated") {
+      _likeStreamController.add({
+        'postId': data['post_id'],
+        'likesCount': data['likes_count'],
+      });
+    }
+  }
 
-      Map<String, dynamic> data;
+  // 📌 معالجة أحداث التعليقات (مثل api_comment.dart)
+  void _handleCommentEvents(
+      String eventName, Map<String, dynamic> data, String channelName) {
+    // استخراج معرف المنشور من اسم القناة (post.{post_id})
+    final postIdMatch = RegExp(r'post\.(\d+)').firstMatch(channelName);
+    if (postIdMatch == null) {
+      debugPrint(
+          "⚠️ Could not extract post_id from channel name: $channelName");
+      return;
+    }
 
-      if (event.data is String) {
-        data = jsonDecode(event.data as String);
-      } else if (event.data is Map) {
-        final rawData = event.data as Map;
-        data = Map<String, dynamic>.from(rawData);
-      } else {
-        debugPrint("❌ Unknown comment data type: ${event.data.runtimeType}");
-        return;
-      }
+    final postId = int.parse(postIdMatch.group(1)!);
 
-      switch (event.eventName) {
-        case "comment.created":
-          if (data['comment'] != null) {
-            final commentData = data['comment'] is Map
-                ? Map<String, dynamic>.from(data['comment'] as Map)
-                : data['comment'] as Map<String, dynamic>;
-            _commentStreamController.add({
-              'type': 'created',
-              'postId': data['post_id'] as int,
-              'comment': commentData,
-            });
-          }
-          break;
+    switch (eventName) {
+      case "comment.posted":
+        if (data['comment'] != null) {
+          final commentData = data['comment'] is Map
+              ? Map<String, dynamic>.from(data['comment'] as Map)
+              : data['comment'] as Map<String, dynamic>;
 
-        case "comment.deleted":
           _commentStreamController.add({
-            'type': 'deleted',
-            'postId': data['post_id'] as int,
-            'commentId': data['comment_id'] as int,
+            'type': 'created',
+            'postId': postId,
+            'comment': commentData,
           });
-          break;
-      }
-    } catch (e) {
-      debugPrint("❌ Error parsing comment event: $e");
+          debugPrint("✅ Comment posted event sent to stream for post $postId");
+        }
+        break;
+
+      default:
+        debugPrint("📡 Unhandled comment event: $eventName");
+        break;
     }
   }
 

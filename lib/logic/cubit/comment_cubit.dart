@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
@@ -10,38 +12,98 @@ class CommentCubit extends Cubit<CommentState> {
   final PusherService _pusherService = PusherService();
   List<Comment> comments = [];
   StreamSubscription<Map<String, dynamic>>? _commentSubscription;
+  int? _currentPostId; // لتخزين معرف المنشور الحالي
 
   CommentCubit(this.apiComment) : super(CommentInitial()) {
-    _listenToCommentUpdates();
+    debugPrint("🔄 CommentCubit: Creating new instance");
+    _initializePusher();
+  }
+
+  Future<void> _initializePusher() async {
+    try {
+      debugPrint("🔄 CommentCubit: Initializing Pusher...");
+      await _pusherService.initPusher();
+      debugPrint("✅ CommentCubit: Pusher initialized successfully");
+      _listenToCommentUpdates();
+      debugPrint("✅ CommentCubit: Comment updates listener started");
+    } catch (e) {
+      debugPrint("❌ CommentCubit: Failed to initialize Pusher: $e");
+      // إعادة المحاولة بعد فترة
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!isClosed) {
+          debugPrint("🔄 CommentCubit: Retrying Pusher initialization...");
+          _initializePusher();
+        }
+      });
+    }
   }
 
   void _listenToCommentUpdates() {
-    _commentSubscription = _pusherService.commentStream.listen((commentData) {
-      if (!isClosed) {
-        _handleCommentUpdate(commentData);
-      }
-    });
+    try {
+      _commentSubscription = _pusherService.commentStream.listen(
+        (commentData) {
+          debugPrint("📡 CommentCubit: Received comment update: $commentData");
+          if (!isClosed) {
+            _handleCommentUpdate(commentData);
+          } else {
+            debugPrint(
+                "⚠️ CommentCubit: Cubit is closed, ignoring comment update");
+          }
+        },
+        onError: (error) {
+          debugPrint("❌ CommentCubit: Stream error: $error");
+        },
+      );
+      debugPrint("✅ CommentCubit: Comment stream listener set up successfully");
+    } catch (e) {
+      debugPrint(
+          "❌ CommentCubit: Failed to set up comment stream listener: $e");
+    }
   }
 
   void _handleCommentUpdate(Map<String, dynamic> commentData) {
-    final type = commentData['type'] as String;
-    // final postId = commentData['postId'] as int;
+    try {
+      final type = commentData['type'] as String?;
+      final postId = commentData['postId'] as int?;
 
-    switch (type) {
-      case 'created':
-        final newComment = Comment.fromJson(commentData['comment']);
-        comments.insert(0, newComment);
-        if (!isClosed) {
-          emit(CommentsLoaded(comments));
-        }
-        break;
-      case 'deleted':
-        final commentId = commentData['commentId'] as int;
-        comments.removeWhere((c) => c.id == commentId);
-        if (!isClosed) {
-          emit(CommentsLoaded(comments));
-        }
-        break;
+      if (type == null || postId == null) {
+        debugPrint(
+            "⚠️ CommentCubit: Invalid comment data format: $commentData");
+        return;
+      }
+
+      debugPrint(
+          "🔄 CommentCubit: Handling comment update - type: $type, postId: $postId");
+
+      switch (type) {
+        case 'created':
+          final commentJson = commentData['comment'] as Map<String, dynamic>?;
+          if (commentJson != null) {
+            final newComment = Comment.fromJson(commentJson);
+            // تأكد من أن التعليق ليس موجود بالفعل
+            if (!comments.any((c) => c.id == newComment.id)) {
+              comments.insert(0, newComment);
+              debugPrint(
+                  "✅ CommentCubit: New comment added, total comments: ${comments.length}");
+              if (!isClosed) {
+                emit(CommentsLoaded(List.from(comments)));
+              }
+            } else {
+              debugPrint(
+                  "⚠️ CommentCubit: Comment ${newComment.id} already exists");
+            }
+          } else {
+            debugPrint("❌ CommentCubit: No comment data in created event");
+          }
+          break;
+
+        default:
+          debugPrint("📡 CommentCubit: Unhandled comment event type: $type");
+          break;
+      }
+    } catch (e) {
+      debugPrint("❌ CommentCubit: Error handling comment update: $e");
+      debugPrint("❌ CommentCubit: Stack trace: ${StackTrace.current}");
     }
   }
 
@@ -50,45 +112,123 @@ class CommentCubit extends Cubit<CommentState> {
       emit(CommentLoading());
     }
 
-    final result = await apiComment.getComments(postId);
-    result.fold(
-      (failure) => emit(CommentError(failure.message)),
-      (listComments) {
-        comments = listComments;
-        if (!isClosed) {
-          emit(CommentsLoaded(listComments));
-        }
-      },
-    );
+    try {
+      debugPrint("🔄 CommentCubit: Fetching comments for post $postId");
+
+      // إلغاء الاشتراك من المنشور السابق إذا كان مختلفاً
+      if (_currentPostId != null && _currentPostId != postId) {
+        await _pusherService.unsubscribeFromPostComments(_currentPostId!);
+        debugPrint(
+            "🔄 CommentCubit: Unsubscribed from previous post $_currentPostId");
+      }
+
+      // الاشتراك في قناة التعليقات للمنشور
+      await _pusherService.subscribeToPostComments(postId);
+      _currentPostId = postId; // تخزين معرف المنشور الحالي
+
+      final result = await apiComment.getComments(postId);
+      result.fold(
+        (failure) {
+          debugPrint(
+              "❌ CommentCubit: Failed to fetch comments: ${failure.message}");
+          if (!isClosed) {
+            emit(CommentError(failure.message));
+          }
+        },
+        (listComments) {
+          comments = listComments;
+          debugPrint(
+              "✅ CommentCubit: Fetched ${comments.length} comments for post $postId");
+          if (!isClosed) {
+            emit(CommentsLoaded(listComments));
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("❌ CommentCubit: Unexpected error fetching comments: $e");
+      if (!isClosed) {
+        emit(CommentError("حدث خطأ غير متوقع: $e"));
+      }
+    }
   }
 
   Future<void> addComment(int postId, String content) async {
-    emit(CommentLoading());
-    final result = await apiComment.addComment(postId, content);
-    result.fold(
-      (failure) => emit(CommentError(failure.message)),
-      (newComment) {
-        comments.insert(0, newComment);
-        emit(CommentsLoaded(comments));
-      },
-    );
+    if (!isClosed) {
+      emit(CommentLoading());
+    }
+
+    try {
+      debugPrint("🔄 CommentCubit: Adding comment to post $postId");
+      final result = await apiComment.addComment(postId, content);
+      result.fold(
+        (failure) {
+          debugPrint(
+              "❌ CommentCubit: Failed to add comment: ${failure.message}");
+          if (!isClosed) {
+            emit(CommentError(failure.message));
+          }
+        },
+        (newComment) {
+          // لا نضيف التعليق هنا لأن Pusher سيرسله
+          debugPrint("✅ CommentCubit: Comment added successfully via API");
+          // نحدث الحالة لإظهار نجاح العملية
+          if (!isClosed) {
+            emit(CommentsLoaded(List.from(comments)));
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("❌ CommentCubit: Unexpected error adding comment: $e");
+      if (!isClosed) {
+        emit(CommentError("حدث خطأ غير متوقع: $e"));
+      }
+    }
   }
 
   Future<void> deleteComment(int commentId) async {
-    emit(CommentLoading());
-    final result = await apiComment.deleteComment(commentId);
-    result.fold(
-      (failure) => emit(CommentError(failure.message)),
-      (_) {
-        comments.removeWhere((c) => c.id == commentId);
-        emit(CommentsLoaded(comments));
-      },
-    );
+    if (!isClosed) {
+      emit(CommentLoading());
+    }
+
+    try {
+      debugPrint("🔄 CommentCubit: Deleting comment $commentId");
+      final result = await apiComment.deleteComment(commentId);
+      result.fold(
+        (failure) {
+          debugPrint(
+              "❌ CommentCubit: Failed to delete comment: ${failure.message}");
+          if (!isClosed) {
+            emit(CommentError(failure.message));
+          }
+        },
+        (_) {
+          debugPrint("✅ CommentCubit: Comment deleted successfully via API");
+          // لا نحذف التعليق هنا لأن Pusher سيرسله
+          if (!isClosed) {
+            emit(CommentsLoaded(List.from(comments)));
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("❌ CommentCubit: Unexpected error deleting comment: $e");
+      if (!isClosed) {
+        emit(CommentError("حدث خطأ غير متوقع: $e"));
+      }
+    }
   }
 
   @override
   Future<void> close() {
+    debugPrint("🔄 CommentCubit: Closing CommentCubit instance");
     _commentSubscription?.cancel();
+
+    // إلغاء الاشتراك من قناة التعليقات للمنشور الحالي
+    if (_currentPostId != null) {
+      _pusherService.unsubscribeFromPostComments(_currentPostId!);
+      debugPrint("✅ CommentCubit: Unsubscribed from post $_currentPostId");
+    }
+
+    debugPrint("✅ CommentCubit: Comment subscription cancelled");
     return super.close();
   }
 }

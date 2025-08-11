@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
+import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/comment/comment_view.dart';
-import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_state.dart';
 import 'package:shamunity/models/post.dart';
+import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
 
@@ -27,12 +28,35 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   late PostCubit postCubit;
   late CommentCubit commentCubit;
+  UserModel? user; // إضافة متغير user
 
   @override
   void initState() {
     super.initState();
     postCubit = BlocProvider.of<PostCubit>(context);
-    commentCubit = BlocProvider.of<CommentCubit>(context);
+    // إنشاء CommentCubit جديد لكل PostWidget
+    commentCubit = getit<CommentCubit>();
+    debugPrint("✅ PostWidget: CommentCubit created for post ${widget.post.id}");
+    _loadUserData(); // تحميل بيانات المستخدم
+  }
+
+  @override
+  void dispose() {
+    debugPrint(
+        "🔄 PostWidget: Disposing CommentCubit for post ${widget.post.id}");
+    commentCubit.close(); // إغلاق CommentCubit
+    super.dispose();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      user = await SecureSharedPrefHelper.getUser();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("❌ Error loading user data: $e");
+    }
   }
 
   void _showOptionsMenu(BuildContext context) {
@@ -84,6 +108,11 @@ class _PostWidgetState extends State<PostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // فحص null للمتغير user
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final isOwner = user!.id.toString() == widget.author.id.toString();
     print(isOwner);
     print("=================================");
@@ -246,38 +275,37 @@ class _PostWidgetState extends State<PostWidget> {
                           print("تم الضغط على إعجاب");
                         },
                       ),
-                      BlocProvider(
-                        create: (context) => getit<CommentCubit>(),
-                        child: _PostAction(
-                          icon: Icons.comment_outlined,
-                          label: "${currentPost.commentsCount}",
-                          onTap: () {
-                            // استخدم CommentCubit الموجود بدلاً من إنشاء واحد جديد
-                            commentCubit.fetchComments(currentPost.id);
-                            showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.white,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20)),
-                                ),
-                                builder: (context) => BlocProvider.value(
-                                      value: commentCubit,
-                                      child: DraggableScrollableSheet(
-                                        expand: false,
-                                        initialChildSize: 0.8,
-                                        minChildSize: 0.5,
-                                        maxChildSize: 0.9,
-                                        builder: (_, controller) =>
-                                            CommentBottomSheet(
-                                          post: currentPost,
-                                          scrollController: ScrollController(),
-                                        ),
+                      _PostAction(
+                        icon: Icons.comment_outlined,
+                        label: "${currentPost.commentsCount}",
+                        onTap: () {
+                          debugPrint(
+                              "🔄 PostWidget: Opening comments for post ${currentPost.id}");
+                          // استخدم CommentCubit الموجود بدلاً من إنشاء واحد جديد
+                          commentCubit.fetchComments(currentPost.id);
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.white,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (context) => BlocProvider.value(
+                                    value: commentCubit,
+                                    child: DraggableScrollableSheet(
+                                      expand: false,
+                                      initialChildSize: 0.8,
+                                      minChildSize: 0.5,
+                                      maxChildSize: 0.9,
+                                      builder: (_, controller) =>
+                                          CommentBottomSheet(
+                                        post: currentPost,
+                                        scrollController: ScrollController(),
                                       ),
-                                    ));
-                          },
-                        ),
+                                    ),
+                                  ));
+                        },
                       )
                     ],
                   ),

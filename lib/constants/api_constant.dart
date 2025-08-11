@@ -2,7 +2,6 @@ class ApiConstances {
   static const String _baseUrl =
       "https://subscriptions-confidential-lease-savings.trycloudflare.com/api";
 
-
   static const String baseUrlImg =
       "https://subscriptions-confidential-lease-savings.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
@@ -30,4 +29,7 @@ class ApiConstances {
 
   static String userFullProfile(int userId) =>
       '$_baseUrl/users/$userId/full-profile';
+
+  // announcements
+  static const String announcementsUrl = "$_baseUrl/announcements";
 }
