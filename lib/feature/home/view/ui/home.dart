@@ -28,23 +28,16 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-                child: FloatingActionButton.extended(
+                child: FloatingActionButton(
                   backgroundColor: Colors.blueAccent,
                   elevation: 4,
                   onPressed: () {
-                    context.pushNamed(
-                      '/geminiChat',
-                    );
+                    context.pushNamed('/geminiChat');
                   },
-                  icon: const Icon(Icons.chat, color: Colors.white, size: 26),
-                  label: const Text(
-                    'Ai',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      letterSpacing: 1,
-                    ),
+                  child: Image.asset(
+                    'assets/images/shamai.png',
+                    width: 36,
+                    height: 36,
                   ),
                 ),
               ),

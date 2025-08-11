@@ -11,6 +11,7 @@ import 'package:shamunity/routes/routers_define.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const String GOOGLE_API_KEY = "AIzaSyC6axuoPVYSz44nqdlYJbE_zh_7ZU1RQec";
+  // const String GOOGLE_API_KEY = "AIzaSyBcQETqzk-xCkdaaJmp8NP1RKktDWAxmGw";
   Gemini.init(
     apiKey: GOOGLE_API_KEY,
   );

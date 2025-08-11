@@ -2,7 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For Clipboard
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // For Markdown rendering
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+
+// ✨✨✨ 1. تبسيط الدالة لتكون آمنة جداً ✨✨✨
+// ستقوم هذه الدالة فقط بإصلاح المسافات بعد علامات الترقيم
+// ✨ دالة التصحيح النهائية والمحسّنة ✨
+String fixMessageSpacing(String text) {
+  // القاعدة الأولى: إصلاح المسافات بعد علامات الترقيم (قاعدة آمنة وموجودة حاليًا)
+  String fixedText = text.replaceAllMapped(
+    RegExp(r'([.!؟،])([^\s])'),
+    (match) => '${match.group(1)} ${match.group(2)}',
+  );
+
+  // ✨ القاعدة الثانية (اختيارية وآمنة): إصلاح الكلمات المنتهية بتاء مربوطة ة
+  // هذه القاعدة تبحث عن أي تاء مربوطة ملتصقة بحرف عربي وتضيف بينهما مسافة
+  // مثال: "المكتبةالجديدة" -> "المكتبة الجديدة"
+  fixedText = fixedText.replaceAllMapped(
+    RegExp(r'(ة)([\u0621-\u064A])'),
+    (match) => '${match.group(1)} ${match.group(2)}',
+  );
+
+  return fixedText;
+}
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -35,16 +57,20 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     final generationConfig = GenerationConfig(
-      temperature: 0.7, // للتحكم في إبداع النموذج
+      temperature: 0.7,
     );
 
-    _gemini.streamGenerateContent(
+    _gemini
+        .streamGenerateContent(
       userMessage,
       generationConfig: generationConfig,
-    ).listen((response) {
+    )
+        .listen((response) {
       final geminiResponseChunk = response.output ?? "Error: No response";
 
+      // ✨✨✨ 2. العودة إلى منطق الدمج البسيط والمباشر ✨✨✨
       if (_messages.last.isUser) {
+        // إضافة أول جزء من رد المساعد
         setState(() {
           _messages.add(ChatMessage(
               isUser: false,
@@ -52,10 +78,12 @@ class _ChatScreenState extends State<ChatScreen> {
               time: DateFormat('HH:mm').format(DateTime.now())));
         });
       } else {
+        // تحديث الرسالة الحالية بإضافة الجزء الجديد إليها
         setState(() {
+          final updatedMessage = _messages.last.message + geminiResponseChunk;
           _messages.last = ChatMessage(
               isUser: false,
-              message: _messages.last.message + geminiResponseChunk,
+              message: updatedMessage,
               time: _messages.last.time);
         });
       }
@@ -69,7 +97,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _isLoading = false;
         _messages.add(ChatMessage(
             isUser: false,
-            // ✨ التحسين: رسالة خطأ أفضل للمستخدم
             message: "عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى.",
             time: DateFormat('HH:mm').format(DateTime.now())));
       });
@@ -93,14 +120,16 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat with Gemini ✨'),
+        title: Text(
+          'Chat with ShamUnity AI ✨',
+          style: TextStyle(fontSize: 28.sp),
+        ),
         centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
             child: _messages.isEmpty
-                // ✨ التحسين: واجهة بداية في حال عدم وجود رسائل
                 ? buildEmptyState()
                 : ListView.builder(
                     controller: _scrollController,
@@ -127,12 +156,12 @@ class _ChatScreenState extends State<ChatScreen> {
           Icon(Icons.support_agent, size: 80, color: Colors.grey[600]),
           const SizedBox(height: 16),
           const Text(
-            'أهلاً بك!',
+            ' ! أهلاً بك',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'ابدأ المحادثة بإرسال رسالة.',
+            'ابدأ المحادثة بإرسال رسالة',
             style: TextStyle(fontSize: 16, color: Colors.grey[400]),
           ),
         ],
@@ -152,7 +181,6 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: TextField(
                 controller: _controller,
-                // ✨ التحسين: تعطيل الحقل أثناء انتظار الرد
                 enabled: !_isLoading,
                 onSubmitted: (_) => _sendMessage(),
                 style: const TextStyle(color: Colors.white),
@@ -170,7 +198,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            // ✨ التحسين: تغيير شكل الزر وتعطيله أثناء التحميل
             IconButton(
               icon: const Icon(Icons.send),
               onPressed: _isLoading ? null : _sendMessage,
@@ -188,7 +215,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// --- ويدجت الرسائل والطباعة (تم تحسينها) ---
 class ChatMessage {
   final bool isUser;
   final String message;
@@ -204,7 +230,6 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✨ التحسين: إضافة ميزة النسخ عند الضغط مطولاً
     return GestureDetector(
       onLongPress: () {
         Clipboard.setData(ClipboardData(text: message.message));
@@ -224,16 +249,15 @@ class ChatBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✨ التحسين: استخدام Markdown لعرض النص بشكل منسق
             MarkdownBody(
-              data: message.message,
-              selectable: true, // للسماح بالتحديد
+              // ✨✨✨ 3. ستبقى هذه الدالة هنا لتصحيح النص النهائي قبل عرضه ✨✨✨
+              data: fixMessageSpacing(message.message),
+              selectable: true,
               styleSheet:
                   MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
                 p: const TextStyle(color: Colors.white),
                 code: const TextStyle(
                     backgroundColor: Colors.black26, color: Colors.amber),
-                // يمكنك إضافة تنسيقات أخرى هنا
               ),
             ),
             const SizedBox(height: 8),
