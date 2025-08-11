@@ -95,45 +95,6 @@ class CommentCubit extends Cubit<CommentState> {
           }
           break;
 
-        case 'updated':
-          final commentJson = commentData['comment'] as Map<String, dynamic>?;
-          if (commentJson != null) {
-            final updatedComment = Comment.fromJson(commentJson);
-            final index = comments.indexWhere((c) => c.id == updatedComment.id);
-            if (index != -1) {
-              comments[index] = updatedComment;
-              debugPrint(
-                  "✅ CommentCubit: Comment ${updatedComment.id} updated");
-              if (!isClosed) {
-                emit(CommentsLoaded(List.from(comments)));
-              }
-            } else {
-              debugPrint(
-                  "⚠️ CommentCubit: Comment ${updatedComment.id} not found for update");
-            }
-          }
-          break;
-
-        case 'deleted':
-          final commentId = commentData['commentId'] as int?;
-          if (commentId != null) {
-            final initialLength = comments.length;
-            comments.removeWhere((c) => c.id == commentId);
-            if (comments.length != initialLength) {
-              debugPrint(
-                  "✅ CommentCubit: Comment $commentId deleted, remaining comments: ${comments.length}");
-              if (!isClosed) {
-                emit(CommentsLoaded(List.from(comments)));
-              }
-            } else {
-              debugPrint(
-                  "⚠️ CommentCubit: Comment $commentId not found for deletion");
-            }
-          } else {
-            debugPrint("❌ CommentCubit: No commentId in deleted event");
-          }
-          break;
-
         default:
           debugPrint("📡 CommentCubit: Unhandled comment event type: $type");
           break;
@@ -151,6 +112,10 @@ class CommentCubit extends Cubit<CommentState> {
 
     try {
       debugPrint("🔄 CommentCubit: Fetching comments for post $postId");
+
+      // الاشتراك في قناة التعليقات للمنشور
+      await _pusherService.subscribeToPost(postId);
+
       final result = await apiComment.getComments(postId);
       result.fold(
         (failure) {
@@ -246,6 +211,11 @@ class CommentCubit extends Cubit<CommentState> {
   Future<void> close() {
     debugPrint("🔄 CommentCubit: Closing CommentCubit instance");
     _commentSubscription?.cancel();
+
+    // إلغاء الاشتراك من جميع قنوات التعليقات
+    // يمكنك تمرير postId إذا كنت تريد إلغاء الاشتراك من منشور معين
+    // _pusherService.unsubscribeFromPost(postId);
+
     debugPrint("✅ CommentCubit: Comment subscription cancelled");
     return super.close();
   }

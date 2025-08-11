@@ -123,15 +123,7 @@ class CommentPusherService {
         onEvent: _onEvent,
       );
 
-      debugPrint("✅ Comment Pusher initialized, subscribing to channels...");
-
-      // الاشتراك في قناة التعليقات
-      await _pusher.subscribe(channelName: "post-comments");
-      debugPrint("✅ Subscribed to post-comments channel");
-
-      await _pusher.connect();
-      debugPrint("✅ Comment Pusher connected");
-
+      debugPrint("✅ Comment Pusher initialized successfully");
       _isInitialized = true;
       debugPrint("✅ Comment Pusher initialization completed successfully");
     } catch (e) {
@@ -148,23 +140,52 @@ class CommentPusherService {
     }
   }
 
+  // دالة للاشتراك في قناة منشور معين
+  Future<void> subscribeToPost(int postId) async {
+    if (!_isInitialized) {
+      debugPrint("⚠️ Comment Pusher not initialized, initializing first...");
+      await initPusher();
+    }
+
+    try {
+      final channelName = "post.$postId";
+      debugPrint("🔄 Subscribing to comment channel: $channelName");
+      await _pusher.subscribe(channelName: channelName);
+      debugPrint("✅ Subscribed to comment channel: $channelName");
+    } catch (e) {
+      debugPrint("❌ Failed to subscribe to comment channel: $e");
+    }
+  }
+
+  // دالة لإلغاء الاشتراك من قناة منشور معين
+  Future<void> unsubscribeFromPost(int postId) async {
+    try {
+      final channelName = "post.$postId";
+      debugPrint("🔄 Unsubscribing from comment channel: $channelName");
+      await _pusher.unsubscribe(channelName: channelName);
+      debugPrint("✅ Unsubscribed from comment channel: $channelName");
+    } catch (e) {
+      debugPrint("❌ Failed to unsubscribe from comment channel: $e");
+    }
+  }
+
   void _onEvent(PusherEvent event) {
     debugPrint("📡 Comment Event: ${event.channelName} - ${event.eventName}");
 
     try {
-      if (event.channelName == "post-comments") {
-        _handleCommentEvents(event);
+      // التحقق من أن الحدث هو comment.posted
+      if (event.eventName == "comment.posted") {
+        _handleCommentPosted(event);
       }
     } catch (e) {
       debugPrint("❌ Error handling comment event: $e");
     }
   }
 
-  void _handleCommentEvents(PusherEvent event) {
+  void _handleCommentPosted(PusherEvent event) {
     try {
       debugPrint("📡 Raw comment data: ${event.data}");
       debugPrint("📡 Comment event data type: ${event.data.runtimeType}");
-      debugPrint("📡 Comment event name: ${event.eventName}");
 
       // تحويل البيانات إلى النوع الصحيح
       Map<String, dynamic> data;
@@ -181,85 +202,33 @@ class CommentPusherService {
 
       debugPrint("📡 Parsed comment data: $data");
 
-      switch (event.eventName) {
-        case "comment.created":
-        case "App\\Events\\CommentCreated":
-        case "CommentCreated":
-          if (data['comment'] != null) {
-            final commentData = data['comment'] is Map
-                ? Map<String, dynamic>.from(data['comment'] as Map)
-                : data['comment'] as Map<String, dynamic>;
+      // استخراج معرف المنشور من اسم القناة (post.{post_id})
+      final channelName = event.channelName;
+      final postIdMatch = RegExp(r'post\.(\d+)').firstMatch(channelName);
 
-            final postId =
-                data['post_id'] as int? ?? data['postId'] as int? ?? 0;
+      if (postIdMatch != null) {
+        final postId = int.parse(postIdMatch.group(1)!);
 
-            if (postId > 0) {
-              _commentStreamController.add({
-                'type': 'created',
-                'postId': postId,
-                'comment': commentData,
-              });
-              debugPrint(
-                  "✅ Comment created event sent to stream for post $postId");
-            } else {
-              debugPrint(
-                  "⚠️ Invalid post_id in comment created event: $postId");
-            }
-          } else {
-            debugPrint("⚠️ No comment data found in comment created event");
-          }
-          break;
+        if (data['comment'] != null) {
+          final commentData = data['comment'] is Map
+              ? Map<String, dynamic>.from(data['comment'] as Map)
+              : data['comment'] as Map<String, dynamic>;
 
-        case "comment.updated":
-        case "App\\Events\\CommentUpdated":
-        case "CommentUpdated":
-          if (data['comment'] != null) {
-            final commentData = data['comment'] is Map
-                ? Map<String, dynamic>.from(data['comment'] as Map)
-                : data['comment'] as Map<String, dynamic>;
-
-            final postId =
-                data['post_id'] as int? ?? data['postId'] as int? ?? 0;
-
-            if (postId > 0) {
-              _commentStreamController.add({
-                'type': 'updated',
-                'postId': postId,
-                'comment': commentData,
-              });
-              debugPrint(
-                  "✅ Comment updated event sent to stream for post $postId");
-            }
-          }
-          break;
-
-        case "comment.deleted":
-        case "App\\Events\\CommentDeleted":
-        case "CommentDeleted":
-          final postId = data['post_id'] as int? ?? data['postId'] as int? ?? 0;
-          final commentId =
-              data['comment_id'] as int? ?? data['commentId'] as int? ?? 0;
-
-          if (postId > 0 && commentId > 0) {
-            _commentStreamController.add({
-              'type': 'deleted',
-              'postId': postId,
-              'commentId': commentId,
-            });
-            debugPrint(
-                "✅ Comment deleted event sent to stream for post $postId, comment $commentId");
-          } else {
-            debugPrint(
-                "⚠️ Invalid post_id or comment_id in comment deleted event: postId=$postId, commentId=$commentId");
-          }
-          break;
-
-        default:
-          debugPrint("📡 Unhandled comment event: ${event.eventName}");
-          break;
+          _commentStreamController.add({
+            'type': 'created',
+            'postId': postId,
+            'comment': commentData,
+          });
+          debugPrint("✅ Comment posted event sent to stream for post $postId");
+        } else {
+          debugPrint("⚠️ No comment data found in comment.posted event");
+        }
+      } else {
+        debugPrint(
+            "⚠️ Could not extract post_id from channel name: $channelName");
       }
     } catch (e) {
-      debugPrint("❌ Error parsing comment event: $e");
+      debugPrint("❌ Error parsing comment.posted event: $e");
       debugPrint("❌ Stack trace: ${StackTrace.current}");
     }
   }
