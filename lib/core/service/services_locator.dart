@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shamunity/apis/auth_api.dart';
+import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
+import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 
@@ -13,6 +15,7 @@ class ServicesLocator {
   void init() {
     _register();
     _posts();
+    _comment();
   }
 
   void _register() {
@@ -25,18 +28,23 @@ class ServicesLocator {
   }
 }
 
+void _posts() {
+  // api
+  getit.registerLazySingleton<ApiPost>(
+    () => ApiPost(dio: DioFactory.getDio()),
+  );
+  // bloc
+  getit.registerLazySingleton(() => PostCubit(getit()));
+}
 
-  void _posts(){
-    // api
-    getit.registerLazySingleton<ApiPost>(
-      () => ApiPost(dio: DioFactory.getDio()),
-    );
-    // bloc
-    getit.registerLazySingleton(() => PostCubit(getit()));
-  }
-
-
-
+void _comment() {
+  // api
+  getit.registerLazySingleton<ApiComment>(
+    () => ApiComment(dio: DioFactory.getDio()),
+  );
+  // bloc
+  getit.registerLazySingleton(() => CommentCubit(getit()));
+}
 
 class SingleInstanceService {
   static final GlobalKey<NavigatorState> navigatorKey =

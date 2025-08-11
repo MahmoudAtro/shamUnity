@@ -103,11 +103,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               builder: (BuildContext context) => const LoadingDialogWidget());
         } else if (state is PostCreatedSuccess) {
           context.pop();
-        } else if (state is PostCubitError) {
+          Toast().success(context, "تم تعديل المنشور بنجاح");
+        } else if (state is PostCreatedError) {
+          context.pop();
           Toast().error(context, state.message);
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text("إنشاء منشور"),
           actions: [

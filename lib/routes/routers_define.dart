@@ -7,13 +7,13 @@ import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
-import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
+import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
@@ -49,8 +49,10 @@ class AppRoute {
         );
       case RoutesNames.profile:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => getit<PostCubit>(),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => getit<PostCubit>()),
+            ],
             child: const ProfileScreen(),
           ),
         );
@@ -60,8 +62,12 @@ class AppRoute {
         );
       case RoutesNames.editPost:
         return MaterialPageRoute(
-          builder: (_) => EditPostScreen(post: route.arguments as Post),
+          builder: (_) => BlocProvider(
+            create: (context) => getit<PostCubit>(),
+            child: EditPostScreen(post: route.arguments as Post),
+          ),
         );
+
       case RoutesNames.academicYearsGrid:
         return MaterialPageRoute(
           builder: (_) => AcademicYearsGridScreen(

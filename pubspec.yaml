@@ -62,6 +62,7 @@ dependencies:
   shared_preferences: ^2.5.3
   # to handle secure shared preferences
   intl: ^0.20.2
+  pusher_channels_flutter: ^2.5.0
 
 dev_dependencies:
   flutter_test:

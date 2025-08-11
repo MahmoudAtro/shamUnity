@@ -16,5 +16,11 @@ class ApiConstances {
   static const String logoutUrl = "$_baseUrl/logout";
   // post
   static const String postsUrl = "$_baseUrl/posts";
-  static String postsId(String userId) => '/posts/$userId';
+  static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
+  static String postDetails(int postId) => '$_baseUrl/posts/$postId';
+  static String postComments(int postId) => '$_baseUrl/posts/$postId/comments';
+  static String commentDetails(int commentId) =>
+      '$_baseUrl/comments/$commentId';
+
+  static String addLike(int postId) => '$_baseUrl/posts/$postId/like';
 }
