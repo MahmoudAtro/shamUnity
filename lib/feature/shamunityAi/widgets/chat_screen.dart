@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:intl/intl.dart';
-import 'package:shamunity/feature/gemini-chat/widgets/chat_bubble.dart';
-import 'package:shamunity/feature/gemini-chat/widgets/type_indecatio.dart';
+import 'package:shamunity/feature/shamunityAi/widgets/chat_bubble.dart';
+import 'package:shamunity/feature/shamunityAi/widgets/type_indecatio.dart';
 import 'package:shamunity/models/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {

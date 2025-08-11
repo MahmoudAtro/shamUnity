@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
+import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
 import 'package:shamunity/logic/rest-password%20cubit/rest_password_cubit.dart';
 
-class ForgetPassword extends StatefulWidget {
-  const ForgetPassword({super.key});
+class RestPassword extends StatefulWidget {
+  final String email;
+  final String token;
+  const RestPassword({
+    super.key,
+    required this.email,
+    required this.token,
+  });
 
   @override
-  State<ForgetPassword> createState() => _ForgetPasswordState();
+  State<RestPassword> createState() => _RestPasswordState();
 }
 
-class _ForgetPasswordState extends State<ForgetPassword> {
-  TextEditingController email = TextEditingController();
+class _RestPasswordState extends State<RestPassword> {
+  TextEditingController password = TextEditingController();
   final forgetKey = GlobalKey<FormState>();
   late RestPasswordCubit restPasswordCubit;
+  bool isObscureText = true;
 
   @override
   void initState() {
@@ -28,7 +36,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   @override
   void dispose() {
     restPasswordCubit.close();
-    email.dispose();
+    password.dispose();
     super.dispose();
   }
 
@@ -40,86 +48,72 @@ class _ForgetPasswordState extends State<ForgetPassword> {
         child: Scaffold(
           resizeToAvoidBottomInset: true,
           body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // الشريط العلوي الثابت
               Container(
                 height: 50.h,
                 color: ColorsManager.gold,
               ),
-
-              // المحتوى القابل للتمرير
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Container(
-                    width: double.infinity,
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height -
-                          100.h -
-                          MediaQuery.of(context).padding.top,
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 40.h),
-                        Text(
-                          "إعادة تعيين كلمة المرور",
-                          style: TextStyle(
-                            fontSize: 30.sp,
-                            fontWeight: FontWeight.w500,
-                            color: ColorsManager.gold,
-                          ),
-                          textAlign: TextAlign.center,
+              SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 20.h),
+                      Text(
+                        "إعادة تعيين كلمة المرور",
+                        style: TextStyle(
+                          fontSize: 30.sp,
+                          fontWeight: FontWeight.w500,
+                          color: ColorsManager.gold,
                         ),
-
-                        SizedBox(height: 50.h),
-
-                        // النموذج
-                        Form(
+                      ),
+                      verticalspace(50),
+                      Form(
                           key: forgetKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // تسمية حقل البريد الإلكتروني
                               Padding(
                                 padding:
                                     EdgeInsets.only(bottom: 8.h, right: 16.w),
                                 child: Text(
-                                  "البريد الالكتروني",
+                                  "كلمة المرور الجديدة",
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     color: Colors.grey,
                                   ),
                                 ),
                               ),
-
                               AppTextFormField(
-                                controller: email,
+                                controller: password,
+                                isObscureText: isObscureText,
                                 hintText: "",
                                 borderRadius: 24.r,
                                 suffixIcon: const Icon(
-                                  Icons.email_outlined,
+                                  Icons.lock_outline,
                                   color: Colors.grey,
                                 ),
+                                prefixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isObscureText = !isObscureText;
+                                      });
+                                    },
+                                    icon: isObscureText
+                                        ? const Icon(Icons.visibility_off,
+                                            color: ColorsManager.gold)
+                                        : const Icon(Icons.visibility,
+                                            color: ColorsManager.gold)),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return "يرجى إدخال البريد الالكتروني";
-                                  }
-                                  // إضافة تحقق من صحة البريد الإلكتروني (اختياري)
-                                  if (!RegExp(
-                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                      .hasMatch(value)) {
-                                    return "يرجى إدخال بريد إلكتروني صحيح";
+                                    return "يرجى إدخال كلمة المرور الجديدة";
                                   }
                                   return null;
                                 },
                               ),
-
-                              SizedBox(height: 30.h),
-
-                              // زر إعادة التعيين
+                              verticalspace(30),
                               Align(
                                 alignment: Alignment.center,
                                 child: AppTextButton(
@@ -135,21 +129,18 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                                   ),
                                   onPressed: () {
                                     if (forgetKey.currentState!.validate()) {
-                                      // إخفاء الكيبورد قبل الإرسال
-                                      FocusScope.of(context).unfocus();
-                                      restPasswordCubit
-                                          .restPassword(email.text);
+                                      restPasswordCubit.newPassword(
+                                        widget.email,
+                                        widget.token,
+                                        password.text,
+                                      );
                                     }
                                   },
                                 ),
-                              ),
+                              )
                             ],
-                          ),
-                        ),
-
-                        SizedBox(height: 40.h),
-                      ],
-                    ),
+                          ))
+                    ],
                   ),
                 ),
               ),

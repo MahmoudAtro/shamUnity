@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/feature/auth/enter_platform_screen.dart';
+import 'package:shamunity/feature/auth/forget-password/check_otp_password.dart';
 import 'package:shamunity/feature/auth/forget-password/forget_password.dart';
+import 'package:shamunity/feature/auth/forget-password/rest_password.dart';
 import 'package:shamunity/feature/auth/login/login_screen.dart';
-import 'package:shamunity/feature/auth/rest-password/rest_password.dart';
 import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
-import 'package:shamunity/feature/gemini-chat/chat_app.dart';
+import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
@@ -78,6 +79,20 @@ class AppRoute {
             child: EditPostScreen(post: route.arguments as Post),
           ),
         );
+      case RoutesNames.restPassword:
+        return MaterialPageRoute(builder: (_) {
+          final args = route.arguments as Map<String, dynamic>? ?? {};
+          return RestPassword(
+            email: args['email'] as String? ?? '',
+            token: args['token'] as String? ?? '',
+          );
+        });
+      case RoutesNames.checkOtp:
+        return MaterialPageRoute(builder: (_) {
+          return CheckOtpPassword(
+            email: route.arguments as String? ?? '',
+          );
+        });
 
       case RoutesNames.sheikhProfile:
         return MaterialPageRoute(
@@ -125,10 +140,6 @@ class AppRoute {
       case RoutesNames.forgetPassword:
         return MaterialPageRoute(
           builder: (_) => const ForgetPassword(),
-        );
-      case RoutesNames.restPassword:
-        return MaterialPageRoute(
-          builder: (_) => const RestPassword(),
         );
       case RoutesNames.signup:
         return MaterialPageRoute(

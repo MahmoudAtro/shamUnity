@@ -131,7 +131,7 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
 
                         // اسم المستخدم
                         Text(
-                          author.name ?? 'اسم غير متوفر',
+                          author.name,
                           style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                           ),
                         ],
                         Text(
-                          author.email ?? 'بريد إلكتروني غير متوفر',
+                          author.email,
                           style:
                               const TextStyle(fontSize: 18, color: Colors.grey),
                         ),
@@ -270,12 +270,12 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                                               size: 32,
                                             ),
                                             title: Text(
-                                              file.title ?? 'عنوان غير متوفر',
+                                              file.title,
                                               style: const TextStyle(
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             subtitle: Text(
-                                              'النوع: ${file.type ?? 'غير محدد'}',
+                                              'النوع: ${file.type}',
                                               style: TextStyle(
                                                   color: Colors.grey[600]),
                                             ),

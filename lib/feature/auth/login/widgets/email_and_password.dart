@@ -21,6 +21,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   final loginFormKey = GlobalKey<FormState>();
+  bool isObscureText = true;
 
   @override
   void dispose() {
@@ -36,7 +37,7 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
       child: Column(children: [
         _buildUsernameField(),
         _buildPasswordField(),
-        verticalspace(5),
+        verticalspace(10),
         GestureDetector(
           onTap: () {
             context.pushNamed('/forget-password');
@@ -106,12 +107,21 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         AppTextFormField(
           controller: password,
           hintText: "",
-          isObscureText: true,
+          isObscureText: isObscureText,
           borderRadius: 24.r,
           suffixIcon: const Icon(
             Icons.lock_outline,
             color: Colors.grey,
           ),
+          prefixIcon: IconButton(
+              onPressed: () {
+                setState(() {
+                  isObscureText = !isObscureText;
+                });
+              },
+              icon: isObscureText
+                  ? const Icon(Icons.visibility_off, color: ColorsManager.gold)
+                  : const Icon(Icons.visibility , color: ColorsManager.gold)),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "يرجى إدخال كلمة المرور";

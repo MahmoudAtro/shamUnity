@@ -122,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text(
           'Chat with ShamUnity AI ✨',
-          style: TextStyle(fontSize: 28.sp),
+          style: TextStyle(fontSize: 25.sp),
         ),
         centerTitle: true,
       ),
@@ -182,6 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: TextField(
                 controller: _controller,
                 enabled: !_isLoading,
+                onChanged: (value) => setState(() {}),
                 onSubmitted: (_) => _sendMessage(),
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -200,7 +201,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 12),
             IconButton(
               icon: const Icon(Icons.send),
-              onPressed: _isLoading ? null : _sendMessage,
+              onPressed: _isLoading || _controller.text.isEmpty ? null : _sendMessage,
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 disabledBackgroundColor: Colors.grey[700],
@@ -250,7 +251,6 @@ class ChatBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             MarkdownBody(
-              // ✨✨✨ 3. ستبقى هذه الدالة هنا لتصحيح النص النهائي قبل عرضه ✨✨✨
               data: fixMessageSpacing(message.message),
               selectable: true,
               styleSheet:

@@ -1,10 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
@@ -30,7 +25,7 @@ class CommentCubit extends Cubit<CommentState> {
 
   void _handleCommentUpdate(Map<String, dynamic> commentData) {
     final type = commentData['type'] as String;
-    final postId = commentData['postId'] as int;
+    // final postId = commentData['postId'] as int;
 
     switch (type) {
       case 'created':

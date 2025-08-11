@@ -192,65 +192,6 @@ class _PostWidgetState extends State<PostWidget> {
                         )
                       : null,
                 ),
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        color: Colors.white,
-        shadowColor: Colors.grey.withOpacity(0.2),
-        clipBehavior: Clip.antiAlias,
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              ListTile(
-                // ...existing code...
-                leading: widget.author.profilePicture != null
-                    ? GlobalShimmer(
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
-                                ),
-                                fit: BoxFit.cover,
-                              )),
-                        ),
-                      )
-                    : Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          image: DecorationImage(
-                            image: AssetImage(
-                              "assets/images/default_avatar.jpg",
-                            ),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-// ...existing code...
-                title: Text(widget.author.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(widget.post.createdAt.toString()),
-                trailing: isOwner
-                    ? IconButton(
-                        icon: const Icon(Icons.more_horiz),
-                        onPressed: () => _showOptionsMenu(context),
-                      )
-                    : null,
-              ),
-
                 // Text Content
                 if (currentPost.content.isNotEmpty)
                   Padding(
@@ -279,27 +220,6 @@ class _PostWidgetState extends State<PostWidget> {
                       },
                     ),
                   ),
-              // Image
-              if (widget.post.imageUrl != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Image.network(
-                    width: double.infinity,
-                    height: 220,
-                    fit: BoxFit.contain,
-                    "${ApiConstances.baseUrlImg}${widget.post.imageUrl}",
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return GlobalShimmer(
-                        child: Container(
-                          height: 220,
-                          width: double.infinity,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
-                ),
 
                 const Divider(),
 
@@ -362,60 +282,6 @@ class _PostWidgetState extends State<PostWidget> {
                     ],
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _PostAction(
-                        color: widget.post.isLiked ? Colors.blue : Colors.grey,
-                        icon: widget.post.isLiked
-                            ? Icons.lightbulb
-                            : Icons.lightbulb_outline,
-                        label: "${widget.post.likesCount}",
-                        onTap: () {
-                          setState(() {
-                            isLiked = !isLiked;
-                          });
-                          print("تم الضغط على لمبة");
-
-                          postCubit.toggleLike(widget.post.id);
-                        }),
-                    BlocProvider(
-                      create: (context) => getit<CommentCubit>(),
-                      child: _PostAction(
-                        icon: Icons.comment_outlined,
-                        label: "${widget.post.commentsCount}",
-                        onTap: () {
-                          commentCubit.fetchComments(widget.post.id);
-                          showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20)),
-                              ),
-                              builder: (context) => BlocProvider.value(
-                                    value: commentCubit,
-                                    child: DraggableScrollableSheet(
-                                      expand: false,
-                                      initialChildSize: 0.8,
-                                      minChildSize: 0.5,
-                                      maxChildSize: 0.9,
-                                      builder: (_, controller) =>
-                                          CommentBottomSheet(
-                                        post: widget.post,
-                                        scrollController: ScrollController(),
-                                      ),
-                                    ),
-                                  ));
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
                 const SizedBox(height: 8),
               ],

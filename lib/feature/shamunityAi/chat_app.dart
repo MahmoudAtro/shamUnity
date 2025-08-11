@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/feature/gemini-chat/chat_screen_new.dart';
+import 'package:shamunity/feature/shamunityAi/chat_screen_new.dart';
 
 class ChatApp extends StatelessWidget {
   const ChatApp({super.key});

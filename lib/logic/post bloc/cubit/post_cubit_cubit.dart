@@ -129,10 +129,7 @@ class PostCubit extends Cubit<PostCubitState> {
       (failure) => emit(PostCubitError(failure.message)),
       (listPost) {
         debugPrint("✅ Server returned ${listPost.length} posts");
-
-        // دمج البيانات الجديدة مع البيانات المحلية الموجودة
         final updatedPosts = listPost.map((newPost) {
-          // البحث عن المنشور المحلي الموجود
           final existingPost = posts.firstWhere(
             (existing) => existing.id == newPost.id,
             orElse: () => newPost,

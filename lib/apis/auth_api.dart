@@ -4,6 +4,7 @@ import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/error/failure.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/models/login_model.dart';
+import 'package:shamunity/models/rest_password_model.dart';
 import 'package:shamunity/models/signup_model.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 
@@ -159,17 +160,19 @@ class AuthApi {
       return left(ServerFailure(message: e.toString()));
     }
   }
-   Future<Either<Failure, String>> restPassword(String email) async {
+
+  Future<Either<Failure, CheckOtpPasswordResponse>> checkOtpPassword(CheckOtpPassword otp) async {
     try {
-      var response = await _dio.post(ApiConstances.restPassword,
+      var response = await _dio.post(ApiConstances.checkOtpPassword,
           options: Options(
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
           ),
-          data: {'email': email});
-      return Right(response.data['message']);
+          data: otp.toJson());
+        final responseData = CheckOtpPasswordResponse.fromJson(response.data);
+      return Right(responseData);
     } catch (e) {
       if (e is DioException) {
         return left(ServerFailure.fromDioError(e));
@@ -178,5 +181,23 @@ class AuthApi {
     }
   }
 
-
+  Future<Either<Failure, String>> restPassword(
+      RestPasswordModel restPasswordModel) async {
+    try {
+      var response = await _dio.post(ApiConstances.restPassword,
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+          data: restPasswordModel.toJson());
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
 }

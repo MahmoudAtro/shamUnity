@@ -12,10 +12,10 @@ class DontHaveAccount extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "ليس لديك حساب؟",
+          "ليس لديك حساب؟ ",
           style: TextStyle(
             fontSize: 15.sp,
-            color: Colors.grey,
+            color: ColorsManager.mainBlue,
           ),
         ),
         GestureDetector(
