@@ -238,31 +238,57 @@ class PusherService {
       _commentStreamController.stream;
 
   Future<void> initPusher() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      debugPrint("✅ Pusher already initialized");
+      return;
+    }
 
     try {
+      debugPrint("🔄 Initializing Pusher...");
+
       await _pusher.init(
         apiKey: "acaead266f9e5e8e34c9",
         cluster: "us3",
         onConnectionStateChange: (currentState, previousState) {
-          debugPrint("Pusher: $previousState -> $currentState");
+          debugPrint("📡 Pusher: $previousState -> $currentState");
         },
         onError: (message, code, e) {
-          debugPrint("Pusher Error: $message, code: $code");
+          debugPrint("❌ Pusher Error: $message, code: $code");
+          if (e != null) {
+            debugPrint("❌ Pusher Exception: $e");
+          }
         },
         onEvent: _onEvent,
       );
 
+      debugPrint("✅ Pusher initialized, subscribing to channels...");
+
       // الاشتراك في القنوات
       await _pusher.subscribe(channelName: "posts");
+      debugPrint("✅ Subscribed to posts channel");
+
       await _pusher.subscribe(channelName: "post-likes");
+      debugPrint("✅ Subscribed to post-likes channel");
+
       await _pusher.subscribe(channelName: "post-comments");
+      debugPrint("✅ Subscribed to post-comments channel");
 
       await _pusher.connect();
+      debugPrint("✅ Pusher connected");
+
       _isInitialized = true;
-      debugPrint("✅ Pusher initialized successfully");
+      debugPrint("✅ Pusher initialization completed successfully");
     } catch (e) {
       debugPrint("❌ Pusher initialization failed: $e");
+      debugPrint("❌ Stack trace: ${StackTrace.current}");
+      _isInitialized = false;
+      // إعادة المحاولة بعد فترة
+      Future.delayed(const Duration(seconds: 5), () {
+        if (!_isInitialized) {
+          debugPrint("🔄 Retrying Pusher initialization...");
+          initPusher();
+        }
+      });
     }
   }
 
@@ -290,6 +316,8 @@ class PusherService {
     try {
       debugPrint("📡 Raw event data: ${event.data}");
       debugPrint("📡 Event data type: ${event.data.runtimeType}");
+      debugPrint("📡 Event name: ${event.eventName}");
+      debugPrint("📡 Channel name: ${event.channelName}");
 
       // تحويل البيانات إلى النوع الصحيح
       Map<String, dynamic> data;
@@ -311,6 +339,8 @@ class PusherService {
       switch (event.eventName) {
         case "post.created":
         case "App\\Events\\PostCreated":
+        case "PostCreated":
+          debugPrint("📡 Handling post.created event");
           if (data['post'] != null) {
             final postData = data['post'] is Map
                 ? Map<String, dynamic>.from(data['post'] as Map)
@@ -320,11 +350,16 @@ class PusherService {
               'action': 'created',
               'post': post,
             });
+            debugPrint("✅ Post created event sent to stream");
+          } else {
+            debugPrint("⚠️ No post data found in event");
           }
           break;
 
         case "post.updated":
         case "App\\Events\\PostUpdated":
+        case "PostUpdated":
+          debugPrint("📡 Handling post.updated event");
           if (data['post'] != null) {
             final postData = data['post'] is Map
                 ? Map<String, dynamic>.from(data['post'] as Map)
@@ -334,15 +369,23 @@ class PusherService {
               'action': 'updated',
               'post': post,
             });
+            debugPrint("✅ Post updated event sent to stream");
           }
           break;
 
         case "post.deleted":
         case "App\\Events\\PostDeleted":
+        case "PostDeleted":
+          debugPrint("📡 Handling post.deleted event");
           _postStreamController.add({
             'action': 'deleted',
-            'postId': data['post_id'] as int,
+            'postId': data['post_id'] as int? ?? data['id'] as int? ?? 0,
           });
+          debugPrint("✅ Post deleted event sent to stream");
+          break;
+
+        default:
+          debugPrint("📡 Unhandled post event: ${event.eventName}");
           break;
       }
     } catch (e) {
@@ -353,6 +396,7 @@ class PusherService {
 
   void _handleLikeEvents(PusherEvent event) {
     debugPrint("📡 Like event received: ${event.eventName}");
+    debugPrint("📡 Like channel: ${event.channelName}");
 
     // التعامل مع أنواع مختلفة من like events
     if (event.eventName == "like.updated" ||
@@ -360,7 +404,10 @@ class PusherService {
         event.eventName == "like.deleted" ||
         event.eventName == "App\\Events\\LikeUpdated" ||
         event.eventName == "App\\Events\\LikeCreated" ||
-        event.eventName == "App\\Events\\LikeDeleted") {
+        event.eventName == "App\\Events\\LikeDeleted" ||
+        event.eventName == "LikeUpdated" ||
+        event.eventName == "LikeCreated" ||
+        event.eventName == "LikeDeleted") {
       try {
         debugPrint("📡 Raw like data: ${event.data}");
         debugPrint("📡 Like event name: ${event.eventName}");
@@ -378,24 +425,47 @@ class PusherService {
         }
 
         debugPrint("📡 Parsed like data: $data");
-        debugPrint("📡 post_id: ${data['post_id']}");
-        debugPrint("📡 likes_count: ${data['likes_count']}");
-        debugPrint("📡 is_liked: ${data['is_liked']}");
 
-        _likeStreamController.add({
-          'postId': data['post_id'] as int,
-          'likesCount': data['likes_count'] as int,
-          'isLiked': data['is_liked'] as bool? ?? false,
-        });
+        // محاولة استخراج البيانات من أماكن مختلفة
+        final postId = data['post_id'] as int? ??
+            data['postId'] as int? ??
+            data['id'] as int? ??
+            0;
+        final likesCount = data['likes_count'] as int? ??
+            data['likesCount'] as int? ??
+            data['count'] as int? ??
+            0;
+        final isLiked = data['is_liked'] as bool? ??
+            data['isLiked'] as bool? ??
+            data['liked'] as bool? ??
+            false;
+
+        debugPrint(
+            "📡 Extracted - post_id: $postId, likes_count: $likesCount, is_liked: $isLiked");
+
+        if (postId > 0) {
+          _likeStreamController.add({
+            'postId': postId,
+            'likesCount': likesCount,
+            'isLiked': isLiked,
+          });
+          debugPrint("✅ Like event sent to stream");
+        } else {
+          debugPrint("⚠️ Invalid post_id in like event: $postId");
+        }
       } catch (e) {
         debugPrint("❌ Error parsing like event: $e");
       }
+    } else {
+      debugPrint("📡 Unhandled like event: ${event.eventName}");
     }
   }
 
   void _handleCommentEvents(PusherEvent event) {
     try {
       debugPrint("📡 Raw comment data: ${event.data}");
+      debugPrint("📡 Comment event name: ${event.eventName}");
+      debugPrint("📡 Comment channel: ${event.channelName}");
 
       Map<String, dynamic> data;
 
@@ -409,30 +479,65 @@ class PusherService {
         return;
       }
 
+      debugPrint("📡 Parsed comment data: $data");
+
       switch (event.eventName) {
         case "comment.created":
+        case "App\\Events\\CommentCreated":
+        case "CommentCreated":
           if (data['comment'] != null) {
             final commentData = data['comment'] is Map
                 ? Map<String, dynamic>.from(data['comment'] as Map)
                 : data['comment'] as Map<String, dynamic>;
-            _commentStreamController.add({
-              'type': 'created',
-              'postId': data['post_id'] as int,
-              'comment': commentData,
-            });
+
+            final postId =
+                data['post_id'] as int? ?? data['postId'] as int? ?? 0;
+
+            if (postId > 0) {
+              _commentStreamController.add({
+                'type': 'created',
+                'postId': postId,
+                'comment': commentData,
+              });
+              debugPrint(
+                  "✅ Comment created event sent to stream for post $postId");
+            } else {
+              debugPrint(
+                  "⚠️ Invalid post_id in comment created event: $postId");
+            }
+          } else {
+            debugPrint("⚠️ No comment data found in comment created event");
           }
           break;
 
         case "comment.deleted":
-          _commentStreamController.add({
-            'type': 'deleted',
-            'postId': data['post_id'] as int,
-            'commentId': data['comment_id'] as int,
-          });
+        case "App\\Events\\CommentDeleted":
+        case "CommentDeleted":
+          final postId = data['post_id'] as int? ?? data['postId'] as int? ?? 0;
+          final commentId =
+              data['comment_id'] as int? ?? data['commentId'] as int? ?? 0;
+
+          if (postId > 0 && commentId > 0) {
+            _commentStreamController.add({
+              'type': 'deleted',
+              'postId': postId,
+              'commentId': commentId,
+            });
+            debugPrint(
+                "✅ Comment deleted event sent to stream for post $postId, comment $commentId");
+          } else {
+            debugPrint(
+                "⚠️ Invalid post_id or comment_id in comment deleted event: postId=$postId, commentId=$commentId");
+          }
+          break;
+
+        default:
+          debugPrint("📡 Unhandled comment event: ${event.eventName}");
           break;
       }
     } catch (e) {
       debugPrint("❌ Error parsing comment event: $e");
+      debugPrint("❌ Stack trace: ${StackTrace.current}");
     }
   }
 

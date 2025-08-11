@@ -37,6 +37,12 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+
+    // إعدادات ExoPlayer
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
+    }
 }
 
 flutter {

@@ -31,17 +31,15 @@ class ServicesLocator {
   }
 }
 
- void _sheikhProfile() {
-    // api
-    getit.registerLazySingleton<ApiVisitedUserProfile>(
-      () => ApiVisitedUserProfile(dio: DioFactory.getDio()),
-    );
-    // bloc
-    getit.registerLazySingleton<VisitedUserProfileCubit>(() => VisitedUserProfileCubit(getit()));
-  }
-
-
-
+void _sheikhProfile() {
+  // api
+  getit.registerLazySingleton<ApiVisitedUserProfile>(
+    () => ApiVisitedUserProfile(dio: DioFactory.getDio()),
+  );
+  // bloc
+  getit.registerLazySingleton<VisitedUserProfileCubit>(
+      () => VisitedUserProfileCubit(getit()));
+}
 
 void _posts() {
   // api
@@ -57,8 +55,8 @@ void _comment() {
   getit.registerLazySingleton<ApiComment>(
     () => ApiComment(dio: DioFactory.getDio()),
   );
-  // bloc
-  getit.registerLazySingleton(() => CommentCubit(getit()));
+  // bloc - تغيير إلى Factory لإنشاء نسخة جديدة لكل استخدام
+  getit.registerFactory(() => CommentCubit(getit()));
 }
 
 class SingleInstanceService {

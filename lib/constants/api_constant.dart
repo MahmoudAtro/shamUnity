@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String _baseUrl =
-      "https://followed-cycling-matt-levels.trycloudflare.com/api";
+      "https://wet-harley-mostly-contributing.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://followed-cycling-matt-levels.trycloudflare.com";
+      "https://wet-harley-mostly-contributing.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
 
   /// ----------Outside Application---------
@@ -26,4 +26,7 @@ class ApiConstances {
 
   static String userFullProfile(int userId) =>
       '$_baseUrl/users/$userId/full-profile';
+
+  // announcements
+  static const String announcementsUrl = "$_baseUrl/announcements";
 }
