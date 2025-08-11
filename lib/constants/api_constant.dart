@@ -17,7 +17,7 @@ class ApiConstances {
   static const String forgetPassword = "$_baseUrl/password/email";
   static const String checkOtpPassword = "$_baseUrl/password/code/check";
   static const String restPassword = "$_baseUrl/password/reset";
-  // post
+  // Post APIs
   static const String postsUrl = "$_baseUrl/posts";
   static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
   static String postDetails(int postId) => '$_baseUrl/posts/$postId';
