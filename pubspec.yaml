@@ -63,6 +63,10 @@ dependencies:
   # to handle secure shared preferences
   intl: ^0.20.2
   pusher_channels_flutter: ^2.5.0
+  app_links: ^6.4.0
+  flutter_gemini: ^3.0.0
+  animated_text_kit: ^4.2.3
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:

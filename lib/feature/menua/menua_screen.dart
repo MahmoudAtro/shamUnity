@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/theming/styles.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
@@ -15,7 +16,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +33,8 @@ class _MenuScreenState extends State<MenuScreen> {
               leading: CircleAvatar(
                 radius: 30,
                 backgroundImage: user?.profilePictureUrl != null
-                    ? NetworkImage(user!.profilePictureUrl!)
+                    ? NetworkImage(
+                        "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
                     : const AssetImage('assets/images/default_avatar.jpg'),
               ),
               title: Text("${user?.firstName} ${user?.lastName}",

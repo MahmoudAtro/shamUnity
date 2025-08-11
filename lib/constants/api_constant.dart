@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String _baseUrl =
-      "https://tx-ping-slovenia-nc.trycloudflare.com/api";
+      "https://canyon-prototype-technical-characterization.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://tx-ping-slovenia-nc.trycloudflare.com";
+      "https://canyon-prototype-technical-characterization.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
 
   /// ----------Outside Application---------
@@ -14,6 +14,8 @@ class ApiConstances {
   static const String verifyOtpUrl = "$_baseUrl/verify-otp";
   static const String resendOtpUrl = "$_baseUrl/resend-otp";
   static const String logoutUrl = "$_baseUrl/logout";
+  static const String forgetPassword= "$_baseUrl/forgot-password";
+  static const String restPassword = "$_baseUrl/reset-password";
   // post
   static const String postsUrl = "$_baseUrl/posts";
   static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';

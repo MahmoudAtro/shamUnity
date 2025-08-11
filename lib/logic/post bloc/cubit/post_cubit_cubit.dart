@@ -13,6 +13,7 @@ class PostCubit extends Cubit<PostCubitState> {
   PostCubit(this.apiPost) : super(PostCubitInitial());
 
   Future<void> fetchPosts() async {
+    emit(PostCubitLoading());
     if (!isClosed) {
       emit(PostUpdatedSuccess());
     }
@@ -30,8 +31,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCreatedLoading());
     final result = await apiPost.createPost(content, image);
     result.fold(
-      (failure) =>
-          emit(PostCreatedError(failure.message ?? "فشل إنشاء المنشور")),
+      (failure) => emit(PostCreatedError(failure.message)),
       (createdPost) async {
         posts.insert(0, createdPost);
         emit(PostCreatedSuccess());
@@ -44,8 +44,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostUpdatedLoading());
     final result = await apiPost.updatePost(postId, post);
     result.fold(
-      (failure) =>
-          emit(PostUpdatedError(failure.message ?? "فشل تعديل المنشور")),
+      (failure) => emit(PostUpdatedError(failure.message)),
       (updatedPost) async {
         final index = posts.indexWhere((p) => p.id == postId);
         if (index != -1) posts[index] = updatedPost;
@@ -59,7 +58,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostDeleteLoading("جاري حذف المنشور..."));
     final result = await apiPost.deletePost(postId);
     result.fold(
-      (failure) => emit(PostDeletedError(failure.message ?? "فشل حذف المنشور")),
+      (failure) => emit(PostDeletedError(failure.message)),
       (_) async {
         posts.removeWhere((p) => p.id == postId);
         emit(PostDeletedSuccess());
@@ -72,7 +71,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(UserPostsLoading());
     final result = await apiPost.getUserPosts(userId);
     result.fold(
-      (failure) => emit(UserPostsError(failure.message ?? "خطأ غير معروف")),
+      (failure) => emit(UserPostsError(failure.message)),
       (posts) {
         posts = posts;
         emit(UserPostsLoaded(posts));

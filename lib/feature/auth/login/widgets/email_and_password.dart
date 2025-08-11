@@ -7,6 +7,7 @@ import 'package:shamunity/core/theming/styles.dart';
 import 'package:shamunity/core/widgets/app_text_button.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
 import 'package:shamunity/logic/login%20bloc/login_bloc.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class EmailAndPassword extends StatefulWidget {
   const EmailAndPassword({super.key});
@@ -37,7 +38,9 @@ class _EmailAndPasswordState extends State<EmailAndPassword> {
         _buildPasswordField(),
         verticalspace(5),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            context.pushNamed('/forget-password');
+          },
           child: Text(
             "نسيت كلمة المرور",
             style: TextStyles.font16form

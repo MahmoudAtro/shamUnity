@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/observer/app_observer.dart';
@@ -9,6 +10,10 @@ import 'package:shamunity/routes/routers_define.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const String GOOGLE_API_KEY = "AIzaSyC6axuoPVYSz44nqdlYJbE_zh_7ZU1RQec";
+  Gemini.init(
+    apiKey: GOOGLE_API_KEY,
+  );
   ServicesLocator().init();
   await checkIfUserLogged();
   await ScreenUtil.ensureScreenSize();

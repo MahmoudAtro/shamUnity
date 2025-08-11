@@ -37,62 +37,43 @@ class _LoginScreenState extends State<LoginScreen> {
       create: (BuildContext context) => loginBloc,
       child: SafeArea(
         child: Scaffold(
-          body: Stack(
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildBackground(),
-              SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 80.h),
-                      Text(
-                        "تسجيل الدخول",
-                        style: TextStyle(
-                          fontSize: 35.sp,
-                          fontWeight: FontWeight.w500,
-                          color: ColorsManager.gold,
-                        ),
+              Container(
+                height: 50.h,
+                color: ColorsManager.gold,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 40.h),
+                    Text(
+                      "تسجيل الدخول",
+                      style: TextStyle(
+                        fontSize: 35.sp,
+                        fontWeight: FontWeight.w500,
+                        color: ColorsManager.gold,
                       ),
-                      verticalspace(50),
-                      verticalspace(20),
-                      const EmailAndPassword(),
-                      SizedBox(height: 16.h),
-                      const DontHaveAccount(),
-                    ],
-                  ),
+                    ),
+                    verticalspace(50),
+                    verticalspace(20),
+                    const EmailAndPassword(),
+                    SizedBox(height: 16.h),
+                    const DontHaveAccount(),
+                  ],
                 ),
+              ),
+              Container(
+                height: 50.h,
+                color: ColorsManager.mainBlue,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-  Widget _buildBackground() {
-    return Column(
-      children: [
-        // الشريط الذهبي العلوي
-        Container(
-          height: 50.h,
-          color: ColorsManager.gold,
-        ),
-
-        // المساحة البيضاء الوسطى
-        Expanded(
-          flex: 8,
-          child: Container(
-            color: Colors.white,
-          ),
-        ),
-
-        // الشريط الأزرق السفلي
-        Container(
-          height: 50.h,
-          color: ColorsManager.mainBlue,
-        ),
-      ],
     );
   }
 }

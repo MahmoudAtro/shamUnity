@@ -49,6 +49,10 @@ class _DropDownVisitResultState<T> extends State<DropDownVisitResult<T>> {
   @override
   void initState() {
     super.initState();
+    _initializeValue();
+  }
+
+  void _initializeValue() {
     selectedValue = widget.value;
     if (widget.controller != null && selectedValue != null) {
       widget.controller!.text = selectedValue.toString();
@@ -58,30 +62,55 @@ class _DropDownVisitResultState<T> extends State<DropDownVisitResult<T>> {
   @override
   void didUpdateWidget(covariant DropDownVisitResult<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.items != widget.items) {
-      if (selectedValue != null &&
-          !isValueInItems(selectedValue, widget.items)) {
-        setState(() {
-          selectedValue = null;
-          if (widget.controller != null) {
-            widget.controller!.text = ''; // تعيين نص فارغ بدلاً من clear()
-          }
-          widget.onChanged(null);
-        });
-      }
+    
+    // التحقق من تغيير القائمة أو القيمة
+    if (oldWidget.items != widget.items || oldWidget.value != widget.value) {
+      // استخدام addPostFrameCallback لتجنب استدعاء setState أثناء البناء
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleItemsOrValueChange();
+      });
     }
   }
 
-  bool isValueInItems(T? value, List<DropdownMenuItem<T>> items) {
+  void _handleItemsOrValueChange() {
+    // التحقق من صحة القيمة المختارة
+    bool isValidValue = selectedValue != null && 
+                       _isValueInItems(selectedValue, widget.items);
+    
+    // إذا تم تمرير قيمة جديدة من الوالد، استخدمها
+    if (widget.value != selectedValue) {
+      selectedValue = widget.value;
+    }
+    
+    // إذا كانت القيمة غير صالحة، امسحها
+    if (!isValidValue && selectedValue != null) {
+      selectedValue = null;
+      if (widget.controller != null) {
+        widget.controller!.text = '';
+      }
+      // إشعار الوالد بالتغيير
+      widget.onChanged(null);
+    }
+    
+    // تحديث واجهة المستخدم
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  bool _isValueInItems(T? value, List<DropdownMenuItem<T>> items) {
+    if (value == null) return false;
     return items.any((item) => item.value == value);
   }
+
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return DropdownButtonFormField<T>(
       value: selectedValue,
       items: widget.items,
-      onChanged: (value) {
+      onChanged: widget.items.isNotEmpty ? (value) {
         setState(() {
           selectedValue = value;
           if (widget.controller != null) {
@@ -89,7 +118,7 @@ class _DropDownVisitResultState<T> extends State<DropDownVisitResult<T>> {
           }
         });
         widget.onChanged(value);
-      },
+      } : null,
       decoration: InputDecoration(
         isDense: widget.isDense ?? true,
         contentPadding: widget.contentPadding ??

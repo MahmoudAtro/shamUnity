@@ -4,6 +4,7 @@ import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,7 +32,9 @@ class _HomePageState extends State<HomePage> {
                   backgroundColor: Colors.blueAccent,
                   elevation: 4,
                   onPressed: () {
-                    // منطق فتح محادثة الذكاء الاصطناعي
+                    context.pushNamed(
+                      '/geminiChat',
+                    );
                   },
                   icon: const Icon(Icons.chat, color: Colors.white, size: 26),
                   label: const Text(

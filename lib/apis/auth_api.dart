@@ -33,11 +33,14 @@ class AuthApi {
         "college": signupRequest.collage,
         "major": signupRequest.major,
         "year": signupRequest.year,
-        "image": userImage
+        "profile_picture": userImage
       });
       var response = await _dio.post(
         ApiConstances.registerUrl,
-        options: Options(),
+        options: Options(headers: {
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
+        }),
         data: formData,
       );
       // Check if response indicates failure
@@ -137,4 +140,43 @@ class AuthApi {
       return left(ServerFailure(message: e.toString()));
     }
   }
+
+  Future<Either<Failure, String>> forgetPassword(String email) async {
+    try {
+      var response = await _dio.post(ApiConstances.forgetPassword,
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+          data: {'email': email});
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+   Future<Either<Failure, String>> restPassword(String email) async {
+    try {
+      var response = await _dio.post(ApiConstances.restPassword,
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+          data: {'email': email});
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+
+
 }

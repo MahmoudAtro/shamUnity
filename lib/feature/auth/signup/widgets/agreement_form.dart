@@ -63,45 +63,47 @@ class _AgreementFormState extends State<AgreementForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _buildProfileImage(),
-        verticalspace(20),
-        Container(
-          width: double.infinity,
-          height: 1,
-          color: Colors.white,
-        ),
-        verticalspace(20),
-        _buildTermsTitle(),
-        verticalspace(15),
-        _buildTermsText(),
-        verticalspace(25),
-        _buildCheckboxRow(
-          "هل توافق على شروط الخدمة التالية؟",
-          acceptTerms,
-          (value) {
-            setState(() {
-              acceptTerms = value!;
-            });
-          },
-        ),
-        verticalspace(15),
-        _buildCheckboxRow(
-          "هل ترغب في استقبال رسائل بريدية؟",
-          acceptEmail,
-          (value) {
-            setState(() {
-              acceptEmail = value!;
-            });
-          },
-        ),
-        verticalspace(30),
-        Center(
-          child: _buildSubmitButton(),
-        ),
-      ],
+    return Form(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildProfileImage(),
+          verticalspace(20),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: Colors.white,
+          ),
+          verticalspace(20),
+          _buildTermsTitle(),
+          verticalspace(15),
+          _buildTermsText(),
+          verticalspace(25),
+          _buildCheckboxRow(
+            "هل توافق على شروط الخدمة التالية؟",
+            acceptTerms,
+            (value) {
+              setState(() {
+                acceptTerms = value!;
+              });
+            },
+          ),
+          verticalspace(15),
+          _buildCheckboxRow(
+            "هل ترغب في استقبال رسائل بريدية؟",
+            acceptEmail,
+            (value) {
+              setState(() {
+                acceptEmail = value!;
+              });
+            },
+          ),
+          verticalspace(30),
+          Center(
+            child: _buildSubmitButton(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -233,12 +235,12 @@ class _AgreementFormState extends State<AgreementForm> {
       ),
       onPressed: () {
         // التحقق من صحة النموذج أولاً
-        if (context.read<RegisterBloc>().formkey2.currentState!.validate()) {
-          if (acceptEmail && acceptTerms) {
-            context.read<RegisterBloc>().add(RegisterRequestEvent());
-          } else {
-            Toast().error(context, 'يجب الموافقة على الشروط والأحكام');
-          }
+        if (acceptEmail && acceptTerms) {
+          context
+              .read<RegisterBloc>()
+              .add(RegisterRequestEvent(image: _selectedImage));
+        } else {
+          Toast().error(context, 'يجب الموافقة على الشروط والأحكام');
         }
       },
     );

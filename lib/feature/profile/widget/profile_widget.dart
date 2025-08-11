@@ -93,7 +93,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         body: SingleChildScrollView(
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -141,12 +141,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                         ),
                       ],
                     ),
-                    child: TabBar(
+                    child: const TabBar(
                       indicatorColor: Colors.blue,
                       labelColor: Colors.blue,
                       unselectedLabelColor: Colors.black,
-                      labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                      tabs: const [
+                      labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                      tabs: [
                         Tab(text: "المنشورات"),
                         Tab(text: "الملفات"),
                       ],

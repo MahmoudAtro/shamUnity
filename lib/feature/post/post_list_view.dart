@@ -152,9 +152,10 @@ class _PostListScreenState extends State<PostListScreen> {
             if (user != null) buildCreatePostCard(context),
             BlocBuilder<PostCubit, PostCubitState>(
               builder: (context, state) {
-                if (state is PostCubitLoading || isLoading) {
+                if (state is PostCubitLoading) {
                   return buildPostShimmer();
-                } else if (state is PostCubitLoaded) {
+                }
+                if (state is PostCubitLoaded) {
                   final posts = state.posts;
                   return Expanded(
                     child: ListView.builder(
@@ -165,7 +166,8 @@ class _PostListScreenState extends State<PostListScreen> {
                       },
                     ),
                   );
-                } else if (state is PostCubitError) {
+                }
+                if (state is PostCubitError) {
                   return Center(child: Text(state.message));
                 }
                 // الحالة الافتراضية

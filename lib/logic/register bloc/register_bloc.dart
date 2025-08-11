@@ -13,24 +13,26 @@ part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   // Form controllers
-  TextEditingController firstName = TextEditingController();
-  TextEditingController lastName = TextEditingController();
-  TextEditingController birthDay = TextEditingController();
-  TextEditingController gender = TextEditingController();
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
-  TextEditingController universityId = TextEditingController();
-  TextEditingController collage = TextEditingController();
-  TextEditingController major = TextEditingController();
-  TextEditingController year = TextEditingController();
+
   File? image;
-  final formkey = GlobalKey<FormState>();
-  final formkey1 = GlobalKey<FormState>();
-  final formkey2 = GlobalKey<FormState>();
+  Map<String, dynamic> registrationData = {
+    'first_name': '',
+    'last_name': '',
+    'birth_day': '',
+    'gender': 'male',
+    'email': '',
+    'password': '',
+    'university_id': '',
+    'collage': '',
+    'major': '',
+    'academic_year': 0,
+  };
   final AuthApi _authApi;
 
   RegisterBloc(this._authApi) : super(RegisterInitial()) {
     on<RegisterRequestEvent>((event, emit) async {
+      debugPrint(
+          "SharedPrefHelper : setData with key : ${event.image} registerData and value : $registrationData");
       emit(RegisterLoading());
       BuildContext? context = SingleInstanceService.context;
       showDialog(
@@ -38,17 +40,17 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           builder: (BuildContext context) => const LoadingDialogWidget());
 
       final result = await _authApi.register(SignupModelRequest(
-        firstName: firstName.text,
-        lastName: lastName.text,
-        gender: gender.text,
-        birthDay: birthDay.text,
-        email: email.text,
-        password: password.text,
-        universityId: universityId.text,
-        collage: collage.text,
-        major: major.text,
-        year: int.parse(year.text),
-        image: image,
+        firstName: registrationData['first_name'],
+        lastName: registrationData['last_name'],
+        gender: registrationData['gender'],
+        birthDay: registrationData['birth_day'],
+        email: registrationData['email'],
+        password: registrationData['password'],
+        universityId: registrationData['university_id'],
+        collage: registrationData['collage'],
+        major: registrationData['major'],
+        year: int.parse(registrationData['academic_year']),
+        image: event.image,
       ));
 
       result.fold(
@@ -60,24 +62,23 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         (data) {
           context.pop();
           emit(RegisterSuccess(signupResponse: data));
+          registrationData.clear();
+          registrationData.addAll({
+            'first_name': '',
+            'last_name': '',
+            'birth_day': '',
+            'gender': 'male',
+            'email': '',
+            'password': '',
+            'university_id': '',
+            'collage': '',
+            'major': '',
+            'academic_year': 0,
+          });
           Toast().success(context, data.message);
           context.pushNamed('/verification', arguments: data.email);
         },
       );
     });
-  }
-
-  @override
-  Future<void> close() {
-    // Dispose controllers when bloc is closed
-    firstName.dispose();
-    lastName.dispose();
-    email.dispose();
-    password.dispose();
-    universityId.dispose();
-    collage.dispose();
-    major.dispose();
-    year.dispose();
-    return super.close();
   }
 }

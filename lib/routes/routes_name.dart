@@ -16,4 +16,7 @@ class RoutesNames {
   static const String verification = "/verification";
   static const String notifications = "/notifications";
   static const String editPost = "/editPost";
+  static const String forgetPassword = "/forget-password";
+  static const String restPassword = "/reset-password";
+  static const String geminiChat = "/geminiChat";
 }
