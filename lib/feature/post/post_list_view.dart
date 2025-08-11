@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
+import 'package:shamunity/core/widgets/connection_error.dart';
+import 'package:shamunity/core/widgets/empty_data.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/post/widget/post_widget.dart';
 import 'package:shamunity/logic/post bloc/cubit/post_cubit_cubit.dart';
@@ -13,6 +15,8 @@ import 'package:shamunity/routes/routes_name.dart';
 UserModel? user;
 
 class PostListScreen extends StatefulWidget {
+  const PostListScreen({super.key});
+
   @override
   State<PostListScreen> createState() => _PostListScreenState();
 }
@@ -151,6 +155,11 @@ class _PostListScreenState extends State<PostListScreen> {
               if (state is PostCubitLoading) {
                 return buildPostShimmer();
               } else if (state is PostCubitLoaded) {
+                if (state.posts.isEmpty) {
+                  return const EmptyData(
+                    message: "لا يوجد منشورات لعرضها",
+                  );
+                }
                 final posts = state.posts;
                 return Expanded(
                   child: RefreshIndicator(
@@ -167,17 +176,8 @@ class _PostListScreenState extends State<PostListScreen> {
                   ),
                 );
               } else if (state is PostCubitError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(state.message),
-                      ElevatedButton(
-                        onPressed: () => postCubit.fetchPosts(),
-                        child: Text("إعادة المحاولة"),
-                      ),
-                    ],
-                  ),
+                return ConnectionError(
+                  message: state.message,
                 );
               }
               return const SizedBox();

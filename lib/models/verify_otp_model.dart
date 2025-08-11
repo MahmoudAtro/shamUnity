@@ -82,7 +82,7 @@ class UserModel {
       universityId: json['university_id'] ?? '',
       college: json['college'] ?? '',
       major: json['major'] ?? '',
-      year: json['year'] ?? '',
+      year: json['year'].toString(),
       role: json['role'] ?? '',
       id: json['id'] ?? 0,
       profilePictureUrl: json['profile_picture_url'],
@@ -121,18 +121,28 @@ class ResendOtpRequest {
 
 class ResendOtpResponse {
   final String message;
+  final int userId;
+  final String email;
 
-  ResendOtpResponse({required this.message});
+  ResendOtpResponse({
+    required this.message,
+    required this.userId,
+    required this.email,
+  });
 
   factory ResendOtpResponse.fromJson(Map<String, dynamic> json) {
     return ResendOtpResponse(
-      message: json['message'],
+      message: json['message'] ?? '',
+      userId: json['user_id'] ?? 0,
+      email: json['email'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'message': message,
+      'user_id': userId,
+      'email': email,
     };
   }
 }

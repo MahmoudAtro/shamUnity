@@ -5,11 +5,16 @@ import 'package:shamunity/routes/routers_define.dart';
 import 'package:shamunity/routes/routes_name.dart';
 import 'package:toastification/toastification.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final AppRoute appRoute;
 
   const MyApp({super.key, required this.appRoute});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ToastificationWrapper(
@@ -18,7 +23,7 @@ class MyApp extends StatelessWidget {
           minTextAdapt: true,
           splitScreenMode: true,
           child: MaterialApp(
-            onGenerateRoute: appRoute.generateRoute,
+            onGenerateRoute: widget.appRoute.generateRoute,
             builder: (context, widget) {
               return Directionality(
                 textDirection: TextDirection

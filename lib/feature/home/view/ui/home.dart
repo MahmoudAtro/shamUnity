@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/feature/announcements/announcements_demo.dart';
 import 'package:shamunity/feature/chat/user_group_srcreen.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,21 +31,16 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-                child: FloatingActionButton.extended(
+                child: FloatingActionButton(
                   backgroundColor: Colors.blueAccent,
                   elevation: 4,
                   onPressed: () {
-                    // منطق فتح محادثة الذكاء الاصطناعي
+                    context.pushNamed('/geminiChat');
                   },
-                  icon: const Icon(Icons.chat, color: Colors.white, size: 26),
-                  label: const Text(
-                    'Ai',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      letterSpacing: 1,
-                    ),
+                  child: Image.asset(
+                    'assets/images/shamai.png',
+                    width: 36,
+                    height: 36,
                   ),
                 ),
               ),
@@ -50,15 +48,15 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.grey[100],
             appBar: AppBar(
               automaticallyImplyLeading: false,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Colors.blueAccent,
               elevation: 1,
               actions: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                    'Sham Unity',
+                  padding: EdgeInsets.symmetric(horizontal: 24.0.w),
+                  child: const Text(
+                    'ShamUnity',
                     style: TextStyle(
-                      color: Colors.blue[800],
+                      color: ColorsManager.lightClor,
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
                       letterSpacing: -1.5,

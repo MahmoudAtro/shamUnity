@@ -65,7 +65,8 @@ class ServerFailure extends Failure {
     } else if (statuscode == 401) {
       return ServerFailure(message: errorMessage);
     } else if (statuscode == 422) {
-      return logout(context);
+      logout(context);
+      return ServerFailure(message: errorMessage);
     } else {
       return ServerFailure(message: errorMessage);
     }

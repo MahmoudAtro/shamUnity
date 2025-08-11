@@ -40,8 +40,7 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
           getit.unregister<RegisterBloc>(
             disposingFunction: (bloc) => bloc.close(),
           );
-          context.pushNamedAndRemoveUntil('/home',
-              predicate: (route) => false);
+          context.pushNamedAndRemoveUntil('/home', predicate: (route) => false);
         },
       );
     });
@@ -49,17 +48,23 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     on<ResendCodeEvent>((event, emit) async {
       emit(ResendCodeLoading());
       BuildContext? context = SingleInstanceService.context;
+      showDialog(
+          context: context!,
+          builder: (BuildContext context) => const LoadingDialogWidget());
 
-      final result = await _authApi.resendOtp(email: event.email);
+      final result =
+          await _authApi.resendOtp(ResendOtpRequest(email: event.email));
 
       result.fold(
         (failure) {
+          context.pop();
           emit(ResendCodeFailure(message: failure.message));
-          Toast().error(context!, failure.message);
+          Toast().error(context, failure.message);
         },
         (data) {
+          context.pop();
           emit(ResendCodeSuccess(message: data.message));
-          Toast().success(context!, data.message);
+          Toast().success(context, data.message);
         },
       );
     });

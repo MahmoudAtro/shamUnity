@@ -73,6 +73,7 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
       },
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         isDense: widget.isDense ?? true,
         contentPadding: widget.contentPadding ??
             EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),

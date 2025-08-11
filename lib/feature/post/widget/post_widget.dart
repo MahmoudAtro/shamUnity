@@ -88,7 +88,7 @@ class _PostWidgetState extends State<PostWidget> {
                       arguments: widget.post);
                 },
               ),
-              Divider(height: 1),
+              const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text('حذف المنشور',
@@ -221,7 +221,6 @@ class _PostWidgetState extends State<PostWidget> {
                         )
                       : null,
                 ),
-
                 // Text Content
                 if (currentPost.content.isNotEmpty)
                   Padding(

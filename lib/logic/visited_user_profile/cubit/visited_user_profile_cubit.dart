@@ -18,7 +18,7 @@ class VisitedUserProfileCubit extends Cubit<VisitedUserProfileState> {
 
       result.fold(
         (failure) => emit(
-            VisitedUserProfileError(failure.message ?? "فشل في جلب البيانات")),
+            VisitedUserProfileError(failure.message)),
         (profile) {
           visitedUserProfile = profile;
           emit(VisitedUserProfileLoaded(profile));

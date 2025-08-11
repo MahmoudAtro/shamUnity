@@ -13,8 +13,11 @@ class ApiConstances {
   static const String registerUrl = "$_baseUrl/register";
   static const String verifyOtpUrl = "$_baseUrl/verify-otp";
   static const String resendOtpUrl = "$_baseUrl/resend-otp";
-
-  // post
+  static const String logoutUrl = "$_baseUrl/logout";
+  static const String forgetPassword = "$_baseUrl/password/email";
+  static const String checkOtpPassword = "$_baseUrl/password/code/check";
+  static const String restPassword = "$_baseUrl/password/reset";
+  // Post APIs
   static const String postsUrl = "$_baseUrl/posts";
   static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
   static String postDetails(int postId) => '$_baseUrl/posts/$postId';

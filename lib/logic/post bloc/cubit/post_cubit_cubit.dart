@@ -198,7 +198,6 @@ class PostCubit extends Cubit<PostCubitState> {
 
         // تحديث القائمة بالكامل مع الحفاظ على البيانات المحلية المحدثة
         final updatedPosts = listPost.map((newPost) {
-          // البحث عن المنشور المحلي الموجود
           final existingPost = posts.firstWhere(
             (existing) => existing.id == newPost.id,
             orElse: () => newPost,
@@ -231,8 +230,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostCreatedLoading());
     final result = await apiPost.createPost(content, image);
     result.fold(
-      (failure) =>
-          emit(PostCreatedError(failure.message ?? "فشل إنشاء المنشور")),
+      (failure) => emit(PostCreatedError(failure.message)),
       (createdPost) async {
         // إضافة المنشور الجديد إلى القائمة المحلية
         posts.insert(0, createdPost);
@@ -251,8 +249,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostUpdatedLoading());
     final result = await apiPost.updatePost(postId, post);
     result.fold(
-      (failure) =>
-          emit(PostUpdatedError(failure.message ?? "فشل تعديل المنشور")),
+      (failure) => emit(PostUpdatedError(failure.message)),
       (updatedPost) async {
         // تحديث المنشور في القائمة المحلية
         final index = posts.indexWhere((p) => p.id == postId);
@@ -273,7 +270,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(PostDeleteLoading("جاري حذف المنشور..."));
     final result = await apiPost.deletePost(postId);
     result.fold(
-      (failure) => emit(PostDeletedError(failure.message ?? "فشل حذف المنشور")),
+      (failure) => emit(PostDeletedError(failure.message)),
       (_) async {
         // حذف المنشور من القائمة المحلية
         posts.removeWhere((p) => p.id == postId);
@@ -291,7 +288,7 @@ class PostCubit extends Cubit<PostCubitState> {
     emit(UserPostsLoading());
     final result = await apiPost.getUserPosts(userId);
     result.fold(
-      (failure) => emit(UserPostsError(failure.message ?? "خطأ غير معروف")),
+      (failure) => emit(UserPostsError(failure.message)),
       (posts) {
         posts = posts;
         emit(UserPostsLoaded(posts));

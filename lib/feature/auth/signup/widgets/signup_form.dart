@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
+import 'package:shamunity/core/widgets/app_text_button.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({super.key});
@@ -13,80 +15,105 @@ class SignupForm extends StatefulWidget {
 }
 
 class _SignupFormState extends State<SignupForm> {
+  final TextEditingController firstName = TextEditingController();
+  final TextEditingController lastName = TextEditingController();
+  final TextEditingController birthDay = TextEditingController();
+  final TextEditingController gender = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  final formkey = GlobalKey<FormState>();
   DateTime? selectedDate;
   bool isObscure = true;
-
-  String selectedGender = 'male';
-
   @override
   void initState() {
-    context.read<RegisterBloc>().gender.text = 'male';
     super.initState();
+    firstName.text =
+        context.read<RegisterBloc>().registrationData['first_name'];
+    lastName.text = context.read<RegisterBloc>().registrationData['last_name'];
+    birthDay.text = context.read<RegisterBloc>().registrationData['birth_day'];
+    gender.text = context.read<RegisterBloc>().registrationData['gender'];
+    email.text = context.read<RegisterBloc>().registrationData['email'];
+    password.text = context.read<RegisterBloc>().registrationData['password'];
   }
 
+  String selectedGender = 'male';
   @override
   void dispose() {
+    firstName.dispose();
+    lastName.dispose();
+    birthDay.dispose();
+    gender.dispose();
+    email.dispose();
+    password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end, // محاذاة للعربية
-      children: [
-        _buildFormField("الاسم الأول", context.read<RegisterBloc>().firstName),
-        verticalspace(15),
-        _buildFormField("الاسم الأخير", context.read<RegisterBloc>().lastName),
-        verticalspace(15),
-        verticalspace(15),
-        _buildGenderSelection(),
-        verticalspace(15),
-        GestureDetector(
-          onTap: () => _selectDate(context),
-          child: AbsorbPointer(
-            child: _buildFormField(
-              "تاريخ الميلاد",
-              context.read<RegisterBloc>().birthDay,
-              suffixIcon: const Icon(Icons.calendar_today,
-                  color: Colors.white, size: 20),
-              hintText: "اليوم / الشهر / السنة",
-              readOnly: true, // جعل الحقل للقراءة فقط لمنع الإدخال اليدوي
-            ),
-          ),
-        ),
-        verticalspace(25),
-        Container(
-          width: double.infinity,
-          height: 1,
-          color: Colors.white,
-        ),
-        verticalspace(25),
-        Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // محاذاة البريد وكلمة المرور من اليسار
-          children: [
-            _buildFormField(
-                "البريد الإلكتروني", context.read<RegisterBloc>().email),
-            verticalspace(15),
-            _buildFormField(
-              "كلمة المرور",
-              context.read<RegisterBloc>().password,
-              isObscureText: isObscure ? true : false,
-              suffixIcon: IconButton(
-                icon: isObscure
-                    ? const Icon(Icons.visibility, color: Colors.grey, size: 20)
-                    : const Icon(Icons.visibility_off,
-                        color: Colors.grey, size: 20),
-                onPressed: () {
-                  setState(() {
-                    isObscure = !isObscure;
-                  });
-                },
+    return Form(
+      key: formkey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end, // محاذاة للعربية
+        children: [
+          _buildFormField("الاسم الأول", firstName),
+          verticalspace(15),
+          _buildFormField("الاسم الأخير", lastName),
+          verticalspace(15),
+          verticalspace(15),
+          _buildGenderSelection(),
+          verticalspace(15),
+          GestureDetector(
+            onTap: () => _selectDate(context),
+            child: AbsorbPointer(
+              child: _buildFormField(
+                "تاريخ الميلاد",
+                birthDay,
+                suffixIcon: const Icon(Icons.calendar_today,
+                    color: Colors.white, size: 20),
+                hintText: "اليوم / الشهر / السنة",
+                readOnly: true, // جعل الحقل للقراءة فقط لمنع الإدخال اليدوي
               ),
             ),
-          ],
-        ),
-      ],
+          ),
+          verticalspace(25),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: Colors.white,
+          ),
+          verticalspace(25),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment
+                .start, // محاذاة البريد وكلمة المرور من اليسار
+            children: [
+              _buildFormField("البريد الإلكتروني", email),
+              verticalspace(15),
+              _buildFormField(
+                "كلمة المرور",
+                password,
+                isObscureText: isObscure ? true : false,
+                suffixIcon: IconButton(
+                  icon: isObscure
+                      ? const Icon(Icons.visibility,
+                          color: Colors.grey, size: 20)
+                      : const Icon(Icons.visibility_off,
+                          color: Colors.grey, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      isObscure = !isObscure;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          verticalspace(30),
+          // زر التالي
+          Center(
+            child: _buildNextButton(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -179,7 +206,7 @@ class _SignupFormState extends State<SignupForm> {
           activeColor: Colors.white,
           fillColor: WidgetStateProperty.all(Colors.white),
           onChanged: (newValue) {
-            context.read<RegisterBloc>().gender.text = newValue!;
+            gender.text = newValue!;
             setState(() {
               selectedGender = newValue;
             });
@@ -196,13 +223,48 @@ class _SignupFormState extends State<SignupForm> {
     );
   }
 
+  // زر التالي
+  Widget _buildNextButton() {
+    return AppTextButton(
+      buttonText: "التالي",
+      buttonHeight: 50,
+      buttonWidth: 120,
+      backgroundColor: Colors.transparent,
+      borderSide: Colors.white,
+      borderRadius: 24.r,
+      textStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w500,
+      ),
+      onPressed: () {
+        if (formkey.currentState!.validate()) {
+          context.read<RegisterBloc>().registrationData['first_name'] =
+              firstName.text;
+          context.read<RegisterBloc>().registrationData['last_name'] =
+              lastName.text;
+          context.read<RegisterBloc>().registrationData['birth_day'] =
+              birthDay.text;
+          context.read<RegisterBloc>().registrationData['gender'] = gender.text;
+          context.read<RegisterBloc>().registrationData['email'] = email.text;
+          context.read<RegisterBloc>().registrationData['password'] =
+              password.text;
+          context.pushNamed("/university-info",
+              arguments: BlocProvider.of<RegisterBloc>(context));
+        }
+      },
+    );
+  }
+
   void _selectDate(BuildContext context) {
-    // استخدام showDatePicker المدمج في Flutter
+    // حساب التاريخ الأقصى (15 سنة من الآن)
+    DateTime maxDate = DateTime.now().subtract(const Duration(days: 365 * 15));
+
     showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: maxDate,
       firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
+      lastDate: maxDate,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -219,15 +281,28 @@ class _SignupFormState extends State<SignupForm> {
     ).then((picked) {
       if (picked != null) {
         setState(() {
-          context.read<RegisterBloc>().birthDay.text =
+          birthDay.text =
               "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
         });
       }
     });
   }
 
+  List<String> allowedDomains = [
+    'gmail.com',
+    'hotmail.com',
+    'outlook.com',
+    'yahoo.com',
+    'icloud.com',
+    'live.com',
+    'msn.com',
+    'aol.com',
+    'protonmail.com',
+    'mail.com'
+  ];
   // التحقق من صحة البريد الإلكتروني
   bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email) &&
+        allowedDomains.contains(email.split('@').last.toLowerCase());
   }
 }

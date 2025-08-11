@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/theming/styles.dart';
 
-
 class AppTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
@@ -27,29 +26,29 @@ class AppTextFormField extends StatelessWidget {
   final Function(String?)? onFieldSubmitted;
   final void Function(String)? onChanged;
 
-  const AppTextFormField({
-    super.key,
-    this.maxLines,
-    this.keyboardType,
-    this.suffix,
-    this.contentPadding,
-    this.focusedBorder,
-    this.enabledBorder,
-    this.inputTextStyle,
-    this.hintStyle,
-    required this.hintText,
-    this.isObscureText,
-    this.suffixIcon,
-    this.backgroundColor,
-    this.controller,
-    required this.validator,
-    this.prefixIcon,
-    this.borderRadius,this.readOnly,
-    this.hintTextDirection,
-    this.textDirection,
-    this.onFieldSubmitted,
-    this.onChanged
-  });
+  const AppTextFormField(
+      {super.key,
+      this.maxLines,
+      this.keyboardType,
+      this.suffix,
+      this.contentPadding,
+      this.focusedBorder,
+      this.enabledBorder,
+      this.inputTextStyle,
+      this.hintStyle,
+      required this.hintText,
+      this.isObscureText,
+      this.suffixIcon,
+      this.backgroundColor,
+      this.controller,
+      required this.validator,
+      this.prefixIcon,
+      this.borderRadius,
+      this.readOnly,
+      this.hintTextDirection,
+      this.textDirection,
+      this.onFieldSubmitted,
+      this.onChanged});
 
   @override
   Widget build(BuildContext context) {
