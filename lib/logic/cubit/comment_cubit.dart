@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
+import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
 import 'package:shamunity/models/comment.dart';
 
 class CommentCubit extends Cubit<CommentState> {
   final ApiComment apiComment;
-  final CommentPusherService _pusherService = CommentPusherService();
+  final PusherService _pusherService = PusherService();
   List<Comment> comments = [];
   StreamSubscription<Map<String, dynamic>>? _commentSubscription;
+  int? _currentPostId; // لتخزين معرف المنشور الحالي
 
   CommentCubit(this.apiComment) : super(CommentInitial()) {
     debugPrint("🔄 CommentCubit: Creating new instance");
@@ -113,8 +115,16 @@ class CommentCubit extends Cubit<CommentState> {
     try {
       debugPrint("🔄 CommentCubit: Fetching comments for post $postId");
 
+      // إلغاء الاشتراك من المنشور السابق إذا كان مختلفاً
+      if (_currentPostId != null && _currentPostId != postId) {
+        await _pusherService.unsubscribeFromPostComments(_currentPostId!);
+        debugPrint(
+            "🔄 CommentCubit: Unsubscribed from previous post $_currentPostId");
+      }
+
       // الاشتراك في قناة التعليقات للمنشور
-      await _pusherService.subscribeToPost(postId);
+      await _pusherService.subscribeToPostComments(postId);
+      _currentPostId = postId; // تخزين معرف المنشور الحالي
 
       final result = await apiComment.getComments(postId);
       result.fold(
@@ -212,9 +222,11 @@ class CommentCubit extends Cubit<CommentState> {
     debugPrint("🔄 CommentCubit: Closing CommentCubit instance");
     _commentSubscription?.cancel();
 
-    // إلغاء الاشتراك من جميع قنوات التعليقات
-    // يمكنك تمرير postId إذا كنت تريد إلغاء الاشتراك من منشور معين
-    // _pusherService.unsubscribeFromPost(postId);
+    // إلغاء الاشتراك من قناة التعليقات للمنشور الحالي
+    if (_currentPostId != null) {
+      _pusherService.unsubscribeFromPostComments(_currentPostId!);
+      debugPrint("✅ CommentCubit: Unsubscribed from post $_currentPostId");
+    }
 
     debugPrint("✅ CommentCubit: Comment subscription cancelled");
     return super.close();

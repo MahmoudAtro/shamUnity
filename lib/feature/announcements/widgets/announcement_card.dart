@@ -124,7 +124,7 @@ class AnnouncementCard extends StatelessWidget {
 
   // دالة لفتح ملف PDF
   void _openPDF(String pdfUrl) async {
-    final url = '${ApiConstances.baseUrlImg}$pdfUrl';
+    final url = '${ApiConstances.baseUrlImg}/$pdfUrl';
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -141,7 +141,7 @@ class AnnouncementCard extends StatelessWidget {
 
   // دالة لفتح أي ملف حسب نوعه
   void _openFile(BuildContext context, String fileUrl, String fileType) async {
-    final url = '${ApiConstances.baseUrlImg}$fileUrl';
+    final url = '${ApiConstances.baseUrlImg}/$fileUrl';
     final uri = Uri.parse(url);
 
     try {
@@ -282,7 +282,7 @@ class AnnouncementCard extends StatelessWidget {
                 topRight: Radius.circular(20),
               ),
               child: Image.network(
-                '${ApiConstances.baseUrlImg}$imageUrl',
+                '${ApiConstances.baseUrlImg}/$imageUrl',
                 width: double.infinity,
                 height: 240,
                 fit: BoxFit.cover,

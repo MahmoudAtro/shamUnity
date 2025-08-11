@@ -139,7 +139,7 @@ class PostCubit extends Cubit<PostCubitState> {
 
     final postId = likeData['postId'] as int?;
     final likesCount = likeData['likesCount'] as int?;
-    final isLiked = likeData['isLiked'] as bool? ?? false;
+    final isLiked = likeData['isLiked'] as bool?;
 
     if (postId == null) {
       debugPrint("❌ PostCubit: No postId found in like data");
@@ -162,14 +162,16 @@ class PostCubit extends Cubit<PostCubitState> {
       debugPrint(
           "📡 PostCubit: Old state - isLiked: ${oldPost.isLiked}, likesCount: ${oldPost.likesCount}");
 
+      // تحديث عدد الإعجابات فقط، والحفاظ على حالة isLiked المحلية
       final updatedPost = oldPost.copyWith(
         likesCount: likesCount,
-        isLiked: isLiked,
+        // لا نغير isLiked لأن الباك اند لا يرسلها
+        // isLiked: isLiked ?? oldPost.isLiked,
       );
 
       posts[postIndex] = updatedPost;
       debugPrint(
-          "📡 PostCubit: Updated post $postId - New isLiked: $isLiked, New likesCount: $likesCount");
+          "📡 PostCubit: Updated post $postId - New likesCount: $likesCount, Preserved isLiked: ${oldPost.isLiked}");
 
       if (!isClosed) {
         emit(PostCubitLoaded(List.from(posts)));
