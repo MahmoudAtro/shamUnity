@@ -105,9 +105,7 @@ class AppTextFormField extends StatelessWidget {
             : backgroundColor ?? ColorsManager.moreLightGray,
         filled: true,
       ),
-      onFieldSubmitted: (value){
-         onFieldSubmitted!(value);
-      },
+      onFieldSubmitted: onFieldSubmitted,
       obscureText: isObscureText ?? false,
       textDirection: textDirection ?? TextDirection.ltr,
       style: isDarkMode

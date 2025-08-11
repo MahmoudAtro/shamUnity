@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shamunity/feature/announcements/announcements_demo.dart';
 import 'package:shamunity/feature/chat/user_group_srcreen.dart';
 import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
@@ -16,7 +17,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: SafeArea(
         child: WillPopScope(
           onWillPop: () async => false,
@@ -80,6 +81,7 @@ class _HomePageState extends State<HomePage> {
                       Tab(icon: Icon(Icons.people_outline, size: 30)),
                       Tab(icon: Icon(Icons.notifications_active, size: 30)),
                       Tab(icon: Icon(Icons.menu_book_outlined, size: 30)),
+                      Tab(icon: Icon(Icons.announcement, size: 30)),
                       Tab(icon: Icon(Icons.menu, size: 30)),
                     ],
                   ),
@@ -91,6 +93,7 @@ class _HomePageState extends State<HomePage> {
                       const UsersGroupsScreen(),
                       const NotificationsScreen(),
                       const LibraryHomeScreen(),
+                      const AnnouncementsDemo(),
                       const MenuScreen(),
                     ],
                   ),

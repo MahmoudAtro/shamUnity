@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
-import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
 import 'package:shamunity/models/post.dart';
+import 'package:shamunity/models/verify_otp_model.dart';
+import 'package:shamunity/routes/routes_name.dart';
 
 class CommentBottomSheet extends StatefulWidget {
   final ScrollController scrollController;
@@ -24,13 +26,25 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final TextEditingController _commentController = TextEditingController();
   late CommentCubit commentCubit;
   bool _hasText = false;
+  UserModel? user;
 
   @override
   void initState() {
     super.initState();
     commentCubit = context.read<CommentCubit>();
-    
+    _loadUserData();
     _commentController.addListener(_checkText);
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      user = await SecureSharedPrefHelper.getUser();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("❌ Error loading user data: $e");
+    }
   }
 
   @override
@@ -53,6 +67,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   void _showDeleteDialog(int commentId) {
+    if (user == null) {
+      debugPrint("⚠️ User not loaded, cannot show delete dialog");
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -119,7 +138,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           final comment = state.comments[index];
           return GestureDetector(
             onLongPress: () {
-              if (user!.id.toString() == comment.author.id.toString()) {
+              if (user != null &&
+                  user!.id.toString() == comment.author.id.toString()) {
                 _showDeleteDialog(comment.id);
               }
             },
@@ -128,18 +148,24 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: comment.author.profilePicture != null
-                        ? NetworkImage(
-                            "${ApiConstances.baseUrlImg}${comment.author.profilePicture}")
-                        : null,
-                    child: comment.author.name.isEmpty
-                        ? Text(
-                            comment.author.name,
-                            style: const TextStyle(color: Colors.white),
-                          )
-                        : null,
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, RoutesNames.sheikhProfile,
+                          arguments: comment.author.id);
+                    },
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: comment.author.profilePicture != null
+                          ? NetworkImage(
+                              "${ApiConstances.baseUrlImg}${comment.author.profilePicture}")
+                          : null,
+                      child: comment.author.name.isEmpty
+                          ? Text(
+                              comment.author.name,
+                              style: const TextStyle(color: Colors.white),
+                            )
+                          : null,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -153,11 +179,19 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            softWrap: true,
-                            maxLines: 1,
-                            comment.author.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, RoutesNames.sheikhProfile,
+                                  arguments: comment.author.id);
+                            },
+                            child: Text(
+                              softWrap: true,
+                              maxLines: 1,
+                              comment.author.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           const SizedBox(height: 1),
                           Text(comment.content),
