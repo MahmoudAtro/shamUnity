@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String _baseUrl =
-      "https://subscriptions-confidential-lease-savings.trycloudflare.com/api";
+      "https://adoption-nano-glucose-gerald.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://subscriptions-confidential-lease-savings.trycloudflare.com";
+      "https://adoption-nano-glucose-gerald.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
 
   /// ----------Outside Application---------
@@ -17,6 +17,7 @@ class ApiConstances {
   static const String forgetPassword = "$_baseUrl/password/email";
   static const String checkOtpPassword = "$_baseUrl/password/code/check";
   static const String restPassword = "$_baseUrl/password/reset";
+
   // Post APIs
   static const String postsUrl = "$_baseUrl/posts";
   static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
@@ -29,6 +30,9 @@ class ApiConstances {
 
   static String userFullProfile(int userId) =>
       '$_baseUrl/users/$userId/full-profile';
+
+  // Search API
+  static const String searchUrl = "$_baseUrl/users/search";
 
   // announcements
   static const String announcementsUrl = "$_baseUrl/announcements";

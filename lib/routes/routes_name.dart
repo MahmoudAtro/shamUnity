@@ -21,4 +21,5 @@ class RoutesNames {
   static const String geminiChat = "/geminiChat";
   static const String sheikhProfile = "/sheikhProfile";
   static const String checkOtp = "/check-otp-password";
+  static const String search = "/search";
 }
