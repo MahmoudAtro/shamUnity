@@ -16,9 +16,10 @@ class ConnectionError extends StatelessWidget {
                 width: 400.w, height: 300.h)),
         Text(
           message,
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.blue[600],
-            fontSize: 16.sp,
+            fontSize: 15.sp,
           ),
         )
       ],

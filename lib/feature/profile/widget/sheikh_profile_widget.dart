@@ -26,13 +26,9 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
     visitedUserProfileCubit.getVisitedUserProfile(widget.userId);
   }
 
-  void _onChatPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('سيتم فتح المحادثة قريباً'),
-        backgroundColor: Colors.green,
-      ),
-    );
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -98,7 +94,7 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         const SizedBox(height: 60),
-
+              
                         // الصورة الشخصية مع حافة زرقاء جميلة
                         Container(
                           decoration: BoxDecoration(
@@ -126,9 +122,9 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                                     as ImageProvider,
                           ),
                         ),
-
+              
                         const SizedBox(height: 16),
-
+              
                         // اسم المستخدم
                         Text(
                           author.name,
@@ -137,7 +133,7 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                               fontWeight: FontWeight.bold,
                               color: Colors.black),
                         ),
-
+              
                         if (author.college != null) ...[
                           Text(
                             author.college!,
@@ -154,16 +150,18 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                         ],
                         Text(
                           author.email,
-                          style:
-                              const TextStyle(fontSize: 18, color: Colors.grey),
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.grey),
                         ),
                         const SizedBox(height: 24),
-
+              
                         // زر المحادثة المصغر مع تنسيق جميل
-                        Container(
+                        SizedBox(
                           width: 200, // تصغير العرض
                           child: ElevatedButton.icon(
-                            onPressed: _onChatPressed,
+                            onPressed: () {
+                              
+                            },
                             icon: const Icon(Icons.chat_bubble_outline,
                                 color: Colors.white, size: 20),
                             label: const Text(
@@ -190,7 +188,7 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                             ),
                           ),
                         ),
-
+              
                         const SizedBox(height: 32),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -213,8 +211,8 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                               labelColor: Colors
                                   .blue, // تغيير لون النص المحدد إلى الأزرق
                               unselectedLabelColor: Colors.black,
-                              labelStyle:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                              labelStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold),
                               tabs: const [
                                 Tab(text: "المنشورات"),
                                 Tab(text: "الملفات"),
@@ -272,7 +270,8 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                                             title: Text(
                                               file.title,
                                               style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
+                                                  fontWeight:
+                                                      FontWeight.bold),
                                             ),
                                             subtitle: Text(
                                               'النوع: ${file.type}',
@@ -285,9 +284,10 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                                                       horizontal: 8,
                                                       vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: file.status == 'approved'
-                                                    ? Colors.green[100]
-                                                    : Colors.orange[100],
+                                                color:
+                                                    file.status == 'approved'
+                                                        ? Colors.green[100]
+                                                        : Colors.orange[100],
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                               ),
@@ -296,10 +296,10 @@ class _SheikhProfileWidgetState extends State<SheikhProfileWidget> {
                                                     ? 'مقبول'
                                                     : 'قيد المراجعة',
                                                 style: TextStyle(
-                                                  color:
-                                                      file.status == 'approved'
-                                                          ? Colors.green[700]
-                                                          : Colors.orange[700],
+                                                  color: file.status ==
+                                                          'approved'
+                                                      ? Colors.green[700]
+                                                      : Colors.orange[700],
                                                   fontSize: 12,
                                                 ),
                                               ),

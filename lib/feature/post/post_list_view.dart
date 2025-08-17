@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
+import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/connection_error.dart';
 import 'package:shamunity/core/widgets/empty_data.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
@@ -29,7 +30,7 @@ class _PostListScreenState extends State<PostListScreen> {
   void initState() {
     super.initState();
     _loadUserData();
-    postCubit = BlocProvider.of<PostCubit>(context);
+    postCubit = PostCubit(getit());
 
     // لا حاجة لاستدعاء listenToNewPosts هنا لأن PostCubit يتعامل معه تلقائياً
     postCubit.fetchPosts();
@@ -44,7 +45,12 @@ class _PostListScreenState extends State<PostListScreen> {
     }
   }
 
-  // يمكنك وضع هذا في أي ملف widgets أو مباشرة في صفحة عرض البوستات
+  @override
+  void dispose() {
+    postCubit.close();
+    super.dispose();
+  }
+
   Widget buildPostShimmer() {
     return Expanded(
       child: ListView.builder(
@@ -146,44 +152,48 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          if (user != null) buildCreatePostCard(context),
-          BlocBuilder<PostCubit, PostCubitState>(
-            builder: (context, state) {
-              if (state is PostCubitLoading) {
-                return buildPostShimmer();
-              } else if (state is PostCubitLoaded) {
-                if (state.posts.isEmpty) {
-                  return const EmptyData(
-                    message: "لا يوجد منشورات لعرضها",
+    return BlocProvider(
+      create: (context) => postCubit,
+      child: Scaffold(
+        body: Column(
+          children: [
+            if (user != null) buildCreatePostCard(context),
+            BlocBuilder<PostCubit, PostCubitState>(
+              builder: (context, state) {
+                if (state is PostCubitLoading || isLoading) {
+                  return buildPostShimmer();
+                } else if (state is PostCubitLoaded) {
+                  if (state.posts.isEmpty) {
+                    return const EmptyData(
+                      message: "لا يوجد منشورات لعرضها",
+                    );
+                  }
+                  final posts = state.posts;
+                  return Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => postCubit.fetchPosts(),
+                      child: ListView.builder(
+                        itemCount: posts.length,
+                        itemBuilder: (context, index) {
+                          return PostWidget(
+                            post: posts[index],
+                            author: posts[index].author,
+                            user: user,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                } else if (state is PostCubitError) {
+                  return ConnectionError(
+                    message: state.message,
                   );
                 }
-                final posts = state.posts;
-                return Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () => postCubit.fetchPosts(),
-                    child: ListView.builder(
-                      itemCount: posts.length,
-                      itemBuilder: (context, index) {
-                        return PostWidget(
-                          post: posts[index],
-                          author: posts[index].author,
-                        );
-                      },
-                    ),
-                  ),
-                );
-              } else if (state is PostCubitError) {
-                return ConnectionError(
-                  message: state.message,
-                );
-              }
-              return const SizedBox();
-            },
-          ),
-        ],
+                return const SizedBox();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,35 +1,40 @@
 class ApiConstances {
-  static const String _baseUrl =
-      "https://subscriptions-confidential-lease-savings.trycloudflare.com/api";
+  static const String baseUrl =
+      "https://compromise-bios-tube-bad.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://subscriptions-confidential-lease-savings.trycloudflare.com";
-  // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
+      "https://compromise-bios-tube-bad.trycloudflare.com";
 
   /// ----------Outside Application---------
 
   /// Auth APIs
-  static const String loginUrl = "$_baseUrl/login";
-  static const String registerUrl = "$_baseUrl/register";
-  static const String verifyOtpUrl = "$_baseUrl/verify-otp";
-  static const String resendOtpUrl = "$_baseUrl/resend-otp";
-  static const String logoutUrl = "$_baseUrl/logout";
-  static const String forgetPassword = "$_baseUrl/password/email";
-  static const String checkOtpPassword = "$_baseUrl/password/code/check";
-  static const String restPassword = "$_baseUrl/password/reset";
+  static const String loginUrl = "$baseUrl/login";
+  static const String registerUrl = "$baseUrl/register";
+  static const String verifyOtpUrl = "$baseUrl/verify-otp";
+  static const String resendOtpUrl = "$baseUrl/resend-otp";
+  static const String logoutUrl = "$baseUrl/logout";
+  static const String forgetPassword = "$baseUrl/password/email";
+  static const String checkOtpPassword = "$baseUrl/password/code/check";
+  static const String restPassword = "$baseUrl/password/reset";
   // Post APIs
-  static const String postsUrl = "$_baseUrl/posts";
-  static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
-  static String postDetails(int postId) => '$_baseUrl/posts/$postId';
-  static String postComments(int postId) => '$_baseUrl/posts/$postId/comments';
-  static String commentDetails(int commentId) =>
-      '$_baseUrl/comments/$commentId';
+  static const String postsUrl = "$baseUrl/posts";
+  static String userPosts(int userId) => '$baseUrl/users/$userId/posts';
+  static String postDetails(int postId) => '$baseUrl/posts/$postId';
+  static String postComments(int postId) => '$baseUrl/posts/$postId/comments';
+  static String commentDetails(int commentId) => '$baseUrl/comments/$commentId';
 
-  static String addLike(int postId) => '$_baseUrl/posts/$postId/like';
+  static String addLike(int postId) => '$baseUrl/posts/$postId/like';
 
   static String userFullProfile(int userId) =>
-      '$_baseUrl/users/$userId/full-profile';
+      '$baseUrl/users/$userId/full-profile';
 
   // announcements
-  static const String announcementsUrl = "$_baseUrl/announcements";
+  static const String announcementsUrl = "$baseUrl/announcements";
+
+  // chats single
+  static const String getConversation = '$baseUrl/conversations';
+  static const String addConversation = '$baseUrl/conversations';
+  static String getChatMessages(int conversationId) =>
+      '$baseUrl/conversations/$conversationId/messages';
+  static String sendMessage(int userId) => '$baseUrl/users/$userId/messages';
 }
