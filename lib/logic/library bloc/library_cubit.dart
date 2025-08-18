@@ -28,7 +28,10 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     result.fold(
       (failure) => emit(UploadFileFailure(failure.message)),
-      (response) => emit(UploadFileSuccess()),
+      (response) {
+        emit(UploadFileSuccess());
+        fetchLibraryInfo();
+      },
     );
   }
 }
