@@ -23,11 +23,11 @@ import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
-import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/conversation_model.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
@@ -44,7 +44,6 @@ class AppRoute {
             providers: [
               BlocProvider(
                   create: (context) => getit<VisitedUserProfileCubit>()),
-              BlocProvider(create: (context) => getit<PostCubit>()),
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
             child: const HomePage(),
@@ -52,10 +51,7 @@ class AppRoute {
         );
       case RoutesNames.createPost:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => getit<PostCubit>(),
-            child: CreatePostScreen(user: route.arguments as UserModel),
-          ),
+          builder: (_) => CreatePostScreen(user: route.arguments as UserModel),
         );
       // case RoutesNames.libraryHome:
       //   return MaterialPageRoute(

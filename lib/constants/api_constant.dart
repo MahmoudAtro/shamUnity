@@ -19,14 +19,13 @@ class ApiConstances {
   static const String restPassword = "$_baseUrl/password/reset";
 
   // Post APIs
-  static const String postsUrl = "$_baseUrl/posts";
-  static String userPosts(int userId) => '$_baseUrl/users/$userId/posts';
-  static String postDetails(int postId) => '$_baseUrl/posts/$postId';
-  static String postComments(int postId) => '$_baseUrl/posts/$postId/comments';
-  static String commentDetails(int commentId) =>
-      '$_baseUrl/comments/$commentId';
+  static const String postsUrl = "$baseUrl/posts";
+  static String userPosts(int userId) => '$baseUrl/users/$userId/posts';
+  static String postDetails(int postId) => '$baseUrl/posts/$postId';
+  static String postComments(int postId) => '$baseUrl/posts/$postId/comments';
+  static String commentDetails(int commentId) => '$baseUrl/comments/$commentId';
 
-  static String addLike(int postId) => '$_baseUrl/posts/$postId/like';
+  static String addLike(int postId) => '$baseUrl/posts/$postId/like';
 
   static String userFullProfile(int userId) =>
       '$_baseUrl/users/$userId/full-profile';

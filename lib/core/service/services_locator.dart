@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shamunity/apis/auth_api.dart';
+import 'package:shamunity/apis/chat/chat.dart';
+import 'package:shamunity/apis/chat/conversation.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/apis/user_profile/api_search.dart';
@@ -63,8 +65,6 @@ void _posts() {
   getit.registerLazySingleton<ApiPost>(
     () => ApiPost(dio: DioFactory.getDio()),
   );
-  // bloc
-  getit.registerLazySingleton(() => PostCubit(getit()));
 }
 
 void _comment() {

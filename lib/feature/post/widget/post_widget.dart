@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/api_constant.dart';
-import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
@@ -17,9 +17,10 @@ import 'package:shamunity/routes/routes_name.dart';
 class PostWidget extends StatefulWidget {
   final Post post;
   final Author author;
+  final UserModel? user; // إضافة متغير user
 
-  const PostWidget({Key? key, required this.post, required this.author})
-      : super(key: key);
+  const PostWidget(
+      {super.key, required this.post, required this.author, this.user});
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -28,7 +29,7 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   late PostCubit postCubit;
   late CommentCubit commentCubit;
-  UserModel? user; // إضافة متغير user
+  bool isLoading = true; // حالة التحميل
 
   @override
   void initState() {
@@ -37,7 +38,6 @@ class _PostWidgetState extends State<PostWidget> {
     // إنشاء CommentCubit جديد لكل PostWidget
     commentCubit = getit<CommentCubit>();
     debugPrint("✅ PostWidget: CommentCubit created for post ${widget.post.id}");
-    _loadUserData(); // تحميل بيانات المستخدم
   }
 
   @override
@@ -46,17 +46,6 @@ class _PostWidgetState extends State<PostWidget> {
         "🔄 PostWidget: Disposing CommentCubit for post ${widget.post.id}");
     commentCubit.close(); // إغلاق CommentCubit
     super.dispose();
-  }
-
-  Future<void> _loadUserData() async {
-    try {
-      user = await SecureSharedPrefHelper.getUser();
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      debugPrint("❌ Error loading user data: $e");
-    }
   }
 
   void _showOptionsMenu(BuildContext context) {
@@ -108,18 +97,7 @@ class _PostWidgetState extends State<PostWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // فحص null للمتغير user
-    if (user == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final isOwner = user!.id.toString() == widget.author.id.toString();
-    print(isOwner);
-    print("=================================");
-    print(widget.author.id.toString());
-    print("=================================");
-
-    print(user!.id.toString());
+    final isOwner = widget.user!.id.toString() == widget.author.id.toString();
 
     return BlocListener<PostCubit, PostCubitState>(
       listenWhen: (previous, current) =>
@@ -135,11 +113,11 @@ class _PostWidgetState extends State<PostWidget> {
             ),
           );
         } else if (state is PostDeletedSuccess) {
-          Navigator.of(context).pop(); // إغلاق dialog التحميل
+          context.pop();
           Toast().success(context, "تم حذف المنشور بنجاح");
-          Navigator.of(context).pop(); // العودة للصفحة السابقة
+          context.pop(); // العودة للصفحة السابقة
         } else if (state is PostDeletedError) {
-          Navigator.of(context).pop(); // إغلاق dialog التحميل
+          context.pop();
           Toast().error(context, state.message);
         }
       },
@@ -184,24 +162,66 @@ class _PostWidgetState extends State<PostWidget> {
                       context.pushNamed(RoutesNames.sheikhProfile,
                           arguments: widget.author.id);
                     },
-                    child: GlobalShimmer(
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          image: widget.author.profilePicture != null
-                              ? DecorationImage(
-                                  image: NetworkImage(
-                                    "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
+                    child: widget.author.profilePicture != null
+                        ? Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.network(
+                                "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return GlobalShimmer(
+                                    child: Container(
+                                      height: 40,
+                                      width: 40,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.grey[300],
+                                    ),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.grey[600],
+                                      size: 24,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    "assets/images/default_avatar.jpg",
                                   ),
                                   fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                      ),
-                    ),
+                                )),
+                          ),
                   ),
                   // ...existing code...
                   title: InkWell(
@@ -225,7 +245,14 @@ class _PostWidgetState extends State<PostWidget> {
                 if (currentPost.content.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Text(currentPost.content),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        currentPost.content,
+                        style: TextStyle(fontSize: 16.sp),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
                   ),
 
                 // Image
