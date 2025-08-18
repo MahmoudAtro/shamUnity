@@ -85,7 +85,7 @@ class YearModel {
 }
 
 class SemesterModel {
-  final String semester;
+  final int semester;
   final List<SubjectModel> subjects;
 
   SemesterModel({
@@ -93,9 +93,36 @@ class SemesterModel {
     required this.subjects,
   });
 
+  // Getter to convert semester number to Arabic text
+  String get semesterDisplayName {
+    try {
+     
+      switch (semester) {
+        case 1:
+          return "الفصل الأول";
+        case 2:
+          return "الفصل الثاني";
+        default:
+          return "الفصل $semester";
+      }
+    } catch (e) {
+      // If parsing fails, return the original value
+      return semester;
+    }
+  }
+
+  // Getter to get semester number as int
+  int get semesterNumber {
+    try {
+      return int.parse(semester);
+    } catch (e) {
+      return 0;
+    }
+  }
+
   factory SemesterModel.fromJson(Map<String, dynamic> json) {
     return SemesterModel(
-      semester: json['semester'],
+      semester: json['semester'] as int,
       subjects: (json['subjects'] as List)
           .map((subject) => SubjectModel.fromJson(subject))
           .toList(),

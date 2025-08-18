@@ -10,10 +10,7 @@ import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
 import 'package:shamunity/apis/library/library_api.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
-import 'package:shamunity/logic/library%20bloc/library_cubit.dart';
-import 'package:shamunity/logic/post bloc/cubit/post_cubit_cubit.dart';
-import 'package:shamunity/logic/register bloc/register_bloc.dart';
-import 'package:shamunity/logic/search bloc/index.dart';
+import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 
 final getit = GetIt.instance;
@@ -25,8 +22,8 @@ class ServicesLocator {
     _posts();
     _comment();
     _sheikhProfile();
-    _search();
-    _library();
+    _conversation();
+    _chats();
   }
 
   void _register() {
@@ -38,51 +35,42 @@ class ServicesLocator {
     getit.registerLazySingleton<RegisterBloc>(() => RegisterBloc(getit()));
   }
 
-  void _library() {
+  void _sheikhProfile() {
     // api
-    getit.registerLazySingleton<LibraryApi>(
-      () => LibraryApi(dio: DioFactory.getDio()),
+    getit.registerLazySingleton<ApiVisitedUserProfile>(
+      () => ApiVisitedUserProfile(dio: DioFactory.getDio()),
     );
-    // cubit
-    getit.registerFactory<LibraryCubit>(
-      () => LibraryCubit(getit()),
+    // bloc
+    getit.registerFactory<VisitedUserProfileCubit>(
+        () => VisitedUserProfileCubit(getit()));
+  }
+
+  void _posts() {
+    // api
+    getit.registerLazySingleton<ApiPost>(
+      () => ApiPost(dio: DioFactory.getDio()),
     );
   }
-}
 
-void _sheikhProfile() {
-  // api
-  getit.registerLazySingleton<ApiVisitedUserProfile>(
-    () => ApiVisitedUserProfile(dio: DioFactory.getDio()),
-  );
-  // bloc
-  getit.registerFactory<VisitedUserProfileCubit>(
-      () => VisitedUserProfileCubit(getit()));
-}
+  void _comment() {
+    // api
+    getit.registerLazySingleton<ApiComment>(
+      () => ApiComment(dio: DioFactory.getDio()),
+    );
+    // bloc - تغيير إلى Factory لإنشاء نسخة جديدة لكل استخدام
+    getit.registerFactory(() => CommentCubit(getit()));
+  }
 
-void _posts() {
-  // api
-  getit.registerLazySingleton<ApiPost>(
-    () => ApiPost(dio: DioFactory.getDio()),
-  );
-}
+  void _conversation() {
+    getit.registerLazySingleton<Conversation>(
+        () => Conversation(dio: DioFactory.getDio()));
+    getit.registerLazySingleton<ConversationPusher>(() => ConversationPusher());
+  }
 
-void _comment() {
-  // api
-  getit.registerLazySingleton<ApiComment>(
-    () => ApiComment(dio: DioFactory.getDio()),
-  );
-  // bloc - تغيير إلى Factory لإنشاء نسخة جديدة لكل استخدام
-  getit.registerFactory(() => CommentCubit(getit()));
-}
-
-void _search() {
-  // api
-  getit.registerLazySingleton<ApiSearch>(
-    () => ApiSearch(dio: DioFactory.getDio()),
-  );
-  // bloc
-  getit.registerFactory(() => SearchCubit(getit()));
+  void _chats() {
+    getit.registerLazySingleton<Chat>(() => Chat(dio: DioFactory.getDio()));
+    // getit.registerLazySingleton<ChatMessagePusher>(() => ChatMessagePusher());
+  }
 }
 
 class SingleInstanceService {

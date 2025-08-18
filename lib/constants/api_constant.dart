@@ -1,22 +1,21 @@
 class ApiConstances {
-  static const String _baseUrl =
-      "https://prevention-pregnancy-hostels-injuries.trycloudflare.com/api";
+  static const String baseUrl =
+      "https://compromise-bios-tube-bad.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://prevention-pregnancy-hostels-injuries.trycloudflare.com";
-  // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
+      "https://compromise-bios-tube-bad.trycloudflare.com";
 
   /// ----------Outside Application---------
 
   /// Auth APIs
-  static const String loginUrl = "$_baseUrl/login";
-  static const String registerUrl = "$_baseUrl/register";
-  static const String verifyOtpUrl = "$_baseUrl/verify-otp";
-  static const String resendOtpUrl = "$_baseUrl/resend-otp";
-  static const String logoutUrl = "$_baseUrl/logout";
-  static const String forgetPassword = "$_baseUrl/password/email";
-  static const String checkOtpPassword = "$_baseUrl/password/code/check";
-  static const String restPassword = "$_baseUrl/password/reset";
+  static const String loginUrl = "$baseUrl/login";
+  static const String registerUrl = "$baseUrl/register";
+  static const String verifyOtpUrl = "$baseUrl/verify-otp";
+  static const String resendOtpUrl = "$baseUrl/resend-otp";
+  static const String logoutUrl = "$baseUrl/logout";
+  static const String forgetPassword = "$baseUrl/password/email";
+  static const String checkOtpPassword = "$baseUrl/password/code/check";
+  static const String restPassword = "$baseUrl/password/reset";
 
   // Post APIs
   static const String postsUrl = "$baseUrl/posts";
@@ -28,17 +27,21 @@ class ApiConstances {
   static String addLike(int postId) => '$baseUrl/posts/$postId/like';
 
   static String userFullProfile(int userId) =>
-      '$_baseUrl/users/$userId/full-profile';
+      '$baseUrl/users/$userId/full-profile';
 
   // Search API
-  static const String searchUrl = "$_baseUrl/users/search";
+  static const String searchUrl = "$baseUrl/users/search";
 
   // Library API
-  static const String bookRequestsUrl = "$_baseUrl/book-requests";
+  static const String bookRequestsUrl = "$baseUrl/book-requests";
 
   // announcements
-  static const String announcementsUrl = "$_baseUrl/announcements";
+  static const String announcementsUrl = "$baseUrl/announcements";
 
-  // Colleges API
-  static const String libraryUrl = "$_baseUrl/library/tree";
+  // chats single
+  static const String getConversation = '$baseUrl/conversations';
+  static const String addConversation = '$baseUrl/conversations';
+  static String getChatMessages(int conversationId) =>
+      '$baseUrl/conversations/$conversationId/messages';
+  static String sendMessage(int userId) => '$baseUrl/users/$userId/messages';
 }

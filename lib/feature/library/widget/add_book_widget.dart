@@ -337,7 +337,7 @@ class _AddBookSheetState extends State<AddBookSheet> {
             title: 'اختر الفصل',
             value: selectedSemester,
             items: selectedYear!.semesters,
-            getLabel: (SemesterModel s) => s.semester.toString(),
+            getLabel: (SemesterModel s) => s.semesterDisplayName,
             onChanged: (value) {
               setState(() {
                 selectedSemester = value;
