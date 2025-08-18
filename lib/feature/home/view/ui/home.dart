@@ -7,7 +7,7 @@ import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/search/index.dart';
+import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
                 child: FloatingActionButton(
+                  heroTag: 'home_gemini_chat_button', // إضافة hero tag فريد
                   backgroundColor: Colors.blueAccent,
                   elevation: 4,
                   onPressed: () {
@@ -51,22 +52,18 @@ class _HomePageState extends State<HomePage> {
               automaticallyImplyLeading: false,
               backgroundColor: Colors.blueAccent,
               elevation: 1,
+              leading: IconButton(
+                icon: const Icon(Icons.search, color: Colors.white, size: 28),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => const SearchScreen()),
+                  );
+                },
+              ),
               actions: [
                 // أيقونة البحث
-                IconButton(
-                  icon: const Icon(
-                    Icons.search,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const SearchScreen(),
-                      ),
-                    );
-                  },
-                ),
+
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.0.w),
                   child: const Text(
@@ -82,50 +79,39 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            body: Column(
-              children: [
-                Container(
-                  color: Colors.white,
-                  child: const TabBar(
-                    indicatorColor: Colors.blue,
-                    unselectedLabelColor: Colors.grey,
-                    labelColor: Colors.blue,
-                    tabs: [
-                      Tab(icon: Icon(Icons.home, size: 30)),
-                      Tab(icon: Icon(Icons.people_outline, size: 30)),
-                      Tab(icon: Icon(Icons.notifications_active, size: 30)),
-                      Tab(icon: Icon(Icons.menu_book_outlined, size: 30)),
-                      Tab(icon: Icon(Icons.announcement, size: 30)),
-                      Tab(icon: Icon(Icons.menu, size: 30)),
-                    ],
-                  ),
+            body: Column(children: [
+              Container(
+                color: Colors.white,
+                child: const TabBar(
+                  indicatorColor: Colors.blue,
+                  unselectedLabelColor: Colors.grey,
+                  labelColor: Colors.blue,
+                  tabs: [
+                    Tab(icon: Icon(Icons.home, size: 30)),
+                    Tab(icon: Icon(Icons.people_outline, size: 30)),
+                    Tab(icon: Icon(Icons.notifications_active, size: 30)),
+                    Tab(icon: Icon(Icons.menu_book_outlined, size: 30)),
+                    Tab(icon: Icon(Icons.announcement, size: 30)),
+                    Tab(icon: Icon(Icons.menu, size: 30)),
+                  ],
                 ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      PostListScreen(),
-                      const UsersGroupsScreen(),
-                      const NotificationsScreen(),
-                      const LibraryHomeScreen(),
-                      const AnnouncementsDemo(),
-                      const MenuScreen(),
-                    ],
-                  ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    PostListScreen(),
+                    UsersGroupsScreen(),
+                    NotificationsScreen(),
+                    LibraryHomeScreen(),
+                    AnnouncementsDemo(),
+                    MenuScreen(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ]),
           ),
         ),
       ),
     );
-  }
-}
-
-class LibraryBooksTab extends StatelessWidget {
-  const LibraryBooksTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('المكتبة'));
   }
 }

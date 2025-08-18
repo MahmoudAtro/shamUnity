@@ -6,9 +6,11 @@ import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/apis/user_profile/api_search.dart';
 import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
+import 'package:shamunity/apis/library/library_api.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
-import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
-import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
+import 'package:shamunity/logic/library%20bloc/library_cubit.dart';
+import 'package:shamunity/logic/post bloc/cubit/post_cubit_cubit.dart';
+import 'package:shamunity/logic/register bloc/register_bloc.dart';
 import 'package:shamunity/logic/search bloc/index.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 
@@ -22,6 +24,7 @@ class ServicesLocator {
     _comment();
     _sheikhProfile();
     _search();
+    _library();
   }
 
   void _register() {
@@ -31,6 +34,17 @@ class ServicesLocator {
     );
     // bloc
     getit.registerLazySingleton<RegisterBloc>(() => RegisterBloc(getit()));
+  }
+
+  void _library() {
+    // api
+    getit.registerLazySingleton<LibraryApi>(
+      () => LibraryApi(dio: DioFactory.getDio()),
+    );
+    // cubit
+    getit.registerFactory<LibraryCubit>(
+      () => LibraryCubit(getit()),
+    );
   }
 }
 

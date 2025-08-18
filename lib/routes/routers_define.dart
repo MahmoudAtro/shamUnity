@@ -57,10 +57,11 @@ class AppRoute {
             child: CreatePostScreen(user: route.arguments as UserModel),
           ),
         );
-      case RoutesNames.libraryHome:
-        return MaterialPageRoute(
-          builder: (_) => const LibraryHomeScreen(),
-        );
+      // case RoutesNames.libraryHome:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const LibraryHomeScreen(),
+      //   );
+
       case RoutesNames.profile:
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
@@ -70,10 +71,7 @@ class AppRoute {
             child: const ProfileScreen(),
           ),
         );
-      case RoutesNames.libraryBooksTab:
-        return MaterialPageRoute(
-          builder: (_) => const LibraryBooksTab(),
-        );
+
       case RoutesNames.editPost:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -120,19 +118,25 @@ class AppRoute {
       case RoutesNames.academicYearsGrid:
         return MaterialPageRoute(
           builder: (_) => AcademicYearsGridScreen(
-            years: route.arguments as List<AcademicYearModel>,
+            years: route.arguments as List<YearModel>,
+            departmentName: route.arguments as String,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.departmentDetails:
         return MaterialPageRoute(
           builder: (_) => DepartmentsGridScreen(
             departments: route.arguments as List<DepartmentModel>,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.subjectsGrid:
         return MaterialPageRoute(
           builder: (_) => SubjectsGridScreen(
-            subjectModel: route.arguments as List<SubjectModel>,
+            semesters: route.arguments as List<SemesterModel>,
+            yearNumber: route.arguments as int,
+            departmentName: route.arguments as String,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.notifications:

@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String _baseUrl =
-      "https://adoption-nano-glucose-gerald.trycloudflare.com/api";
+      "https://prevention-pregnancy-hostels-injuries.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://adoption-nano-glucose-gerald.trycloudflare.com";
+      "https://prevention-pregnancy-hostels-injuries.trycloudflare.com";
   // static const String imageUrl = "$_baseUrl/Images/single?imagePath";
 
   /// ----------Outside Application---------
@@ -34,6 +34,12 @@ class ApiConstances {
   // Search API
   static const String searchUrl = "$_baseUrl/users/search";
 
+  // Library API
+  static const String bookRequestsUrl = "$_baseUrl/book-requests";
+
   // announcements
   static const String announcementsUrl = "$_baseUrl/announcements";
+
+  // Colleges API
+  static const String libraryUrl = "$_baseUrl/library/tree";
 }
