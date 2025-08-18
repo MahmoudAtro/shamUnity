@@ -84,15 +84,15 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                Expanded(
+                const Expanded(
                   child: TabBarView(
                     children: [
                       PostListScreen(),
-                      const UsersGroupsScreen(),
-                      const NotificationsScreen(),
-                      const LibraryHomeScreen(),
-                      const AnnouncementsDemo(),
-                      const MenuScreen(),
+                      UsersGroupsScreen(),
+                      NotificationsScreen(),
+                      LibraryHomeScreen(),
+                      AnnouncementsDemo(),
+                      MenuScreen(),
                     ],
                   ),
                 ),

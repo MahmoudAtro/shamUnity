@@ -189,7 +189,6 @@ class PostCubit extends Cubit<PostCubitState> {
   Future<void> fetchPosts() async {
     debugPrint("🔄 Fetching posts from server");
     emit(PostCubitLoading());
-
     final result = await apiPost.getPosts();
     result.fold(
       (failure) => emit(PostCubitError(failure.message)),

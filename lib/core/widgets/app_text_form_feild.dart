@@ -13,6 +13,7 @@ class AppTextFormField extends StatelessWidget {
   final TextStyle? inputTextStyle;
   final TextStyle? hintStyle;
   final Widget? prefixIcon;
+  final int? minlines;
   final String hintText;
   final bool? isObscureText;
   final bool? readOnly;
@@ -29,6 +30,7 @@ class AppTextFormField extends StatelessWidget {
   const AppTextFormField(
       {super.key,
       this.maxLines,
+      this.minlines,
       this.keyboardType,
       this.suffix,
       this.contentPadding,
@@ -56,6 +58,7 @@ class AppTextFormField extends StatelessWidget {
     return TextFormField(
       readOnly: readOnly ?? false,
       maxLines: maxLines ?? 1,
+      minLines: minlines ?? 1,
       keyboardType: keyboardType,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       controller: controller,
