@@ -7,6 +7,7 @@ import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
+import 'package:shamunity/feature/search/index.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,6 +52,21 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.blueAccent,
               elevation: 1,
               actions: [
+                // أيقونة البحث
+                IconButton(
+                  icon: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const SearchScreen(),
+                      ),
+                    );
+                  },
+                ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.0.w),
                   child: const Text(

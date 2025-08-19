@@ -5,10 +5,12 @@ import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/apis/chat/conversation.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
+import 'package:shamunity/apis/user_profile/api_search.dart';
 import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
+import 'package:shamunity/logic/search bloc/index.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 
 final getit = GetIt.instance;
@@ -22,6 +24,7 @@ class ServicesLocator {
     _sheikhProfile();
     _conversation();
     _chats();
+    _search();
   }
 
   void _register() {
@@ -40,7 +43,7 @@ void _sheikhProfile() {
     () => ApiVisitedUserProfile(dio: DioFactory.getDio()),
   );
   // bloc
-  getit.registerLazySingleton<VisitedUserProfileCubit>(
+  getit.registerFactory<VisitedUserProfileCubit>(
       () => VisitedUserProfileCubit(getit()));
 }
 
@@ -69,6 +72,14 @@ void _conversation() {
 void _chats() {
   getit.registerLazySingleton<Chat>(() => Chat(dio: DioFactory.getDio()));
   // getit.registerLazySingleton<ChatMessagePusher>(() => ChatMessagePusher());
+}
+void _search() {
+  // api
+  getit.registerLazySingleton<ApiSearch>(
+    () => ApiSearch(dio: DioFactory.getDio()),
+  );
+  // bloc
+  getit.registerFactory(() => SearchCubit(getit()));
 }
 
 class SingleInstanceService {

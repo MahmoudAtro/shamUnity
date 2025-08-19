@@ -22,4 +22,5 @@ class RoutesNames {
   static const String sheikhProfile = "/sheikhProfile";
   static const String checkOtp = "/check-otp-password";
   static const String userChatScreen = "/userChatScreen";
+  static const String search = "/search";
 }

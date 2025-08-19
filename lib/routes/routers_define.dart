@@ -22,8 +22,10 @@ import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
+import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
+import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 import 'package:shamunity/models/college_model.dart';
 import 'package:shamunity/models/conversation_model.dart';
@@ -72,6 +74,15 @@ class AppRoute {
       case RoutesNames.editPost:
         return MaterialPageRoute(
           builder: (_) => EditPostScreen(post: route.arguments as Post),
+        );
+      case RoutesNames.search:
+        return MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => getit<SearchCubit>()),
+            ],
+            child: const SearchScreen(),
+          ),
         );
       case RoutesNames.restPassword:
         return MaterialPageRoute(builder: (_) {

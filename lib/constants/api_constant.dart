@@ -5,6 +5,7 @@ class ApiConstances {
   static const String baseUrlImg =
       "https://compromise-bios-tube-bad.trycloudflare.com";
 
+
   /// ----------Outside Application---------
 
   /// Auth APIs
@@ -16,6 +17,7 @@ class ApiConstances {
   static const String forgetPassword = "$baseUrl/password/email";
   static const String checkOtpPassword = "$baseUrl/password/code/check";
   static const String restPassword = "$baseUrl/password/reset";
+
   // Post APIs
   static const String postsUrl = "$baseUrl/posts";
   static String userPosts(int userId) => '$baseUrl/users/$userId/posts';
@@ -27,6 +29,9 @@ class ApiConstances {
 
   static String userFullProfile(int userId) =>
       '$baseUrl/users/$userId/full-profile';
+
+  // Search API
+  static const String searchUrl = "$baseUrl/users/search";
 
   // announcements
   static const String announcementsUrl = "$baseUrl/announcements";
