@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String baseUrl =
-      "https://compromise-bios-tube-bad.trycloudflare.com/api";
+      "https://melbourne-likely-helicopter-nikon.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://compromise-bios-tube-bad.trycloudflare.com";
+      "https://melbourne-likely-helicopter-nikon.trycloudflare.com";
 
   /// ----------Outside Application---------
 
@@ -35,7 +35,7 @@ class ApiConstances {
   // Library API
   static const String bookRequestsUrl = "$baseUrl/book-requests";
 
-  static const String libraryUrl = "$baseUrl/library";
+  static const String libraryUrl = "$baseUrl/library/tree";
 
   // announcements
   static const String announcementsUrl = "$baseUrl/announcements";

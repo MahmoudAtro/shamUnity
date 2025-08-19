@@ -8,15 +8,20 @@ import 'video_player_screen.dart';
 /// بطاقة الإعلان التي تعرض المحتوى والملفات المرفقة
 /// تدعم أنواع مختلفة من الملفات:
 /// - الصور: jpg, jpeg, png, gif, webp, bmp, tiff
-/// - الفيديوهات: mp4, avi, mov, wmv, flv, mkv, webm, 3gp, m4v
+/// - الفيديوهات: mp4, avi, mov, wmv, flv, mkv, webm, 3gp, m4v (مشاهدة مباشرة)
 /// - المستندات: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, rtf
 /// - الأرشيف: zip, rar, 7z
 /// - ملفات أخرى: يتم فتحها في التطبيق الخارجي
 
-class AnnouncementCard extends StatelessWidget {
+class AnnouncementCard extends StatefulWidget {
   final Announcement announcement;
   const AnnouncementCard({super.key, required this.announcement});
 
+  @override
+  State<AnnouncementCard> createState() => _AnnouncementCardState();
+}
+
+class _AnnouncementCardState extends State<AnnouncementCard> {
   // دالة مساعدة للتحقق من نوع الملف
   bool _isVideoFile(String fileType) {
     final cleanType = fileType.toLowerCase().replaceAll('.', '');
@@ -88,38 +93,17 @@ class AnnouncementCard extends StatelessWidget {
     );
   }
 
-  // دالة لفتح الفيديو داخل التطبيق
+  // دالة لفتح الفيديو مباشرة بدون تحميل
   void _openVideo(BuildContext context, String videoUrl) {
-    try {
-      final fullVideoUrl = '${ApiConstances.baseUrlImg}$videoUrl';
-
-      // التحقق من صحة الرابط
-      if (fullVideoUrl.isEmpty || !fullVideoUrl.startsWith('http')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('رابط الفيديو غير صحيح'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(
-            videoUrl: fullVideoUrl,
-          ),
+    // فتح الفيديو مباشرة من الرابط
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoPlayerScreen(
+          videoUrl: '${ApiConstances.baseUrlImg}$videoUrl',
         ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('خطأ في فتح الفيديو: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+      ),
+    );
   }
 
   // دالة لفتح ملف PDF
@@ -745,16 +729,16 @@ class AnnouncementCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // الملف في الأعلى - يدعم جميع أنواع الملفات
-          if (announcement.fileUrl != null)
-            _buildFilePreview(
-                context, announcement.fileType!, announcement.fileUrl!),
+          if (widget.announcement.fileUrl != null)
+            _buildFilePreview(context, widget.announcement.fileType!,
+                widget.announcement.fileUrl!),
 
           // النص تحت الملف
-          if (announcement.content != null)
+          if (widget.announcement.content != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(
-                announcement.content!,
+                widget.announcement.content!,
                 style: const TextStyle(
                   fontSize: 16,
                   height: 1.6,
@@ -783,7 +767,7 @@ class AnnouncementCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        announcement.createdAt,
+                        widget.announcement.createdAt,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],

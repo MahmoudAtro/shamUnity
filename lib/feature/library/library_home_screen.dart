@@ -53,43 +53,151 @@ class _LibraryHomeViewState extends State<LibraryHomeView> {
       body: BlocBuilder<LibraryCubit, LibraryState>(
         builder: (context, state) {
           if (state is LibraryInitial) {
-            return const Center(
-              child: Text('اضغط على زر التحديث لجلب البيانات'),
-            );
+            return _buildInitialView(context);
           }
 
           if (state is LibraryLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return _buildLoadingView();
           }
 
           if (state is LibraryFailure) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('خطأ: ${state.message}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<LibraryCubit>().fetchLibraryInfo();
-                    },
-                    child: const Text('إعادة المحاولة'),
-                  ),
-                ],
-              ),
-            );
+            return _buildFailureView(context, state.message);
           }
 
           if (state is LibrarySuccess) {
-            return LibrariesGridScreen(libraries: state.libraries);
+            return _buildSuccessView(context, state.libraries);
           }
 
           return const SizedBox.shrink();
         },
       ),
     );
+  }
+
+  Widget _buildInitialView(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.library_books,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'اضغط على زر التحديث لجلب البيانات',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _refreshLibrary(context),
+            icon: const Icon(Icons.refresh),
+            label: const Text('تحديث البيانات'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingView() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('جاري تحميل البيانات...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFailureView(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 80,
+            color: Colors.red[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'خطأ: $message',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.red[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _refreshLibrary(context),
+            icon: const Icon(Icons.refresh),
+            label: const Text('إعادة المحاولة'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessView(BuildContext context, List<LibraryModel> libraries) {
+    return RefreshIndicator(
+      onRefresh: () => _refreshLibrary(context),
+      child: LibrariesGridScreen(libraries: libraries),
+    );
+  }
+
+  Future<void> _refreshLibrary(BuildContext context) async {
+    try {
+      // إظهار مؤشر التحميل
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('جاري تحديث البيانات...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // تحديث البيانات
+      await context.read<LibraryCubit>().fetchLibraryInfo();
+
+      // رسالة نجاح
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم تحديث البيانات بنجاح'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في تحديث البيانات: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _showAddBookSheet(BuildContext context) {

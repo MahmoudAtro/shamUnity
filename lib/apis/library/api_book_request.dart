@@ -57,7 +57,13 @@ class ApiBookRequest {
 
   Future<Either<Failure, List<BookRequestData>>> getBookRequests() async {
     try {
-      final response = await _dio.get(ApiConstances.bookRequestsUrl);
+      final response = await _dio.get(
+        ApiConstances.bookRequestsUrl,
+        options: Options(headers: {
+          'Authorization':
+              'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+        }),
+      );
 
       if (response.data['success'] == false) {
         return left(ServerFailure(

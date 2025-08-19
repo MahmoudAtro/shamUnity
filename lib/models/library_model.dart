@@ -1,3 +1,5 @@
+import 'package:shamunity/constants/api_constant.dart';
+
 class LibraryModel {
   final int id;
   final String name;
@@ -130,16 +132,22 @@ class SemesterModel {
 class SubjectModel {
   final int id;
   final String name;
+  final List<MaterialModel> materials;
 
   SubjectModel({
     required this.id,
     required this.name,
+    required this.materials,
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
     return SubjectModel(
       id: json['id'],
       name: json['name'],
+      materials: (json['materials'] as List?)
+              ?.map((material) => MaterialModel.fromJson(material))
+              .toList() ??
+          [],
     );
   }
 
@@ -147,6 +155,68 @@ class SubjectModel {
     return {
       'id': id,
       'name': name,
+      'materials': materials.map((material) => material.toJson()).toList(),
     };
   }
+}
+
+class MaterialModel {
+  final int id;
+  final String title;
+  final String filePath;
+  final String status;
+  final int userId;
+  final int courseId;
+  final int processedByUserId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  MaterialModel({
+    required this.id,
+    required this.title,
+    required this.filePath,
+    required this.status,
+    required this.userId,
+    required this.courseId,
+    required this.processedByUserId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory MaterialModel.fromJson(Map<String, dynamic> json) {
+    return MaterialModel(
+      id: json['id'],
+      title: json['title'],
+      filePath: ApiConstances.baseUrlImg + json['file_url'],
+      status: json['status'],
+      userId: json['user_id'],
+      courseId: json['course_id'],
+      processedByUserId: json['processed_by_user_id'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'file_path': filePath,
+      'status': status,
+      'user_id': userId,
+      'course_id': courseId,
+      'processed_by_user_id': processedByUserId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  // Helper getter to check if material is approved
+  bool get isApproved => status == 'approved';
+
+  // Helper getter to check if material is pending
+  bool get isPending => status == 'pending';
+
+  // Helper getter to check if material is rejected
+  bool get isRejected => status == 'rejected';
 }
