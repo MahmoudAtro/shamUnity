@@ -5,6 +5,7 @@ import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/apis/chat/conversation.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
+import 'package:shamunity/apis/suggestion_api.dart';
 import 'package:shamunity/apis/user_profile/api_search.dart';
 import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
@@ -25,6 +26,7 @@ class ServicesLocator {
     _conversation();
     _chats();
     _search();
+    _suggestion();
   }
 
   void _register() {
@@ -35,6 +37,12 @@ class ServicesLocator {
     // bloc
     getit.registerLazySingleton<RegisterBloc>(() => RegisterBloc(getit()));
   }
+}
+
+void _suggestion(){
+  getit.registerLazySingleton<SuggestionApi>(
+    () => SuggestionApi(dio: DioFactory.getDio()),
+  );
 }
 
 void _sheikhProfile() {

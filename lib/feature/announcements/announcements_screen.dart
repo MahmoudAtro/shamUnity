@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shamunity/core/widgets/connection_error.dart';
+import 'package:shamunity/core/widgets/empty_data.dart';
 import 'package:shamunity/core/widgets/fade_in_up.dart';
 import 'package:shamunity/feature/announcements/widgets/announcement_card.dart';
 import 'package:shamunity/logic/announcements bloc/cubit/announcements_cubit.dart';
@@ -17,16 +19,6 @@ class AnnouncementsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightBackgroundColor,
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      //   title: const Text(
-      //     'قرارات الجامعة',
-      //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      //   ),
-      //   backgroundColor: Colors.blue,
-      //   elevation: 2,
-      //   centerTitle: true,
-      // ),
       body: BlocBuilder<AnnouncementsCubit, AnnouncementsState>(
         builder: (context, state) {
           if (state is AnnouncementsLoading || state is AnnouncementsInitial) {
@@ -34,29 +26,10 @@ class AnnouncementsScreen extends StatelessWidget {
               child: CircularProgressIndicator(color: accentColor),
             );
           } else if (state is AnnouncementsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('حدث خطأ: ${state.message}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<AnnouncementsCubit>().fetchAnnouncements();
-                    },
-                    child: const Text('إعادة المحاولة'),
-                  ),
-                ],
-              ),
-            );
+            return ConnectionError(message: state.message);
           } else if (state is AnnouncementsLoaded) {
             if (state.announcements.isEmpty) {
-              return const Center(
-                child: Text(
-                  'لا توجد قرارات حاليًا',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              );
+              return const EmptyData(message: "لا توجد قرارات حاليا");
             }
             final announcements = state.announcements;
             return RefreshIndicator(

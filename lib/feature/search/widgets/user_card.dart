@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/routes/extension.dart';
@@ -33,7 +34,7 @@ class UserCard extends StatelessWidget {
         leading: CircleAvatar(
           radius: 25.r,
           backgroundImage: user.profilePicture != null
-              ? NetworkImage(user.profilePicture!)
+              ? NetworkImage("${ApiConstances.baseUrlImg}${user.profilePicture!}")
               : const AssetImage('assets/images/default_avatar.jpg')
                   as ImageProvider,
         ),

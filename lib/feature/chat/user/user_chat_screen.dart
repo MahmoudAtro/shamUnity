@@ -1,26 +1,22 @@
 import 'dart:io';
-
-import 'package:audioplayers/audioplayers.dart';
-import 'package:chat_bubbles/bubbles/bubble_normal_image.dart';
-import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/service/services_locator.dart';
+import 'package:shamunity/core/theming/styles.dart';
 import 'package:shamunity/core/widgets/app_text_form_feild.dart';
 import 'package:shamunity/core/widgets/connection_error.dart';
 import 'package:shamunity/core/widgets/empty_data.dart';
+import 'package:shamunity/feature/chat/user/chat_bubble_user.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_bloc.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_event.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_state.dart';
-import 'package:shamunity/models/chat_message_model.dart';
 import 'package:shamunity/models/conversation_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:record/record.dart';
@@ -42,22 +38,29 @@ class _UserChatScreenState extends State<UserChatScreen> {
   bool _hasText = false;
   File? image;
   final record = AudioRecorder();
-  late AudioPlayer audioPlayer;
   bool isRecord = false;
   int messageCount = 0;
+  int currentConversation = 0;
+  late bool isNewChat;
 
   @override
   void initState() {
     chatBloc = ChatBloc(
       chat: getit(),
       pusherService: ChatMessagePusher(),
-    )..add(FetchChat(conversationId: widget.conversation.id));
+    );
+    if (widget.conversation.id != 0) {
+      chatBloc.add(FetchChat(conversationId: widget.conversation.id));
+    } else {
+      chatBloc
+          .add(CheckConversation(userId: widget.conversation.participant.id));
+    }
+    isNewChat = widget.conversation.id == 0;
     _controller.addListener(() {
       setState(() {
         _hasText = _controller.text.trim().isNotEmpty;
       });
     });
-    audioPlayer = AudioPlayer();
     super.initState();
     _loadUserId();
   }
@@ -126,9 +129,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                 ),
                 horizontalspace(60),
                 InkWell(
-                  onTap: () {
-                    uploadfromcamera(context);
-                  },
+                  onTap: () {},
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -175,6 +176,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                           SendMessage(
                             userId: widget.conversation.participant.id,
                             type: "image",
+                            isNewChat: isNewChat,
                             attachment: image,
                           ),
                         );
@@ -261,22 +263,6 @@ class _UserChatScreenState extends State<UserChatScreen> {
     return File(pathRecord.toString());
   }
 
-  play(urlvoice) async {
-    try {
-      audioPlayer.play(UrlSource(urlvoice));
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  stop() async {
-    try {
-      await audioPlayer.stop();
-    } catch (e) {
-      print(e);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -323,7 +309,11 @@ class _UserChatScreenState extends State<UserChatScreen> {
                 children: [
                   IconButton(icon: const Icon(Icons.call), onPressed: () {}),
                   PopupMenuButton<String>(
-                    onSelected: (String value) {},
+                    onSelected: (String value) {
+                      if (value == "delete") {
+                        deleteChannel(context);
+                      }
+                    },
                     itemBuilder: (BuildContext context) {
                       return ['refresh', 'delete'].map((String choice) {
                         return PopupMenuItem<String>(
@@ -348,36 +338,47 @@ class _UserChatScreenState extends State<UserChatScreen> {
             child: Column(
               children: [
                 Expanded(
-                  child: BlocBuilder<ChatBloc, ChatState>(
-                      builder: (context, state) {
-                    if (state is ChatLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is ChatError) {
-                      return ConnectionError(message: state.message);
-                    } else if (state is ChatLoaded) {
-                      if (state.chats.isEmpty) {
-                        return const EmptyData(message: 'المحادثة فارغة');
+                  child: BlocListener<ChatBloc, ChatState>(
+                    listener: (context, state) {
+                      if (state is ChatCheckConversation) {
+                        currentConversation = state.conversationId;
                       }
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _scrollToBottom();
-                      });
-                      messageCount = state.chats.length;
-                      return ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        itemCount: state.chats.length,
-                        itemBuilder: (context, index) {
-                          final message = state.chats[index];
-                          final isMe = message.sender.id == _currentUserId;
-                          return MessageBubble(
-                            message: message,
-                            isMe: isMe,
-                          );
-                        },
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
+                    },
+                    child: BlocBuilder<ChatBloc, ChatState>(
+                        builder: (context, state) {
+                      if (state is ChatLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is ChatError) {
+                        return ConnectionError(message: state.message);
+                      } else if (state is ChatLoaded) {
+                        isNewChat = false;
+                        if (state.chats.isEmpty) {
+                          return const EmptyData(message: 'المحادثة فارغة');
+                        }
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _scrollToBottom();
+                        });
+                        messageCount = state.chats.length;
+                        return ListView.builder(
+                          controller: _scrollController,
+                          reverse: true,
+                          itemCount: state.chats.length,
+                          itemBuilder: (context, index) {
+                            final message = state.chats[index];
+                            final isMe = message.sender.id == _currentUserId;
+                            return MessageBubble(
+                              message: message,
+                              isMe: isMe,
+                              conversationId: widget.conversation.id == 0
+                                  ? currentConversation
+                                  : widget.conversation.id,
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                  ),
                 ),
                 _buildMessageComposer(),
               ],
@@ -449,6 +450,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                               SendMessage(
                                   userId: widget.conversation.participant.id,
                                   content: _controller.text,
+                                  isNewChat: isNewChat,
                                   type: "text"),
                             );
                             _controller.clear();
@@ -465,6 +467,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                               chatBloc.add(
                                 SendMessage(
                                   userId: widget.conversation.participant.id,
+                                  isNewChat: isNewChat,
                                   attachment: audio,
                                   type: "audio",
                                 ),
@@ -483,100 +486,56 @@ class _UserChatScreenState extends State<UserChatScreen> {
       },
     );
   }
-}
 
-class MessageBubble extends StatelessWidget {
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-  });
-
-  final ChatMessageModel message;
-  final bool isMe;
-
-  @override
-  Widget build(BuildContext context) {
-    return message.type == "text" ? buildTextMessage() : buildImageMessage();
-  }
-
-  Widget buildTextMessage() {
-    return isMe
-        ? Slidable(
-            endActionPane: ActionPane(
-              motion: const StretchMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) async {
-                    // await chat.DeleteMessage(snapshot.data![index]["id"].toString());
-                  },
-                  icon: Icons.delete,
-                  backgroundColor: Colors.red,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ],
+  deleteChannel(context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(
+          Icons.delete,
+          color: Colors.red,
+          size: 32,
+        ),
+        content: Text(
+          textAlign: TextAlign.center,
+          style: TextStyles.font15Regular.copyWith(fontWeight: FontWeight.bold),
+          "هل انت متأكد من حذف الدردشة ؟ \n  لن تتمكن من استرجاع الدردشات بعد ذلك ",
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () {
+              context.pop();
+            },
+            child: Text(
+              'الغاء',
+              style: isDarkMode
+                  ? TextStyles.font14Medium
+                  : TextStyles.font14Medium.copyWith(color: Colors.black),
             ),
-            child: BubbleSpecialThree(
-              text: message.content,
-              color: const Color(0xFF1B97F3),
-              tail: true,
-              sent: true,
-              // seen: snapshot.data![index]["is_read"] ? true : false,
-              isSender: isMe,
-              textStyle: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(
+            width: 10,
+          ),
+          GestureDetector(
+            onTap: () async {
+              context.pop();
+              chatBloc.add(DeleteChannel(
+                widget.conversation.id == 0
+                    ? currentConversation
+                    : widget.conversation.id,
+              ));
+            },
+            child: Text(
+              'حذف',
+              style: isDarkMode
+                  ? TextStyles.font14Medium
+                  : TextStyles.font14Medium
+                      .copyWith(color: Colors.red, fontWeight: FontWeight.bold),
             ),
-          )
-        : BubbleSpecialThree(
-            text: message.content,
-            color: Colors.green,
-            tail: true,
-            sent: true,
-            // seen: snapshot.data![index]["is_read"] ? true : false,
-            isSender: isMe,
-            textStyle: const TextStyle(color: Colors.white, fontSize: 16),
-          );
-  }
-
-  Widget buildImageMessage() {
-    final img = Image.network(
-      "${ApiConstances.baseUrlImg}${message.fileUrl}",
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-        // عرض لودينج مؤقت أثناء تحميل الصورة
-        return const SizedBox(
-          height: 150,
-          child: Center(child: CircularProgressIndicator()),
-        );
-      },
+          ),
+        ],
+      ),
     );
-
-    final bubble = BubbleNormalImage(
-      image: img,
-      tail: false,
-      sent: true,
-      isSender: !isMe,
-      id: message.id.toString(),
-    );
-
-    return isMe
-        ? Slidable(
-            endActionPane: ActionPane(
-              motion: const StretchMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) async {
-                    // await chat.DeleteMessage(snapshot.data![index]["id"].toString());
-                  },
-                  icon: Icons.delete,
-                  backgroundColor: Colors.red,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ],
-            ),
-            child: bubble,
-          )
-        : bubble;
   }
 }

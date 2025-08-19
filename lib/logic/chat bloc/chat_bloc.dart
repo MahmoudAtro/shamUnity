@@ -4,14 +4,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/core/service/services_locator.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_event.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_state.dart';
+import 'package:shamunity/models/chat_message_model.dart';
+import 'package:shamunity/routes/extension.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final Chat chat;
   final ChatMessagePusher pusherService;
   StreamSubscription? _messageSubscription;
+  StreamSubscription<int>? _deleteSubscription;
+  StreamSubscription<List<int>>? _readSubscription;
   bool _isListening = false; // متابعة حالة الاستماع
+  int? currentId = user?.id;
 
   ChatBloc({required this.chat, required this.pusherService})
       : super(ChatInitial()) {
@@ -19,6 +25,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<FetchChat>(_onFetchChats);
     on<SendMessage>(_onSendMessage);
     on<ChatUpdate>(_onChatUpdated);
+    on<DeleteMessage>(_deleteMessage);
+    on<DeleteMessageupdate>(_onMessageDeleted);
+    on<ReadAllMessage>(_onReadAllMessage);
+    on<MessagesMarkedAsRead>(_onMessagesMarkedAsRead);
+    on<DeleteChannel>(_onDeleteChannel);
+    on<CheckConversation>(_checkConversation);
 
     debugPrint("🚀 ChatBloc: تم إنشاؤه بنجاح");
   }
@@ -35,8 +47,95 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     result.fold((failure) {
       Toast().error(context!, failure.message);
     }, (data) {
+      if (event.isNewChat!) {
+        add(FetchChat(conversationId: data.conversationId));
+      }
       debugPrint("تم ارسال الرسالة بنجاح");
     });
+  }
+
+  Future<void> _onReadAllMessage(
+      ReadAllMessage event, Emitter<ChatState> emit) async {
+    BuildContext? context = SingleInstanceService.context;
+    final result = await chat.readMessages(event.conversationId);
+    result.fold((failure) {
+      Toast().error(context!, failure.message);
+    }, (data) {
+      debugPrint("تم قراءة جميع الرسائل بنجاح");
+    });
+  }
+
+  Future<void> _deleteMessage(
+      DeleteMessage event, Emitter<ChatState> emit) async {
+    BuildContext? context = SingleInstanceService.context;
+    final result = await chat.deleteMessage(event.messageId);
+    result.fold((failure) {
+      Toast().error(context!, failure.message);
+    }, (data) {
+      debugPrint("تم ارسال الرسالة بنجاح");
+    });
+  }
+
+  Future<void> _checkConversation(
+      CheckConversation event, Emitter<ChatState> emit) async {
+    BuildContext? context = SingleInstanceService.context;
+    final result = await chat.checkConversation(event.userId);
+    result.fold((failure) {
+      Toast().error(context!, failure.message);
+    }, (data) {
+      if (data != 0) {
+        add(FetchChat(conversationId: data));
+        emit(ChatCheckConversation(conversationId: data));
+      } else {
+        debugPrint("there is not conversation");
+      }
+    });
+  }
+
+  Future<void> _onDeleteChannel(
+      DeleteChannel event, Emitter<ChatState> emit) async {
+    BuildContext? context = SingleInstanceService.context;
+    final result = await chat.deleteChannel(event.conversationId);
+    result.fold((failure) {
+      Toast().error(context!, failure.message);
+    }, (data) {
+      debugPrint("تم حذف القناة بنجاح");
+      context?.pushNamedAndRemoveUntil('/home',
+          arguments: 1, predicate: (route) => false);
+    });
+  }
+
+  void _onMessageDeleted(DeleteMessageupdate event, Emitter<ChatState> emit) {
+    debugPrint("🗑️ ChatBloc: معالجة حذف الرسالة - ID: ${event.messageId}");
+
+    if (state is ChatLoaded) {
+      final currentState = state as ChatLoaded;
+
+      // البحث عن الرسالة المحذوفة
+      final messageIndex = currentState.chats.indexWhere(
+        (msg) => msg.id == event.messageId,
+      );
+
+      if (messageIndex != -1) {
+        // إنشاء قائمة جديدة بدون الرسالة المحذوفة
+        final updatedChats = List<ChatMessageModel>.from(currentState.chats);
+        final deletedMessage = updatedChats.removeAt(messageIndex);
+
+        emit(ChatLoaded(chats: updatedChats));
+
+        debugPrint("✅ ChatBloc: تم حذف الرسالة بنجاح");
+        debugPrint("   📄 محتوى الرسالة المحذوفة: ${deletedMessage.content}");
+        debugPrint("   📊 عدد الرسائل المتبقية: ${updatedChats.length}");
+      } else {
+        debugPrint(
+            "⚠️ ChatBloc: الرسالة المراد حذفها غير موجودة - ID: ${event.messageId}");
+        debugPrint(
+            "📋 الرسائل الحالية: ${currentState.chats.map((m) => m.id).toList()}");
+      }
+    } else {
+      debugPrint(
+          "⚠️ ChatBloc: لا يمكن حذف الرسالة، الحالة الحالية ليست ChatLoaded");
+    }
   }
 
   Future<void> _onFetchChats(FetchChat event, Emitter<ChatState> emit) async {
@@ -59,12 +158,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       // 3. الاشتراك في القناة
       debugPrint(
           "📡 ChatBloc: الاشتراك في قناة المحادثة ${event.conversationId}");
-      await pusherService.subscribeToConversation(event.conversationId);
+      await pusherService.subscribeToConversation(event.conversationId!);
       debugPrint("✅ ChatBloc: تم الاشتراك في القناة بنجاح");
 
       // 4. جلب الرسائل الموجودة من API
       debugPrint("🔄 ChatBloc: جلب الرسائل من الخادم...");
-      final result = await chat.getMessages(event.conversationId);
+      final result = await chat.getMessages(event.conversationId!);
 
       result.fold(
         (failure) {
@@ -74,6 +173,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         (messages) {
           debugPrint("✅ ChatBloc: تم جلب ${messages.length} رسالة بنجاح");
           emit(ChatLoaded(chats: messages));
+          add(ReadAllMessage(conversationId: event.conversationId!));
 
           // اختبار الاتصال بعد التحميل
           _testConnection(event.conversationId);
@@ -82,6 +182,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       debugPrint("❌ ChatBloc: خطأ في التهيئة: $e");
       emit(ChatError("فشل في تهيئة المحادثة: $e"));
+    }
+  }
+
+  void _onMessagesMarkedAsRead(
+      MessagesMarkedAsRead event, Emitter<ChatState> emit) {
+    if (state is ChatLoaded) {
+      final currentState = state as ChatLoaded;
+
+      // أنشئ قائمة جديدة، مع تحديث الرسائل التي تمت قراءتها
+      final updatedMessages = currentState.chats.map((msg) {
+        if (event.messageIds.contains(msg.id)) {
+          return msg.copyWith(isRead: true);
+        }
+        return msg;
+      }).toList();
+
+      emit(ChatLoaded(chats: updatedMessages));
     }
   }
 
@@ -114,6 +231,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       },
     );
 
+    _deleteSubscription = pusherService.messageDeleteStream.listen(
+      (messageId) {
+        debugPrint(
+            "🗑️ BLoC: استقبال حدث حذف رسالة من Pusher - MessageID: $messageId");
+        add(DeleteMessageupdate(messageId: messageId));
+      },
+      onError: (error) {
+        debugPrint("❌ BLoC: خطأ في stream حذف الرسائل: $error");
+      },
+    );
+
+    _readSubscription = pusherService.readReceiptsStream.listen((messageIds) {
+      add(MessagesMarkedAsRead(messageIds: messageIds));
+    });
+
     _isListening = true;
     debugPrint("✅ ChatBloc: تم تفعيل مستمع الرسائل");
   }
@@ -145,8 +277,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(ChatLoaded(chats: [event.message]));
       debugPrint("✅ ChatBloc: تم إنشاء الحالة وإضافة الرسالة");
     }
+    if (currentId != event.message.sender.id && !event.message.isRead) {
+      add(ReadAllMessage(conversationId: event.message.conversationId!));
+    }
     debugPrint("📋 القائمة الجديدة:");
-    debugPrint("  [0] ID: ${event.message.id} - النص: ${event.message.content} - الصورة: ${event.message.fileUrl}");
+    debugPrint(
+        "  [0] ID: ${event.message.id} - النص: ${event.message.content} - الصورة: ${event.message.fileUrl}");
   }
 
   // دالة اختبار الاتصال
@@ -166,6 +302,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   void _stopListening() {
     if (_messageSubscription != null) {
       _messageSubscription?.cancel();
+      _deleteSubscription?.cancel();
+      _readSubscription?.cancel();
       _messageSubscription = null;
       _isListening = false;
       debugPrint("🛑 ChatBloc: تم إيقاف الاستماع للرسائل");

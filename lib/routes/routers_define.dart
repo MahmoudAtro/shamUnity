@@ -23,6 +23,7 @@ import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
+import 'package:shamunity/feature/suggesation/suggesation_seceen.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
@@ -47,8 +48,12 @@ class AppRoute {
                   create: (context) => getit<VisitedUserProfileCubit>()),
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
-            child: const HomePage(),
+            child: HomePage(currentIndex: route.arguments as int?),
           ),
+        );
+      case RoutesNames.suggesation:
+        return MaterialPageRoute(
+          builder: (_) => const FeedbackScreen(),
         );
       case RoutesNames.createPost:
         return MaterialPageRoute(

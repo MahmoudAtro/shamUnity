@@ -69,6 +69,86 @@ class Chat {
       return left(ServerFailure(message: e.toString()));
     }
   }
+
+  Future<Either<Failure, String>> deleteMessage(int messageId) async {
+    try {
+      final response = await _dio.delete(
+        ApiConstances.deleteMessage(messageId),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization':
+                'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+          },
+        ),
+      );
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) return left(ServerFailure.fromDioError(e));
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, String>> readMessages(int conversationId) async {
+    try {
+      final response = await _dio.post(
+        ApiConstances.readAllMessage(conversationId),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization':
+                'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+          },
+        ),
+      );
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) return left(ServerFailure.fromDioError(e));
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, String>> deleteChannel(int conversationId) async {
+    try {
+      final response = await _dio.delete(
+        ApiConstances.deleteChannel(conversationId),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization':
+                'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+          },
+        ),
+      );
+      return Right(response.data['message']);
+    } catch (e) {
+      if (e is DioException) return left(ServerFailure.fromDioError(e));
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<Either<Failure, int>> checkConversation(int conversationId) async {
+    try {
+      final response = await _dio.get(
+        ApiConstances.checkConversation(conversationId),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization':
+                'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+          },
+        ),
+      );
+      final result = response.data['conversation_id'];
+      if (result == null) {
+        return const Right(0);
+      }
+      return Right(result);
+    } catch (e) {
+      if (e is DioException) return left(ServerFailure.fromDioError(e));
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
 }
 
 class ChatMessagePusher {
@@ -76,7 +156,14 @@ class ChatMessagePusher {
   final messageStreamController =
       StreamController<ChatMessageModel>.broadcast();
 
+  final messageDeleteStreamController = StreamController<int>.broadcast();
+
+  final _readReceiptsStreamController = StreamController<List<int>>.broadcast();
+  Stream<List<int>> get readReceiptsStream =>
+      _readReceiptsStreamController.stream;
+
   Stream<ChatMessageModel> get messagesStream => messageStreamController.stream;
+  Stream<int> get messageDeleteStream => messageDeleteStreamController.stream;
 
   // تتبع القنوات المشترك بها لتجنب الاشتراك المتكرر
   final Set<String> _subscribedChannels = <String>{};
@@ -171,19 +258,27 @@ class ChatMessagePusher {
   }
 
   // معالج الأحداث العامة - المعالج الرئيسي
+  // In ChatMessagePusher class
   void _handleGlobalEvent(PusherEvent event) {
-    debugPrint("🌐 Global Event Received:");
-    debugPrint("   📺 Channel: ${event.channelName}");
-    debugPrint("   🎯 Event Name: ${event.eventName}");
-    debugPrint("   📄 Data: ${event.data}");
-    debugPrint("   👤 User ID: ${event.userId}");
+    // ‼ TEMPORARY DEBUGGING CODE ‼
+    // Log every single event that comes through, unconditionally.
+    debugPrint("🕵‍♂ RAW PUSHER EVENT RECEIVED 🕵‍♂");
+    debugPrint("  - Channel: ${event.channelName}");
+    debugPrint(
+        "  - Event Name: >>> ${event.eventName} <<<"); // This is the most important line
+    debugPrint("  - Data: ${event.data}");
+    debugPrint("-------------------------------------");
 
+    // Keep your original logic below for now
     try {
-      // معالجة أسماء الأحداث المختلفة
       if (_isMessageEvent(event.eventName)) {
         _processMessageEvent(event);
+      } else if (_isMessageDeleteEvent(event.eventName)) {
+        _processMessageDeleteEvent(event);
+      } else if (_isMessageReadEvent(event.eventName)) {
+        _processMessageReadEvent(event);
       } else {
-        debugPrint("ℹ️ Ignoring non-message event: ${event.eventName}");
+        debugPrint("ℹ Ignoring event: ${event.eventName}");
       }
     } catch (e, stackTrace) {
       debugPrint("❌ Error processing global event: $e");
@@ -206,6 +301,31 @@ class ChatMessagePusher {
     final isMessage = messageEvents.contains(eventName);
     debugPrint("🔍 Event '$eventName' is message event: $isMessage");
     return isMessage;
+  }
+
+  bool _isMessageDeleteEvent(String eventName) {
+    final deleteEvents = [
+      'App\\Events\\MessageDeleted',
+      'MessageDeleted',
+      'message.deleted',
+      'MessageDeleted',
+      'private-message-deleted',
+    ];
+
+    final isDelete = deleteEvents.contains(eventName);
+    debugPrint("🔍 Event '$eventName' is message delete event: $isDelete");
+    return isDelete;
+  }
+
+  bool _isMessageReadEvent(String eventName) {
+    final deleteEvents = [
+      'App\\Events\\PrivateMessageSent',
+      'messages.read',
+    ];
+
+    final isDelete = deleteEvents.contains(eventName);
+    debugPrint("🔍 Event '$eventName' is message delete event: $isDelete");
+    return isDelete;
   }
 
   // معالجة حدث الرسالة
@@ -257,6 +377,94 @@ class ChatMessagePusher {
     }
   }
 
+  void _processMessageDeleteEvent(PusherEvent event) {
+    try {
+      debugPrint("🗑️ Processing message delete event...");
+
+      // تحليل البيانات
+      Map<String, dynamic> eventData;
+      if (event.data is String) {
+        eventData = jsonDecode(event.data);
+      } else if (event.data is Map) {
+        eventData = Map<String, dynamic>.from(event.data);
+      } else {
+        debugPrint(
+            "⚠️ Unknown data type for delete event: ${event.data.runtimeType}");
+        return;
+      }
+
+      debugPrint("📊 Parsed delete event data: $eventData");
+
+      // استخراج messageId و conversationId
+      final messageId = eventData['messageId'];
+
+      if (messageId != null) {
+        //   final deleteEvent = MessageDeletedEvent(
+        //     messageId: messageId,
+        //     conversationId: conversationId,
+        //   );
+
+        messageDeleteStreamController.add(messageId);
+        debugPrint(
+            "✅ Message delete event added to stream - MessageID: $messageId");
+        debugPrint(
+            "📊 Delete stream has listeners: ${messageDeleteStreamController.hasListener}");
+      } else {
+        debugPrint(
+            "❌ Could not extract messageId or conversationId from delete event");
+        debugPrint("📊 Available keys: ${eventData.keys.toList()}");
+      }
+    } catch (e, stackTrace) {
+      debugPrint("❌ Error processing message delete event: $e");
+      debugPrint("📊 Stack trace: $stackTrace");
+    }
+  }
+
+  void _processMessageReadEvent(PusherEvent event) {
+    try {
+      debugPrint("📩 Processing message Read event...");
+
+      // تحليل البيانات
+      Map<String, dynamic> eventData;
+      if (event.data is String) {
+        eventData = jsonDecode(event.data);
+      } else if (event.data is Map) {
+        eventData = Map<String, dynamic>.from(event.data);
+      } else {
+        debugPrint(
+            "⚠️ Unknown data type for read event: ${event.data.runtimeType}");
+        return;
+      }
+
+      debugPrint("📊 Parsed read event data: $eventData");
+
+      // الحدث يجب أن يحتوي على قائمة messageIds
+      final List<dynamic>? rawMessageIds = eventData['messageIds'];
+
+      if (rawMessageIds != null) {
+        final messageIds = rawMessageIds
+            .map((id) => int.tryParse(id.toString()))
+            .whereType<int>()
+            .toList();
+
+        if (messageIds.isNotEmpty) {
+          _readReceiptsStreamController.add(messageIds);
+          debugPrint("✅ Added read receipts to stream: $messageIds");
+          debugPrint(
+              "📊 Read receipts stream has listeners: ${_readReceiptsStreamController.hasListener}");
+        } else {
+          debugPrint("❌ No valid messageIds found in read event");
+        }
+      } else {
+        debugPrint("❌ Could not extract 'messageIds' from read event");
+        debugPrint("📊 Available keys: ${eventData.keys.toList()}");
+      }
+    } catch (e, stackTrace) {
+      debugPrint("❌ Error processing message read event: $e");
+      debugPrint("📊 Stack trace: $stackTrace");
+    }
+  }
+
   // استخراج بيانات الرسالة من مستويات مختلفة
   Map<String, dynamic>? _extractMessageData(Map<String, dynamic> eventData) {
     // المحاولة الأولى: البحث عن مفتاح 'message'
@@ -287,30 +495,34 @@ class ChatMessagePusher {
 
   // التحقق من صحة الرسالة
   bool _isValidMessage(ChatMessageModel messageData) {
-  // التحقق من نوع الرسالة
-  final messageType = messageData.type;
-  
-  if (messageType == 'text') {
-    // رسائل النص تحتاج content
-    if (messageData.content.toString().trim().isEmpty) {
-      debugPrint("! رسالة نصية بدون محتوى، تم تجاهلها");
-      return false;
+    // التحقق من نوع الرسالة
+    final messageType = messageData.type;
+
+    if (messageType == 'text') {
+      // رسائل النص تحتاج content
+      if (messageData.content.toString().trim().isEmpty) {
+        debugPrint("! رسالة نصية بدون محتوى، تم تجاهلها");
+        return false;
+      }
+    } else if (messageType == 'image' ||
+        messageType == 'audio' ||
+        messageType == 'file') {
+      // رسائل الصور تحتاج file_url
+      if (messageData.fileUrl == null ||
+          messageData.fileUrl.toString().trim().isEmpty) {
+        debugPrint("! رسالة صورة بدون رابط الملف، تم تجاهلها");
+        return false;
+      }
+    } else if (messageType == 'file') {
+      // رسائل الملفات تحتاج file_url
+      if (messageData.fileUrl == null ||
+          messageData.fileUrl.toString().trim().isEmpty) {
+        debugPrint("! رسالة ملف بدون رابط الملف، تم تجاهلها");
+        return false;
+      }
     }
-  } else if (messageType == 'image' || messageType == 'audio' || messageType == 'file') {
-    // رسائل الصور تحتاج file_url
-    if (messageData.fileUrl== null || messageData.fileUrl.toString().trim().isEmpty) {
-      debugPrint("! رسالة صورة بدون رابط الملف، تم تجاهلها");
-      return false;
-    }
-  } else if (messageType == 'file') {
-    // رسائل الملفات تحتاج file_url
-    if (messageData.fileUrl == null || messageData.fileUrl.toString().trim().isEmpty) {
-      debugPrint("! رسالة ملف بدون رابط الملف، تم تجاهلها");
-      return false;
-    }
-  }
-  
-  return true;
+
+    return true;
   }
 
   // التحقق من حالة الاتصال
@@ -432,6 +644,9 @@ class ChatMessagePusher {
     disconnect();
     if (!messageStreamController.isClosed) {
       messageStreamController.close();
+    }
+    if (!messageDeleteStreamController.isClosed) {
+      messageDeleteStreamController.close();
     }
     debugPrint("✅ ChatMessagePusher disposed");
   }

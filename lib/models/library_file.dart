@@ -6,7 +6,7 @@ class LibraryFile {
   final String status;
   final int userId;
   final int courseId;
-  final int processedByUserId;
+  final int? processedByUserId;
   final String createdAt;
   final String updatedAt;
 
