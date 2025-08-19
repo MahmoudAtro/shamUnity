@@ -17,16 +17,6 @@ class AnnouncementsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightBackgroundColor,
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      //   title: const Text(
-      //     'قرارات الجامعة',
-      //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      //   ),
-      //   backgroundColor: Colors.blue,
-      //   elevation: 2,
-      //   centerTitle: true,
-      // ),
       body: BlocBuilder<AnnouncementsCubit, AnnouncementsState>(
         builder: (context, state) {
           if (state is AnnouncementsLoading || state is AnnouncementsInitial) {

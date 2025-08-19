@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart' show YearModel;
 
 class AcademicYearsGridScreen extends StatelessWidget {
   final List<YearModel> years;

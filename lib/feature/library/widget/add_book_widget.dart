@@ -7,7 +7,7 @@ import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/logic/library%20bloc/library_cubit.dart';
 import 'package:shamunity/logic/library%20bloc/library_state.dart';
 import 'package:shamunity/models/book_request.dart';
-import 'package:shamunity/models/college_model.dart'
+import 'package:shamunity/models/library_model.dart'
     show LibraryModel, DepartmentModel, YearModel, SemesterModel;
 import 'package:shamunity/routes/extension.dart';
 

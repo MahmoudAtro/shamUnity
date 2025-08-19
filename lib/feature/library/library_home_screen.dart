@@ -6,7 +6,7 @@ import 'package:shamunity/feature/library/department_view.dart';
 import 'package:shamunity/feature/library/widget/add_book_widget.dart';
 import 'package:shamunity/logic/library%20bloc/library_cubit.dart';
 import 'package:shamunity/logic/library%20bloc/library_state.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart' show LibraryModel;
 
 class LibraryHomeScreen extends StatelessWidget {
   const LibraryHomeScreen({super.key});

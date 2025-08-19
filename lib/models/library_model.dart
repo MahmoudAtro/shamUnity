@@ -96,7 +96,6 @@ class SemesterModel {
   // Getter to convert semester number to Arabic text
   String get semesterDisplayName {
     try {
-     
       switch (semester) {
         case 1:
           return "الفصل الأول";
@@ -107,16 +106,7 @@ class SemesterModel {
       }
     } catch (e) {
       // If parsing fails, return the original value
-      return semester;
-    }
-  }
-
-  // Getter to get semester number as int
-  int get semesterNumber {
-    try {
-      return int.parse(semester);
-    } catch (e) {
-      return 0;
+      return semester.toString();
     }
   }
 

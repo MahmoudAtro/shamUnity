@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart' show LibraryModel;
 
 abstract class LibraryState extends Equatable {
   const LibraryState();

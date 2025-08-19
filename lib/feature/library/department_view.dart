@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart' show DepartmentModel;
 
 class DepartmentsGridScreen extends StatelessWidget {
   final List<DepartmentModel> departments;

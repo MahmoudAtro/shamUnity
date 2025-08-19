@@ -1,13 +1,13 @@
 // Export all models
 // Import CollegeModel to use in helper functions
-import 'college_model.dart';
+import 'package:shamunity/models/library_model.dart';
 
 export 'announcement.dart';
 export 'chat_item_model.dart';
 export 'chat_model.dart';
-export 'college_model.dart';
 export 'comment.dart';
 export 'library_file.dart';
+export 'library_model.dart';
 export 'login_model.dart';
 export 'post.dart';
 export 'rest_password_model.dart';
@@ -24,7 +24,7 @@ List<LibraryModel> parseCollegesFromJson(Map<String, dynamic> json) {
 }
 
 // Helper function to convert colleges back to JSON
-  Map<String, dynamic> collegesToJson(List<LibraryModel> colleges) {
+Map<String, dynamic> collegesToJson(List<LibraryModel> colleges) {
   return {
     'data': colleges.map((college) => college.toJson()).toList(),
   };

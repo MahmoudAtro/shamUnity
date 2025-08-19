@@ -4,7 +4,7 @@ import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/error/failure.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/models/book_request.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart';
 
 class LibraryApi {
   final Dio _dio;

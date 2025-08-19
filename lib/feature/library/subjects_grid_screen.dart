@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shamunity/models/college_model.dart';
+import 'package:shamunity/models/library_model.dart'
+    show SemesterModel, SubjectModel;
 
 class SubjectsGridScreen extends StatelessWidget {
   final List<SemesterModel> semesters;
@@ -91,14 +92,14 @@ class SemesterCard extends StatelessWidget {
           ),
         ),
         title: Text(
-          'الفصل ${_getSemesterName(semester.semester)}',
+          'الفصل ${semester.semesterDisplayName}',
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         subtitle: Text(
-          '$libraryName - $departmentName - السنة $yearNumber - الفصل ${_getSemesterName(semester.semester)}',
+          '$libraryName - $departmentName - السنة $yearNumber - الفصل ${semester.semesterDisplayName}',
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey[600],
@@ -119,7 +120,7 @@ class SemesterCard extends StatelessWidget {
           else
             ...semester.subjects.map((subject) => SubjectTile(
                   subject: subject,
-                  semester: semester.semester,
+                  semester: semester.semesterDisplayName,
                   yearNumber: yearNumber,
                   departmentName: departmentName,
                   libraryName: libraryName,
@@ -127,19 +128,6 @@ class SemesterCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getSemesterName(String semester) {
-    switch (semester.toLowerCase()) {
-      case 'first':
-        return 'الأول';
-      case 'second':
-        return 'الثاني';
-      case 'summer':
-        return 'الصيفي';
-      default:
-        return semester;
-    }
   }
 }
 

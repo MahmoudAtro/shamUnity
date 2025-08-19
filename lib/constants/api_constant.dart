@@ -35,6 +35,8 @@ class ApiConstances {
   // Library API
   static const String bookRequestsUrl = "$baseUrl/book-requests";
 
+  static const String libraryUrl = "$baseUrl/library";
+
   // announcements
   static const String announcementsUrl = "$baseUrl/announcements";
 
