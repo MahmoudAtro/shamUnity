@@ -257,80 +257,80 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
 
   // معاينة ملف PDF
   Widget _buildPDFPreview(BuildContext context, String pdfUrl) {
-  final fileName = pdfUrl.split('/').last; // استخراج اسم الملف من الرابط
+    final fileName = pdfUrl.split('/').last; // استخراج اسم الملف من الرابط
 
-  return GestureDetector(
-    onTap: () => downloadPDF(context , pdfUrl),
-    child: Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // أيقونة PDF
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: () => downloadPDF(context, pdfUrl),
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
-            child: Icon(
-              Icons.picture_as_pdf,
-              color: Colors.red[600],
-              size: 40,
+          ],
+        ),
+        child: Row(
+          children: [
+            // أيقونة PDF
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.picture_as_pdf,
+                color: Colors.red[600],
+                size: 40,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
 
-          // اسم الملف + وصف
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fileName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+            // اسم الملف + وصف
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "مستند PDF",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                  const SizedBox(height: 4),
+                  Text(
+                    "مستند PDF",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // زر تحميل / فتح
-          Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: Colors.grey[500],
-          ),
-        ],
+            // زر تحميل / فتح
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey[500],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // معاينة المستندات
   Widget _buildDocumentPreview(

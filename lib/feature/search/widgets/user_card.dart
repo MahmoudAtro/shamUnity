@@ -33,8 +33,8 @@ class UserCard extends StatelessWidget {
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         leading: CircleAvatar(
           radius: 25.r,
-          backgroundImage: user.profilePicture != null
-              ? NetworkImage("${ApiConstances.baseUrlImg}${user.profilePicture!}")
+          backgroundImage: user.profilePictureUrl != null
+              ? NetworkImage("${ApiConstances.baseUrlImg}${user.profilePictureUrl!}")
               : const AssetImage('assets/images/default_avatar.jpg')
                   as ImageProvider,
         ),

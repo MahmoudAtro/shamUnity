@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/constants/colors.dart';
 import 'package:shamunity/core/helpers/space_helper.dart';
@@ -14,9 +16,7 @@ import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
-import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:cached_network_image/cached_network_image.dart';
 
 class PostWidget extends StatefulWidget {
   final Post post;
@@ -46,7 +46,6 @@ class _PostWidgetState extends State<PostWidget>
   @override
   void initState() {
     super.initState();
-    postCubit = BlocProvider.of<PostCubit>(context);
 
     commentCubit = getit<CommentCubit>();
 
@@ -257,16 +256,24 @@ class _PostWidgetState extends State<PostWidget>
                     child: Row(
                       children: [
                         // صورة البروفايل (دائرية)
-                        CircleAvatar(
-                          radius: 22.r,
-                          backgroundColor: Colors.grey[300],
-                          backgroundImage: widget.author.profilePicture != null
-                              ? NetworkImage(
-                                  "${ApiConstances.baseUrlImg}${widget.author.profilePicture}")
-                              : const AssetImage(
-                                      "assets/images/default_avatar.jpg")
-                                  as ImageProvider,
+                        InkWell(
+                          onTap: () {
+                            context.pushNamed(RoutesNames.sheikhProfile,
+                                arguments: widget.author.id);
+                          },
+                          child: CircleAvatar(
+                            radius: 22.r,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage: widget.author.profilePictureUrl !=
+                                    null
+                                ? NetworkImage(
+                                    "${ApiConstances.baseUrlImg}${widget.author.profilePictureUrl}")
+                                : const AssetImage(
+                                        "assets/images/default_avatar.jpg")
+                                    as ImageProvider,
+                          ),
                         ),
+
                         SizedBox(width: 10.w),
 
                         // الاسم + الوقت
@@ -276,12 +283,18 @@ class _PostWidgetState extends State<PostWidget>
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    widget.author.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14.sp,
-                                      color: Colors.black87,
+                                  InkWell(
+                                    onTap: () {
+                                      context.pushNamed(RoutesNames.sheikhProfile,
+                                          arguments: widget.author.id);
+                                    },
+                                    child: Text(
+                                      widget.author.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14.sp,
+                                        color: Colors.black87,
+                                      ),
                                     ),
                                   ),
                                   horizontalspace(5),

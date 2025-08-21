@@ -81,6 +81,8 @@ dependencies:
   timeago: ^3.7.1
   cached_network_image: ^3.4.1
   flutter_animate: ^4.5.2
+  open_filex: ^4.7.0
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

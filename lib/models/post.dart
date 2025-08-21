@@ -86,7 +86,7 @@ class Author {
   final int id;
   final String name;
   final String email;
-  final String? profilePicture;
+  final String? profilePictureUrl;
   final int? postsCount; // جعله nullable
   final int? commentsCount; // جعله nullable
   final int? likesCount; // جعله nullable
@@ -102,7 +102,7 @@ class Author {
     required this.id,
     required this.name,
     required this.email,
-    this.profilePicture,
+    this.profilePictureUrl,
     this.postsCount,
     this.commentsCount,
     this.likesCount,
@@ -119,7 +119,7 @@ class Author {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      profilePicture: json['profile_picture'],
+      profilePictureUrl: json['profile_picture'],
       postsCount: json['posts_count'],
       commentsCount: json['comments_count'],
       likesCount: json['likes_count'],
@@ -138,7 +138,7 @@ class Author {
       id: 0,
       name: '',
       email: '',
-      profilePicture: null,
+      profilePictureUrl: null,
       postsCount: 0,
       commentsCount: 0,
       likesCount: 0,
@@ -156,7 +156,7 @@ class Author {
       'id': id,
       'name': name,
       'email': email,
-      'profile_picture': profilePicture,
+      'profile_picture': profilePictureUrl,
       'posts_count': postsCount,
       'comments_count': commentsCount,
       'likes_count': likesCount,

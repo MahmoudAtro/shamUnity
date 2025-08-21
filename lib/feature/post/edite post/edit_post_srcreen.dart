@@ -153,10 +153,10 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundImage: widget.post.author.profilePicture !=
+                        backgroundImage: widget.post.author.profilePictureUrl !=
                                 null
                             ? NetworkImage(
-                                "${ApiConstances.baseUrlImg}${widget.post.author.profilePicture}")
+                                "${ApiConstances.baseUrlImg}${widget.post.author.profilePictureUrl}")
                             : null,
                         radius: 22,
                       ),

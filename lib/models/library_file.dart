@@ -2,7 +2,7 @@ class LibraryFile {
   final int id;
   final String title;
   final String filePath;
-  final String type;
+  final String? type;
   final String status;
   final int userId;
   final int courseId;

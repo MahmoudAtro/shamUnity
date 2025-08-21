@@ -176,9 +176,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     },
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundImage: comment.author.profilePicture != null
+                      backgroundImage: comment.author.profilePictureUrl != null
                           ? NetworkImage(
-                              "${ApiConstances.baseUrlImg}${comment.author.profilePicture}")
+                              "${ApiConstances.baseUrlImg}${comment.author.profilePictureUrl}")
                           : const AssetImage(
                               "assets/images/default_avatar.jpg"),
                       child: comment.author.name.isEmpty

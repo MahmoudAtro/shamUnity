@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String baseUrl =
-      "https://exemption-courts-controlling-covering.trycloudflare.com/api";
+      "https://soldier-gathering-detailed-developer.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://exemption-courts-controlling-covering.trycloudflare.com";
+      "https://soldier-gathering-detailed-developer.trycloudflare.com";
 
   /// ----------Outside Application---------
 
@@ -52,6 +52,8 @@ class ApiConstances {
   static String deleteMessage(int messageId) => '$baseUrl/messages/$messageId';
   static String readAllMessage(int conversatioId) =>
       '$baseUrl/conversations/$conversatioId/read';
-  static String deleteChannel(int conversationId) => '$baseUrl/conversations/$conversationId';
-  static String checkConversation(int conversationId) => '$baseUrl/users/$conversationId/conversation';
+  static String deleteChannel(int conversationId) =>
+      '$baseUrl/conversations/$conversationId';
+  static String checkConversation(int conversationId) =>
+      '$baseUrl/users/$conversationId/conversation';
 }
