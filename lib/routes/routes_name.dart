@@ -21,7 +21,8 @@ class RoutesNames {
   static const String geminiChat = "/geminiChat";
   static const String sheikhProfile = "/sheikhProfile";
   static const String checkOtp = "/check-otp-password";
-  static const String search = "/search";
-  static const String library = "/library";
   static const String userChatScreen = "/userChatScreen";
+  static const String search = "/search";
+  static const String suggesation = "/suggesation";
+  static const String library = "/library";
 }

@@ -99,130 +99,207 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     return BlocProvider(
       create: (context) => _postCubit,
       child: BlocListener<PostCubit, PostCubitState>(
-        listener: (context, state) {
-          if (state is PostCreatedLoading) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) => const LoadingDialogWidget());
-          } else if (state is PostCreatedSuccess) {
-            context.pop();
-            Toast().success(context, "تم نشر المنشور بنجاح");
-            context.pop();
-          } else if (state is PostCreatedError) {
-            context.pop();
-            Toast().error(context, state.message);
-          }
-        },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            title: const Text("إنشاء منشور"),
-            actions: [
-              TextButton(
-                onPressed: _submitPost,
-                child: const Text("نشر",
-                    style: TextStyle(color: Colors.blue, fontSize: 16)),
+          listener: (context, state) {
+            if (state is PostCreatedLoading) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) =>
+                      const LoadingDialogWidget());
+            } else if (state is PostCreatedSuccess) {
+              context.pop();
+              Toast().success(context, "تم نشر المنشور بنجاح");
+              context.pop();
+            } else if (state is PostCreatedError) {
+              context.pop();
+              Toast().error(context, state.message);
+            }
+          },
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
+              title: const Text(
+                "إنشاء منشور",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: [
-                  // شريط الملف الشخصي
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: user!.profilePictureUrl != null
-                            ? NetworkImage(
-                                "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
-                            : const AssetImage(
-                                'assets/images/default_avatar.jpg'),
-                        radius: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        "${widget.user.firstName} ${widget.user.lastName}",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // مربع الكتابة
-                  TextField(
-                    controller: _controller,
-                    maxLines: null,
-                    decoration: const InputDecoration(
-                      hintText: "بم تفكر؟",
-                      border: InputBorder.none,
+              iconTheme: const IconThemeData(color: Colors.black),
+              actions: [
+                TextButton(
+                  onPressed: _submitPost,
+                  child: const Text(
+                    "نشر",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  // معاينة الصورة
-                  if (_selectedImage != null) ...[
-                    const SizedBox(height: 10),
-                    Stack(
-                      alignment: Alignment.topRight,
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ====== شريط الملف الشخصي ======
+                    Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            _selectedImage!,
-                            height: 350,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundImage: user!.profilePictureUrl != null
+                              ? NetworkImage(
+                                  "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
+                              : const AssetImage(
+                                      'assets/images/default_avatar.jpg')
+                                  as ImageProvider,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () =>
-                              setState(() => _selectedImage = null),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${widget.user.firstName} ${widget.user.lastName}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "${user?.role} 🎓" ,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.blueAccent),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ],
-                  const SizedBox(height: 50),
-                  // InkWell(
-                  //   onTap: _pickImage,
-                  //   child: Row(
-                  //     children: [
-                  //       IconButton(
-                  //         icon: const Icon(Icons.image, color: Colors.green),
-                  //         onPressed: _pickImage,
-                  //       ),
-                  //       const Text("إضافة صورة", style: TextStyle(fontSize: 14)),
-                  //     ],
-                  //   ),
-                  // ),
-                  InkWell(
-                    onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: double.infinity,
-                      height: 300,
-                      margin: const EdgeInsets.only(top: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image, size: 75, color: Colors.green),
-                          SizedBox(height: 8),
-                          Text("إضافة صورة", style: TextStyle(fontSize: 16)),
-                        ],
+
+                    const SizedBox(height: 15),
+
+                    // ====== مربع الكتابة ======
+                    TextField(
+                      controller: _controller,
+                      maxLines: null,
+                      style: const TextStyle(fontSize: 15, height: 1.4),
+                      decoration: const InputDecoration(
+                        hintText:
+                            "بم تفكر اليوم؟ شارك فكرة، ملخص، أو نصيحة لزملائك...",
+                        border: InputBorder.none,
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 10),
+
+                    // ====== معاينة الصورة ======
+                    if (_selectedImage != null) ...[
+                      Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              _selectedImage!,
+                              height: 300,
+                              width: double.infinity,
+                              fit: BoxFit.fitWidth,
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black54,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.close,
+                                  color: Colors.white, size: 20),
+                              onPressed: () =>
+                                  setState(() => _selectedImage = null),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                    ],
+
+                    // ====== أدوات الإضافة (صورة - ملف - وسم جامعي) ======
+                    Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildPostTool(
+                              icon: Icons.image,
+                              color: Colors.green,
+                              label: "صورة",
+                              onTap: _pickImage,
+                            ),
+                            _buildPostTool(
+                              icon: Icons.insert_drive_file,
+                              color: Colors.orange,
+                              label: "ملف",
+                              onTap: () {
+                                debugPrint("📂 اختيار ملف");
+                              },
+                            ),
+                            _buildPostTool(
+                              icon: Icons.school,
+                              color: Colors.blue,
+                              label: "إنجاز جامعي",
+                              onTap: () {
+                                debugPrint("🎓 اختيار مادة/محاضرة");
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          )),
+    );
+  }
+
+  // ====== Widget مساعد للأدوات ======
+  Widget _buildPostTool({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
         ),
       ),
     );

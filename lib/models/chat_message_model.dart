@@ -30,20 +30,25 @@ class ChatMessageModel {
         conversationId: json['conversation_id'] ?? 0,
         isRead: json['is_read'],
         fileUrl: json['file_url'] ?? '');
-  }
-
-  ChatMessageModel copyWith({
+  }ChatMessageModel copyWith({
     int? id,
-    UserMessage? participant,
-    ChatMessageModel? lastMessage,
+    String? content,
+    String? type,
+    UserMessage? sender,
+    DateTime? createdAt,
+    int? conversationId,
+    String? fileUrl,
+    bool? isRead
   }) {
     return ChatMessageModel(
         id: id ?? this.id,
-        content: content,
-        type: type,
-        sender: sender,
-        createdAt: createdAt,
-        isRead: isRead);
+        content: content ?? this.content,
+        type: type ?? this.type,
+        sender: sender ?? this.sender,
+        createdAt: createdAt ?? this.createdAt,
+        conversationId: conversationId ?? this.conversationId,
+        fileUrl: fileUrl ?? this.fileUrl,
+        isRead: isRead ?? this.isRead);
   }
 
   List<Object?> get props => [id, content, type, sender, createdAt];

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shamunity/constants/api_constant.dart';
+import 'package:shamunity/core/network/download_pdf.dart';
+import 'package:shamunity/feature/announcements/widgets/image_preview.dart';
+import 'package:shamunity/feature/announcements/widgets/video_preview.dart';
 import 'package:shamunity/models/announcement.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'video_player_screen.dart';
 
 /// بطاقة الإعلان التي تعرض المحتوى والملفات المرفقة
 /// تدعم أنواع مختلفة من الملفات:
@@ -22,106 +23,38 @@ class AnnouncementCard extends StatefulWidget {
 }
 
 class _AnnouncementCardState extends State<AnnouncementCard> {
-  // دالة مساعدة للتحقق من نوع الملف
-  bool _isVideoFile(String fileType) {
-    final cleanType = fileType.toLowerCase().replaceAll('.', '');
-    return [
-      'video',
-      'mp4',
-      'avi',
-      'mov',
-      'wmv',
-      'flv',
-      'mkv',
-      'webm',
-      '3gp',
-      'm4v'
-    ].contains(cleanType);
-  }
-
-  // دالة مساعدة للتحقق من نوع الصورة
-  bool _isImageFile(String fileType) {
-    final cleanType = fileType.toLowerCase().replaceAll('.', '');
-    return ['image', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff']
-        .contains(cleanType);
-  }
-
-  // دالة لفتح الصورة في وضع ملء الشاشة
-  void _openImageFullScreen(BuildContext context, String imageUrl) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-            title: const Text(
-              'عرض الصورة',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              child: Image.network(
-                '${ApiConstances.baseUrlImg}$imageUrl',
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      value: progress.expectedTotalBytes != null
-                          ? progress.cumulativeBytesLoaded /
-                              progress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(
-                    Icons.error_outline,
-                    color: Colors.white,
-                    size: 50,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // دالة لفتح الفيديو مباشرة بدون تحميل
-  void _openVideo(BuildContext context, String videoUrl) {
-    // فتح الفيديو مباشرة من الرابط
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VideoPlayerScreen(
-          videoUrl: '${ApiConstances.baseUrlImg}$videoUrl',
-        ),
-      ),
-    );
-  }
-
   // دالة لفتح ملف PDF
-  void _openPDF(String pdfUrl) async {
-    final url = '${ApiConstances.baseUrlImg}/$pdfUrl';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      // إذا لم يتمكن من فتح PDF، حاول فتحه في متصفح
-      final browserUrl =
-          'https://mozilla.github.io/pdf.js/web/viewer.html?file=$url';
-      final browserUri = Uri.parse(browserUrl);
-      if (await canLaunchUrl(browserUri)) {
-        await launchUrl(browserUri, mode: LaunchMode.externalApplication);
-      }
-    }
-  }
+//   void _openPDF(String pdfUrl) async {
+//   try {
+//     // بناء الرابط الكامل
+//     final url = '${ApiConstances.baseUrlImg}/$pdfUrl';
+
+//     // تأكد من ترميز الرابط بشكل صحيح
+//     final encodedUrl = Uri.encodeFull(url);
+//     final uri = Uri.parse(encodedUrl);
+
+//     // المحاولة الأولى: فتح في تطبيق خارجي
+//     if (await canLaunchUrl(uri)) {
+//       await launchUrl(uri, mode: LaunchMode.externalApplication);
+//       return;
+//     }
+
+//     // المحاولة الثانية: فتح باستخدام PDF.js في المتصفح
+//     final browserUrl =
+//         'https://mozilla.github.io/pdf.js/web/viewer.html?file=$encodedUrl';
+//     final browserUri = Uri.parse(browserUrl);
+
+//     if (await canLaunchUrl(browserUri)) {
+//       await launchUrl(browserUri, mode: LaunchMode.externalApplication);
+//       return;
+//     }
+
+//     // fallback: رسالة خطأ
+//     debugPrint("❌ لم أتمكن من فتح ملف PDF: $url");
+//   } catch (e) {
+//     debugPrint("⚠️ خطأ أثناء محاولة فتح PDF: $e");
+//   }
+// }
 
   // دالة لفتح أي ملف حسب نوعه
   void _openFile(BuildContext context, String fileUrl, String fileType) async {
@@ -137,18 +70,6 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
             backgroundColor: Colors.red,
           ),
         );
-        return;
-      }
-
-      // إذا كان الملف فيديو، افتحه داخل التطبيق
-      if (_isVideoFile(fileType)) {
-        _openVideo(context, fileUrl);
-        return;
-      }
-
-      // إذا كان الملف صورة، افتحها في وضع ملء الشاشة
-      if (_isImageFile(fileType)) {
-        _openImageFullScreen(context, fileUrl);
         return;
       }
 
@@ -197,7 +118,9 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
       case 'webp':
       case 'bmp':
       case 'tiff':
-        return _buildImagePreview(context, fileUrl);
+        return HeroImageExample(
+          imageUrl: fileUrl,
+        );
 
       case 'video':
       case 'mp4':
@@ -209,9 +132,10 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
       case 'webm':
       case '3gp':
       case 'm4v':
-        return _buildVideoPreview(context, fileUrl);
+        return VideoPreview(videoUrl: '${ApiConstances.baseUrlImg}$fileUrl');
 
       case 'pdf':
+      case 'document':
         return _buildPDFPreview(context, fileUrl);
 
       case 'doc':
@@ -241,259 +165,172 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
   }
 
   // معاينة الصور
-  Widget _buildImagePreview(BuildContext context, String imageUrl) {
-    return GestureDetector(
-      onTap: () => _openImageFullScreen(context, imageUrl),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              child: Image.network(
-                '${ApiConstances.baseUrlImg}/$imageUrl',
-                width: double.infinity,
-                height: 240,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    height: 240,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                    ),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.blue[500],
-                        strokeWidth: 3,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 240,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: Colors.grey,
-                      size: 60,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // أيقونة التكبير في الزاوية
-            // Positioned(
-            //   top: 12,
-            //   right: 12,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     decoration: BoxDecoration(
-            //       color: Colors.black.withOpacity(0.6),
-            //       borderRadius: BorderRadius.circular(20),
-            //     ),
-            //     child: const Icon(
-            //       Icons.zoom_in,
-            //       color: Colors.white,
-            //       size: 20,
-            //     ),
-            //   ),
-            // ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // معاينة الفيديو
-  Widget _buildVideoPreview(BuildContext context, String videoUrl) {
-    return GestureDetector(
-      onTap: () => _openVideo(context, videoUrl),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Container(
-              height: 240,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.grey[800]!,
-                    Colors.grey[900]!,
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.videocam,
-                  color: Colors.white,
-                  size: 80,
-                ),
-              ),
-            ),
-            // أيقونة التشغيل في الوسط
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
-              ),
-            ),
-            // نص "انقر للمشاهدة" في الأسفل
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'انقر للمشاهدة',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildImagePreview(BuildContext context, String imageUrl) {
+  //   return GestureDetector(
+  //     onTap: () => _openImageFullScreen(context, imageUrl),
+  //     child: Container(
+  //       decoration: BoxDecoration(
+  //         borderRadius: const BorderRadius.only(
+  //           topLeft: Radius.circular(20),
+  //           topRight: Radius.circular(20),
+  //         ),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black.withOpacity(0.1),
+  //             blurRadius: 8,
+  //             offset: const Offset(0, 2),
+  //           ),
+  //         ],
+  //       ),
+  //       child: Stack(
+  //         children: [
+  //           ClipRRect(
+  //             borderRadius: const BorderRadius.only(
+  //               topLeft: Radius.circular(20),
+  //               topRight: Radius.circular(20),
+  //             ),
+  //             child: Image.network(
+  //               '${ApiConstances.baseUrlImg}/$imageUrl',
+  //               width: double.infinity,
+  //               height: 240,
+  //               fit: BoxFit.cover,
+  //               loadingBuilder: (context, child, progress) {
+  //                 if (progress == null) return child;
+  //                 return Container(
+  //                   height: 240,
+  //                   decoration: BoxDecoration(
+  //                     color: Colors.grey[100],
+  //                     borderRadius: const BorderRadius.only(
+  //                       topLeft: Radius.circular(20),
+  //                       topRight: Radius.circular(20),
+  //                     ),
+  //                   ),
+  //                   child: Center(
+  //                     child: CircularProgressIndicator(
+  //                       color: Colors.blue[500],
+  //                       strokeWidth: 3,
+  //                     ),
+  //                   ),
+  //                 );
+  //               },
+  //               errorBuilder: (context, error, stackTrace) => Container(
+  //                 height: 240,
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.grey[100],
+  //                   borderRadius: const BorderRadius.only(
+  //                     topLeft: Radius.circular(20),
+  //                     topRight: Radius.circular(20),
+  //                   ),
+  //                 ),
+  //                 child: const Center(
+  //                   child: Icon(
+  //                     Icons.broken_image_outlined,
+  //                     color: Colors.grey,
+  //                     size: 60,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //           // أيقونة التكبير في الزاوية
+  //           // Positioned(
+  //           //   top: 12,
+  //           //   right: 12,
+  //           //   child: Container(
+  //           //     padding: const EdgeInsets.all(8),
+  //           //     decoration: BoxDecoration(
+  //           //       color: Colors.black.withOpacity(0.6),
+  //           //       borderRadius: BorderRadius.circular(20),
+  //           //     ),
+  //           //     child: const Icon(
+  //           //       Icons.zoom_in,
+  //           //       color: Colors.white,
+  //           //       size: 20,
+  //           //     ),
+  //           //   ),
+  //           // ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // معاينة ملف PDF
   Widget _buildPDFPreview(BuildContext context, String pdfUrl) {
-    return GestureDetector(
-      onTap: () => _openPDF(pdfUrl),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+  final fileName = pdfUrl.split('/').last; // استخراج اسم الملف من الرابط
+
+  return GestureDetector(
+    onTap: () => downloadPDF(context , pdfUrl),
+    child: Container(
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Container(
-              height: 240,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.red[600],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.picture_as_pdf,
-                  color: Colors.white,
-                  size: 80,
-                ),
-              ),
-            ),
-            // أيقونة PDF في الزاوية
-            // Positioned(
-            //   top: 12,
-            //   right: 12,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     decoration: BoxDecoration(
-            //       color: Colors.black.withOpacity(0.6),
-            //       borderRadius: BorderRadius.circular(20),
-            //     ),
-            //     child: const Icon(
-            //       Icons.picture_as_pdf,
-            //       color: Colors.white,
-            //       size: 20,
-            //     ),
-            //   ),
-            // ),
-          ],
-        ),
+        ],
       ),
-    );
-  }
+      child: Row(
+        children: [
+          // أيقونة PDF
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.picture_as_pdf,
+              color: Colors.red[600],
+              size: 40,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // اسم الملف + وصف
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fileName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "مستند PDF",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // زر تحميل / فتح
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Colors.grey[500],
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   // معاينة المستندات
   Widget _buildDocumentPreview(
@@ -543,7 +380,6 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
           children: [
             Container(
               height: 240,
-              width: double.infinity,
               decoration: BoxDecoration(
                 color: backgroundColor,
                 borderRadius: const BorderRadius.only(
@@ -711,44 +547,40 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
+    // إذا كان الملف صورة، نعرض فقط بحجم الصورة
+    if (widget.announcement.fileUrl != null &&
+        ['image', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff'].contains(
+            widget.announcement.fileType?.toLowerCase().replaceAll('.', ''))) {
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // الملف في الأعلى - يدعم جميع أنواع الملفات
+          // الصورة أو الملف (بدون ظل - ستايل تيليجرام)
           if (widget.announcement.fileUrl != null)
-            _buildFilePreview(context, widget.announcement.fileType!,
-                widget.announcement.fileUrl!),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: _buildFilePreview(
+                context,
+                widget.announcement.fileType!,
+                widget.announcement.fileUrl!,
+              ),
+            ),
 
-          // النص تحت الملف
+          // النص أسفل الصورة
           if (widget.announcement.content != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Text(
                 widget.announcement.content!,
                 style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.6,
+                  fontSize: 15,
+                  height: 1.4,
                   color: Color(0xFF1A1A1A),
-                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
 
-          // التاريخ في الزاوية السفلى
+          // التاريخ بخط صغير جدًا في الأسفل
           Container(
             padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
             child: Row(
@@ -781,7 +613,84 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
             ),
           ),
         ],
-      ),
-    );
+      );
+    } else {
+      // للملفات الأخرى، نستخدم العرض الكامل
+      return IntrinsicWidth(
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // الملف في الأعلى
+              if (widget.announcement.fileUrl != null)
+                _buildFilePreview(context, widget.announcement.fileType!,
+                    widget.announcement.fileUrl!),
+
+              // النص تحت الملف
+              if (widget.announcement.content != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Text(
+                    widget.announcement.content!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: Color(0xFF1A1A1A),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+
+              // التاريخ في الزاوية السفلى
+              Container(
+                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Colors.grey[500],
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.announcement.createdAt,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }

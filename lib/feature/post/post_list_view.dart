@@ -113,41 +113,65 @@ class _PostListScreenState extends State<PostListScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
       child: Card(
-        color: Colors.white,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  color: Colors.white,
+  elevation: 2,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    child: Row(
+      children: [
+        // صورة البروفايل
+        CircleAvatar(
+          backgroundImage: user!.profilePictureUrl != null
+              ? NetworkImage("${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
+              : const AssetImage('assets/images/default_avatar.jpg')
+                  as ImageProvider,
+          radius: 22,
         ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            context.pushNamed(RoutesNames.createPost, arguments: user);
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: user!.profilePictureUrl != null
-                      ? NetworkImage(
-                          "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
-                      : const AssetImage('assets/images/default_avatar.jpg'),
-                  radius: 20,
+        const SizedBox(width: 10),
+
+        // زر "بماذا تفكر؟" (يشبه فيسبوك)
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              context.pushNamed(RoutesNames.createPost, arguments: user);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.grey.shade100,
+              ),
+              child: const Text(
+                "بماذا تفكر؟",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    "إنشاء منشور جديد",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                const Icon(Icons.edit, color: Colors.grey),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+        const SizedBox(width: 8),
+
+        // لمسة خاصة بالتطبيق (أيقونة إضافة صورة)
+        IconButton(
+          onPressed: () {
+            context.pushNamed(RoutesNames.createPost, arguments: user);
+          },
+          icon: const Icon(Icons.edit,
+              color: Colors.green, size: 24),
+          tooltip: "إضافة صورة",
+        ),
+      ],
+    ),
+  ),
+)
+ );
   }
 
   @override

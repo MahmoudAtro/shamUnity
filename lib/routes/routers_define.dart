@@ -10,10 +10,11 @@ import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
+import 'package:shamunity/feature/chat/user/user_chat_screen.dart';
+import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
-import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/create_post_view.dart';
@@ -21,7 +22,7 @@ import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
-import 'package:shamunity/feature/shamunityAi/chat_app.dart';
+import 'package:shamunity/feature/suggesation/suggesation_seceen.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
@@ -48,8 +49,12 @@ class AppRoute {
                   create: (context) => getit<VisitedUserProfileCubit>()),
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
-            child: const HomePage(),
+            child: HomePage(currentIndex: route.arguments as int?),
           ),
+        );
+      case RoutesNames.suggesation:
+        return MaterialPageRoute(
+          builder: (_) => const FeedbackScreen(),
         );
       case RoutesNames.createPost:
         return MaterialPageRoute(
@@ -110,6 +115,13 @@ class AppRoute {
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
             child: SheikhProfileScreen(userId: route.arguments as int),
+          ),
+        );
+
+      case RoutesNames.userChatScreen:
+        return MaterialPageRoute(
+          builder: (_) => UserChatScreen(
+            conversation: route.arguments as ConversationResponseModel,
           ),
         );
 

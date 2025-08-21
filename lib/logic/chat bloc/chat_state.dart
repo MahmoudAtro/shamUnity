@@ -1,4 +1,3 @@
-
 import 'package:shamunity/models/chat_message_model.dart';
 
 abstract class ChatState {}
@@ -8,6 +7,18 @@ class ChatInitial extends ChatState {}
 
 // Loading state when fetching Chat
 class ChatLoading extends ChatState {}
+
+class ChatSendMessageSuccess extends ChatState {
+  final int conversationId;
+
+  ChatSendMessageSuccess({required this.conversationId});
+}
+
+class ChatCheckConversation extends ChatState {
+  final int conversationId;
+
+  ChatCheckConversation({required this.conversationId});
+}
 
 // Success state when Chat are loaded successfully
 class ChatLoaded extends ChatState {
@@ -25,6 +36,6 @@ class ChatLoaded extends ChatState {
 // Error state when something goes wrong
 class ChatError extends ChatState {
   final String message;
-  
+
   ChatError(this.message);
 }

@@ -53,6 +53,14 @@ class _MenuScreenState extends State<MenuScreen> {
             iconColor: const Color.fromARGB(255, 52, 75, 94),
             onTap: () {},
           ),
+          MenuCard(
+            icon: Icons.support_agent,
+            title: 'الإقتراحات',
+            iconColor: const Color.fromARGB(255, 52, 75, 94),
+            onTap: () {
+              context.pushNamed('/suggesation');
+            },
+          ),
           const SizedBox(height: 10),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 4),

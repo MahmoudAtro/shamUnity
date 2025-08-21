@@ -25,7 +25,7 @@ class TextStyles {
   );
 
   static TextStyle font14Medium = TextStyle(
-    fontSize: 14.sp,
+    fontSize: 15.sp,
     fontWeight: FontWeightHelper.medium,
     color: Colors.white
   );
