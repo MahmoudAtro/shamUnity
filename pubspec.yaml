@@ -78,6 +78,9 @@ dependencies:
   audioplayers: ^6.5.0
   open_file: ^3.5.10
   syncfusion_flutter_pdfviewer: ^30.2.6
+  timeago: ^3.7.1
+  cached_network_image: ^3.4.1
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:

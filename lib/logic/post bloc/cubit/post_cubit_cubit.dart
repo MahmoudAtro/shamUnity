@@ -150,6 +150,8 @@ class PostCubit extends Cubit<PostCubitState> {
       final postId = likeData['postId'] as int?;
       final likesCount = likeData['likesCount'] as int?;
       final isLiked = likeData['isLiked'] as bool?;
+      
+      debugPrint("isLiked Post $isLiked");
 
       if (postId == null) {
         debugPrint("❌ PostCubit: No postId found in like data");

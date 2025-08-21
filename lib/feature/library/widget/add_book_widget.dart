@@ -527,33 +527,33 @@ class _AddBookSheetState extends State<AddBookSheet> {
     );
   }
 
-  String _getFileType(String fileName) {
-    final extension = fileName.split('.').last.toLowerCase();
-    switch (extension) {
-      case 'pdf':
-        return 'pdf';
-      case 'doc':
-      case 'docx':
-        return 'doc';
-      case 'xls':
-      case 'xlsx':
-        return 'xls';
-      case 'ppt':
-      case 'pptx':
-        return 'ppt';
-      case 'txt':
-        return 'txt';
-      case 'jpg':
-      case 'jpeg':
-        return 'image';
-      case 'png':
-        return 'image';
-      case 'gif':
-        return 'image';
-      default:
-        return 'other';
-    }
-  }
+  // String _getFileType(String fileName) {
+  //   final extension = fileName.split('.').last.toLowerCase();
+  //   switch (extension) {
+  //     case 'pdf':
+  //       return 'pdf';
+  //     case 'doc':
+  //     case 'docx':
+  //       return 'doc';
+  //     case 'xls':
+  //     case 'xlsx':
+  //       return 'xls';
+  //     case 'ppt':
+  //     case 'pptx':
+  //       return 'ppt';
+  //     case 'txt':
+  //       return 'txt';
+  //     case 'jpg':
+  //     case 'jpeg':
+  //       return 'image';
+  //     case 'png':
+  //       return 'image';
+  //     case 'gif':
+  //       return 'image';
+  //     default:
+  //       return 'other';
+  //   }
+  // }
 
   Widget _buildUploadButton() {
     return BlocBuilder<LibraryCubit, LibraryState>(

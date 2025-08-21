@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage>
                       Tab(icon: Icon(Icons.people_outline, size: 30)),
                       Tab(icon: Icon(Icons.notifications_active, size: 30)),
                       Tab(icon: Icon(Icons.menu_book_outlined, size: 30)),
-                      Tab(icon: Icon(Icons.announcement, size: 30)),
+                      Tab(icon: Icon(Icons.article, size: 30)),
                       Tab(icon: Icon(Icons.menu, size: 30)),
                     ],
                   ),

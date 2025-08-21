@@ -254,7 +254,7 @@ class TextViewerScreen extends StatelessWidget {
   void _openInBrowser(BuildContext context) async {
     try {
       // فتح الملف النصي في المتصفح
-      final url = Uri.parse(textUrl);
+      // final url = Uri.parse(textUrl);
 
       // يمكن استخدام مكتبة url_launcher
       // import 'package:url_launcher/url_launcher.dart';

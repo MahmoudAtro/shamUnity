@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
+import 'package:shamunity/core/widgets/empty_data.dart';
+import 'package:shamunity/feature/comment/shimmer_comments_view.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
 import 'package:shamunity/models/post.dart';
@@ -138,17 +140,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   Widget _buildCommentList(CommentState state) {
     if (state is CommentLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: ShimmerCommentsView(),
+      );
     } else if (state is CommentError) {
       return Center(child: Text(state.failure));
     } else if (state is CommentsLoaded) {
       if (state.comments.isEmpty) {
-        return const Center(
-          child: Text(
-            "لا توجد تعليقات",
-            style: TextStyle(fontSize: 22),
-          ),
-        );
+        return const EmptyData(message: "لا توجد تعليقات");
       }
 
       return ListView.builder(
@@ -179,7 +179,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       backgroundImage: comment.author.profilePicture != null
                           ? NetworkImage(
                               "${ApiConstances.baseUrlImg}${comment.author.profilePicture}")
-                          : null,
+                          : const AssetImage(
+                              "assets/images/default_avatar.jpg"),
                       child: comment.author.name.isEmpty
                           ? Text(
                               comment.author.name,
@@ -248,7 +249,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   Widget _buildCommentInputField() {
     return Container(
-      
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 8,

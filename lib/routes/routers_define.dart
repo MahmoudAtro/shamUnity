@@ -10,6 +10,7 @@ import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
+import 'package:shamunity/feature/chat/user/user_chat_screen.dart';
 import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
@@ -27,6 +28,7 @@ import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
+import 'package:shamunity/models/conversation_model.dart';
 import 'package:shamunity/models/library_model.dart'
     show YearModel, DepartmentModel, SemesterModel;
 import 'package:shamunity/models/post.dart';
@@ -113,6 +115,13 @@ class AppRoute {
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
             child: SheikhProfileScreen(userId: route.arguments as int),
+          ),
+        );
+
+      case RoutesNames.userChatScreen:
+        return MaterialPageRoute(
+          builder: (_) => UserChatScreen(
+            conversation: route.arguments as ConversationResponseModel,
           ),
         );
 

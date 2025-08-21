@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/api_constant.dart';
+import 'package:shamunity/constants/colors.dart';
+import 'package:shamunity/core/helpers/space_helper.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/comment/comment_view.dart';
@@ -12,31 +14,48 @@ import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
 import 'package:shamunity/routes/routes_name.dart';
+import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:cached_network_image/cached_network_image.dart';
 
 class PostWidget extends StatefulWidget {
   final Post post;
   final Author author;
-  final UserModel? user; // إضافة متغير user
 
-  const PostWidget(
-      {super.key, required this.post, required this.author, this.user});
+  final UserModel? user;
 
+  const PostWidget({
+    super.key,
+    required this.post,
+    required this.author,
+    this.user,
+  });
   @override
   State<PostWidget> createState() => _PostWidgetState();
 }
 
-class _PostWidgetState extends State<PostWidget> {
-  bool _isDeleting = false; // مؤشر محلي لحالة الحذف
+class _PostWidgetState extends State<PostWidget>
+    with SingleTickerProviderStateMixin {
+  bool _isDeleting = false;
   late PostCubit postCubit;
   late CommentCubit commentCubit;
-  bool isLoading = true; // حالة التحميل
+
+  bool isLoading = true;
+  late AnimationController _likeController;
 
   @override
   void initState() {
     super.initState();
     postCubit = BlocProvider.of<PostCubit>(context);
-    // إنشاء CommentCubit جديد لكل PostWidget
+
     commentCubit = getit<CommentCubit>();
+
+    // إضافة التحريك للإعجاب
+    _likeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
     debugPrint("✅ PostWidget: CommentCubit created for post ${widget.post.id}");
   }
 
@@ -44,49 +63,106 @@ class _PostWidgetState extends State<PostWidget> {
   void dispose() {
     debugPrint(
         "🔄 PostWidget: Disposing CommentCubit for post ${widget.post.id}");
-    commentCubit.close(); // إغلاق CommentCubit
+    commentCubit.close();
+    _likeController.dispose();
     super.dispose();
+  }
+
+  // تنسيق التاريخ بشكل مناسب
+  String _formatDate(String dateString) {
+    try {
+      final dateTime = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      // إذا كان أقل من 24 ساعة، استخدم timeago
+      if (difference.inHours < 24) {
+        timeago.setLocaleMessages('ar', timeago.ArMessages());
+        return timeago.format(dateTime, locale: 'ar');
+      } else {
+        // إذا كان في نفس السنة
+        if (dateTime.year == now.year) {
+          return DateFormat('d MMMM', 'ar').format(dateTime);
+        } else {
+          return DateFormat('d MMMM y', 'ar').format(dateTime);
+        }
+      }
+    } catch (e) {
+      return dateString;
+    }
   }
 
   void _showOptionsMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
+      backgroundColor: Colors.white,
+      elevation: 10,
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 50,
-                height: 5,
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 50.w,
+                height: 5.h,
+                margin: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(3.r),
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.edit, color: Colors.blue),
-                title: const Text('تعديل المنشور',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.blue),
+                ),
+                title: Text(
+                  'تعديل المنشور',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
+                ),
                 onTap: () {
                   context.pushNamed(RoutesNames.editPost,
                       arguments: widget.post);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1.h, color: Colors.grey.withOpacity(0.3)),
               ListTile(
-                leading: _isDeleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.delete, color: Colors.red),
-                title: Text(_isDeleting ? 'جاري الحذف...' : 'حذف المنشور',
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: _isDeleting
+                      ? SizedBox(
+                          width: 20.w,
+                          height: 20.h,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.red),
+                          ),
+                        )
+                      : const Icon(Icons.delete, color: Colors.red),
+                ),
+                title: Text(
+                  _isDeleting ? 'جاري الحذف...' : 'حذف المنشور',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                    color: _isDeleting ? Colors.grey : Colors.black,
+                  ),
+                ),
                 onTap: _isDeleting
                     ? null
                     : () async {
@@ -106,7 +182,7 @@ class _PostWidgetState extends State<PostWidget> {
                         }
                       },
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 16.h),
             ],
           ),
         );
@@ -159,234 +235,397 @@ class _PostWidgetState extends State<PostWidget> {
           });
         }
 
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          color: Colors.white,
-          shadowColor: Colors.grey.withOpacity(0.2),
-          clipBehavior: Clip.antiAlias,
-          elevation: 2,
-          child: Column(
-            children: [
-              // Header
-              ListTile(
-                leading: InkWell(
-                  onTap: () {
-                    context.pushNamed(RoutesNames.sheikhProfile,
-                        arguments: widget.author.id);
-                  },
-                  child: widget.author.profilePicture != null
-                      ? Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return GlobalShimmer(
-                                  child: Container(
-                                    height: 40,
-                                    width: 40,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0.w),
+          child: Card(
+            margin: EdgeInsets.symmetric(vertical: 5.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            elevation: 1,
+            color: Colors.white,
+            child: Padding(
+              // ✅ إرجاع البادينغ للـ Card
+              padding: EdgeInsets.all(8.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ====== Header (LinkedIn style) ======
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                    child: Row(
+                      children: [
+                        // صورة البروفايل (دائرية)
+                        CircleAvatar(
+                          radius: 22.r,
+                          backgroundColor: Colors.grey[300],
+                          backgroundImage: widget.author.profilePicture != null
+                              ? NetworkImage(
+                                  "${ApiConstances.baseUrlImg}${widget.author.profilePicture}")
+                              : const AssetImage(
+                                      "assets/images/default_avatar.jpg")
+                                  as ImageProvider,
+                        ),
+                        SizedBox(width: 10.w),
+
+                        // الاسم + الوقت
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    widget.author.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14.sp,
+                                      color: Colors.black87,
                                     ),
                                   ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[300],
+                                  horizontalspace(5),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      widget.author.college != null
+                                          ? "${widget.author.college} 🎓"
+                                          : "Academic 🎓",
+                                      style: TextStyle(
+                                          fontSize: 10.sp,
+                                          color: Colors.blueAccent),
+                                    ),
                                   ),
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.grey[600],
-                                    size: 24,
+                                ],
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                _formatDate(currentPost.createdAt.toString()),
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // زر الخيارات
+                        if (isOwner)
+                          IconButton(
+                            icon: Icon(Icons.more_horiz,
+                                color: Colors.grey[700], size: 22.sp),
+                            onPressed: () => _showOptionsMenu(context),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(height: 1, color: Colors.grey[300]),
+
+                  // ====== نص البوست ======
+                  if (currentPost.content.isNotEmpty)
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Text(
+                        currentPost.content,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          height: 1.5,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+
+                  // ====== صورة البوست ======
+                  if (currentPost.imageUrl != null)
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(12.r), // ✅ حواف دائرية للصورة
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            "${ApiConstances.baseUrlImg}${currentPost.imageUrl}",
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) => GlobalShimmer(
+                          child: Container(
+                            height: 220.h,
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          height: 220.h,
+                          color: Colors.grey[200],
+                          child: Icon(Icons.broken_image,
+                              size: 40.sp, color: Colors.grey[400]),
+                        ),
+                      ),
+                    ),
+
+                  SizedBox(height: 6.h),
+
+                  // ====== عدد التفاعلات ======
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    child: Row(
+                      children: [
+                        Icon(Icons.lightbulb, // ✅ لمبة بدل إعجاب
+                            size: 16.sp,
+                            color: ColorsManager.gold.withOpacity(0.8)),
+                        SizedBox(width: 4.w),
+                        Text(
+                          "${currentPost.likesCount}",
+                          style: TextStyle(
+                              fontSize: 12.sp, color: Colors.grey[700]),
+                        ),
+                        const Spacer(),
+                        Text(
+                          "${currentPost.commentsCount} تعليقات",
+                          style: TextStyle(
+                              fontSize: 12.sp, color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(height: 1, color: Colors.grey[300]),
+
+                  // ====== أزرار التفاعل ======
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // زر أبدعت (بديل إعجاب)
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              postCubit.toggleLike(currentPost.id);
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.h),
+                              child: Row(
+                                // mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.lightbulb_outline,
+                                    size: 20.sp,
+                                    color: currentPost.isLiked
+                                        ? ColorsManager.gold
+                                        : Colors.grey[700],
                                   ),
-                                );
-                              },
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    "أبدعت",
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      color: currentPost.isLiked
+                                          ? ColorsManager.gold
+                                          : Colors.grey[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        )
-                      : Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  "assets/images/default_avatar.jpg",
-                                ),
-                                fit: BoxFit.cover,
-                              )),
                         ),
-                ),
-                // ...existing code...
-                title: InkWell(
-                  onTap: () {
-                    context.pushNamed(RoutesNames.sheikhProfile,
-                        arguments: widget.author.id);
-                  },
-                  child: Text(widget.author.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ),
-
-                subtitle: Text(currentPost.createdAt.toString()),
-                trailing: isOwner
-                    ? IconButton(
-                        icon: const Icon(Icons.more_horiz),
-                        onPressed: () => _showOptionsMenu(context),
-                      )
-                    : null,
-              ),
-              // Text Content
-              if (currentPost.content.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      currentPost.content,
-                      style: TextStyle(fontSize: 16.sp),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ),
-
-              // Image
-              if (currentPost.imageUrl != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Image.network(
-                    width: double.infinity,
-                    height: 220,
-                    fit: BoxFit.cover,
-                    "${ApiConstances.baseUrlImg}${currentPost.imageUrl}",
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return GlobalShimmer(
-                        child: Container(
-                          height: 220,
-                          width: double.infinity,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-              const Divider(),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _PostAction(
-                      color: currentPost.isLiked ? Colors.blue : Colors.grey,
-                      icon: currentPost.isLiked
-                          ? Icons.lightbulb
-                          : Icons.lightbulb_outline,
-                      label: "${currentPost.likesCount}",
-                      onTap: () {
-                        debugPrint("🔄 PostWidget - Tapping like button");
-                        debugPrint(
-                            "🔄 PostWidget - Current isLiked: ${currentPost.isLiked}");
-                        debugPrint(
-                            "🔄 PostWidget - Current likesCount: ${currentPost.likesCount}");
-
-                        postCubit.toggleLike(currentPost.id);
-
-                        print("تم الضغط على إعجاب");
-                      },
-                    ),
-                    _PostAction(
-                      icon: Icons.comment_outlined,
-                      label: "${currentPost.commentsCount}",
-                      onTap: () {
-                        debugPrint(
-                            "🔄 PostWidget: Opening comments for post ${currentPost.id}");
-                        // استخدم CommentCubit الموجود بدلاً من إنشاء واحد جديد
-                        commentCubit.fetchComments(currentPost.id);
-                        showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              debugPrint("💾 حفظ البوست ${currentPost.id}");
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.h),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.bookmark_border,
+                                      size: 20.sp, color: Colors.grey[700]),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    "حفظ",
+                                    style: TextStyle(
+                                        fontSize: 13.sp,
+                                        color: Colors.grey[700]),
+                                  ),
+                                ],
+                              ),
                             ),
-                            builder: (context) => BlocProvider.value(
+                          ),
+                        ),
+
+                        // زر تعليق (بديل مشاركة)
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              commentCubit.fetchComments(currentPost.id);
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor:
+                                    Colors.transparent, // خليها شفاف
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20.r)),
+                                ),
+                                builder: (context) => BlocProvider.value(
                                   value: commentCubit,
                                   child: DraggableScrollableSheet(
                                     expand: false,
-                                    initialChildSize: 0.8,
+                                    initialChildSize: 0.85,
                                     minChildSize: 0.5,
                                     maxChildSize: 0.9,
-                                    builder: (_, controller) =>
-                                        CommentBottomSheet(
-                                      post: currentPost,
-                                      scrollController: ScrollController(),
+                                    builder: (_, controller) => ClipRRect(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(20.r)),
+                                      child: Container(
+                                        color: Colors
+                                            .white, // لازم تعطي لون الخلفية هنا
+                                        child: CommentBottomSheet(
+                                          post: currentPost,
+                                          scrollController: controller,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ));
-                      },
-                    )
-                  ],
-                ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.h),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.comment_outlined,
+                                      size: 20.sp, color: Colors.grey[700]),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    "تعليق",
+                                    style: TextStyle(
+                                        fontSize: 13.sp,
+                                        color: Colors.grey[700]),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
         );
       },
     );
   }
-}
 
-class _PostAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color? color;
+  Widget buildLikeButton(Post post, BuildContext context) {
+    final isLiked = post.isLiked;
+    final iconColor = isLiked ? ColorsManager.gold : Colors.grey[600];
 
-  const _PostAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        child: Row(
-          children: [
-            Text(label, style: TextStyle(color: color ?? Colors.grey[700])),
-            const SizedBox(width: 3),
-            Icon(icon, size: 28, color: color ?? Colors.grey[700]),
-          ],
+        onTap: () {
+          debugPrint("🔄 PostWidget - Tapping like button");
+          if (isLiked) {
+            _likeController.reverse();
+          } else {
+            _likeController.forward(from: 0.0);
+          }
+          postCubit.toggleLike(post.id);
+        },
+        borderRadius: BorderRadius.circular(30.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          child: Row(
+            children: [
+              Text(
+                "${post.likesCount}",
+                style: TextStyle(
+                  color: iconColor,
+                  fontWeight: isLiked ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 15.sp,
+                ),
+              ),
+              SizedBox(width: 6.w),
+              ScaleTransition(
+                scale: Tween<double>(begin: 1.0, end: 1.3).animate(
+                  CurvedAnimation(
+                      parent: _likeController, curve: Curves.elasticOut),
+                ),
+                child: Icon(
+                  isLiked ? Icons.lightbulb : Icons.lightbulb_outline,
+                  color: iconColor,
+                  size: 26.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildCommentButton(Post post, BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          debugPrint("🔄 PostWidget: Opening comments for post ${post.id}");
+          commentCubit.fetchComments(post.id);
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            ),
+            builder: (context) => BlocProvider.value(
+              value: commentCubit,
+              child: DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.8,
+                minChildSize: 0.5,
+                maxChildSize: 0.9,
+                builder: (_, controller) => CommentBottomSheet(
+                  post: post,
+                  scrollController: ScrollController(),
+                ),
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(30.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          child: Row(
+            children: [
+              Text(
+                "${post.commentsCount}",
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 15.sp,
+                ),
+              ),
+              SizedBox(width: 6.w),
+              Icon(
+                Icons.comment_outlined,
+                color: Colors.grey[600],
+                size: 26.sp,
+              ),
+            ],
+          ),
         ),
       ),
     );

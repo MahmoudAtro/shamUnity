@@ -13,6 +13,7 @@ import 'package:shamunity/core/widgets/app_text_form_feild.dart';
 import 'package:shamunity/core/widgets/connection_error.dart';
 import 'package:shamunity/core/widgets/empty_data.dart';
 import 'package:shamunity/feature/chat/user/chat_bubble_user.dart';
+import 'package:shamunity/feature/chat/user/shimmer_user_chat.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_bloc.dart';
 import 'package:shamunity/logic/chat%20bloc/chat_event.dart';
@@ -347,7 +348,22 @@ class _UserChatScreenState extends State<UserChatScreen> {
                     child: BlocBuilder<ChatBloc, ChatState>(
                         builder: (context, state) {
                       if (state is ChatLoading) {
-                        return const Center(child: CircularProgressIndicator());
+                        return ListView.builder(
+                          itemCount: 6, // عدد عناصر shimmer
+                          itemBuilder: (context, index) {
+                            // مثال: أول 3 رسائل نصية و 2 صور و 1 صوتية
+                            if (index < 3) {
+                              return const MessageBubbleShimmer(
+                                  isMe: true, type: "text");
+                            } else if (index < 5) {
+                              return const MessageBubbleShimmer(
+                                  isMe: false, type: "image");
+                            } else {
+                              return const MessageBubbleShimmer(
+                                  isMe: true, type: "audio");
+                            }
+                          },
+                        );
                       } else if (state is ChatError) {
                         return ConnectionError(message: state.message);
                       } else if (state is ChatLoaded) {
