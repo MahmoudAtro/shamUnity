@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String baseUrl =
-      "https://melbourne-likely-helicopter-nikon.trycloudflare.com/api";
+      "https://soldier-gathering-detailed-developer.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://melbourne-likely-helicopter-nikon.trycloudflare.com";
+      "https://soldier-gathering-detailed-developer.trycloudflare.com";
 
   /// ----------Outside Application---------
 
