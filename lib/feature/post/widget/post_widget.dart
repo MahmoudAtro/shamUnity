@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shamunity/constants/api_constant.dart';
-import 'package:shamunity/core/helpers/toast.dart';
 import 'package:shamunity/core/service/services_locator.dart';
 import 'package:shamunity/core/widgets/global_shimmer.dart';
 import 'package:shamunity/feature/comment/comment_view.dart';
@@ -27,6 +26,7 @@ class PostWidget extends StatefulWidget {
 }
 
 class _PostWidgetState extends State<PostWidget> {
+  bool _isDeleting = false; // مؤشر محلي لحالة الحذف
   late PostCubit postCubit;
   late CommentCubit commentCubit;
   bool isLoading = true; // حالة التحميل
@@ -79,13 +79,32 @@ class _PostWidgetState extends State<PostWidget> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('حذف المنشور',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                onTap: () {
-                  postCubit.deletePost(widget.post.id);
-                  context.pop();
-                },
+                leading: _isDeleting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.delete, color: Colors.red),
+                title: Text(_isDeleting ? 'جاري الحذف...' : 'حذف المنشور',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                onTap: _isDeleting
+                    ? null
+                    : () async {
+                        setState(() {
+                          _isDeleting = true;
+                        });
+
+                        try {
+                          await postCubit.deletePost(widget.post.id);
+                          context.pop();
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _isDeleting = false;
+                            });
+                          }
+                        }
+                      },
               ),
               const SizedBox(height: 10),
             ],
@@ -99,251 +118,246 @@ class _PostWidgetState extends State<PostWidget> {
   Widget build(BuildContext context) {
     final isOwner = widget.user!.id.toString() == widget.author.id.toString();
 
-    return BlocListener<PostCubit, PostCubitState>(
-      listenWhen: (previous, current) =>
-          isOwner &&
-          (current is PostDeletedSuccess || current is PostDeletedError),
-      listener: (context, state) {
-        if (state is PostDeleteLoading) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const Center(
-              child: CircularProgressIndicator(),
-            ),
+    return BlocBuilder<PostCubit, PostCubitState>(
+      builder: (context, state) {
+        // البحث عن المنشور الحالي في قائمة المنشورات المحدثة
+        Post currentPost = widget.post;
+        if (state is PostCubitLoaded) {
+          final updatedPost = state.posts.firstWhere(
+            (post) => post.id == widget.post.id,
+            orElse: () => widget.post,
           );
-        } else if (state is PostDeletedSuccess) {
-          context.pop();
-          Toast().success(context, "تم حذف المنشور بنجاح");
-          context.pop(); // العودة للصفحة السابقة
-        } else if (state is PostDeletedError) {
-          context.pop();
-          Toast().error(context, state.message);
+          currentPost = updatedPost;
+
+          debugPrint("🔄 PostWidget - Post ${widget.post.id} updated");
+          debugPrint(
+              "🔄 PostWidget - Original isLiked: ${widget.post.isLiked}");
+          debugPrint("🔄 PostWidget - Updated isLiked: ${currentPost.isLiked}");
+          debugPrint(
+              "🔄 PostWidget - Original likesCount: ${widget.post.likesCount}");
+          debugPrint(
+              "🔄 PostWidget - Updated likesCount: ${currentPost.isLiked}");
         }
-      },
-      child: BlocBuilder<PostCubit, PostCubitState>(
-        builder: (context, state) {
-          // البحث عن المنشور الحالي في قائمة المنشورات المحدثة
-          Post currentPost = widget.post;
-          if (state is PostCubitLoaded) {
-            final updatedPost = state.posts.firstWhere(
-              (post) => post.id == widget.post.id,
-              orElse: () => widget.post,
+
+        // إذا كان المنشور محذوف، لا نعرضه
+        if (state is PostCubitLoaded &&
+            !state.posts.any((post) => post.id == widget.post.id)) {
+          return const SizedBox.shrink(); // إخفاء المنشور المحذوف
+        }
+
+        // معالجة أخطاء الحذف
+        if (state is PostDeletedError) {
+          // إظهار رسالة الخطأ
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
             );
-            currentPost = updatedPost;
+          });
+        }
 
-            debugPrint("🔄 PostWidget - Post ${widget.post.id} updated");
-            debugPrint(
-                "🔄 PostWidget - Original isLiked: ${widget.post.isLiked}");
-            debugPrint(
-                "🔄 PostWidget - Updated isLiked: ${currentPost.isLiked}");
-            debugPrint(
-                "🔄 PostWidget - Original likesCount: ${widget.post.likesCount}");
-            debugPrint(
-                "🔄 PostWidget - Updated likesCount: ${currentPost.likesCount}");
-          }
-
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            color: Colors.white,
-            shadowColor: Colors.grey.withOpacity(0.2),
-            clipBehavior: Clip.antiAlias,
-            elevation: 2,
-            child: Column(
-              children: [
-                // Header
-                ListTile(
-                  // ...existing code...
-                  leading: InkWell(
-                    onTap: () {
-                      context.pushNamed(RoutesNames.sheikhProfile,
-                          arguments: widget.author.id);
-                    },
-                    child: widget.author.profilePicture != null
-                        ? Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.network(
-                                "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return GlobalShimmer(
-                                    child: Container(
-                                      height: 40,
-                                      width: 40,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.grey[300],
-                                    ),
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.grey[600],
-                                      size: 24,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    "assets/images/default_avatar.jpg",
-                                  ),
-                                  fit: BoxFit.cover,
-                                )),
-                          ),
-                  ),
-                  // ...existing code...
-                  title: InkWell(
-                    onTap: () {
-                      context.pushNamed(RoutesNames.sheikhProfile,
-                          arguments: widget.author.id);
-                    },
-                    child: Text(widget.author.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-
-                  subtitle: Text(currentPost.createdAt.toString()),
-                  trailing: isOwner
-                      ? IconButton(
-                          icon: const Icon(Icons.more_horiz),
-                          onPressed: () => _showOptionsMenu(context),
-                        )
-                      : null,
-                ),
-                // Text Content
-                if (currentPost.content.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        currentPost.content,
-                        style: TextStyle(fontSize: 16.sp),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ),
-
-                // Image
-                if (currentPost.imageUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Image.network(
-                      width: double.infinity,
-                      height: 220,
-                      fit: BoxFit.cover,
-                      "${ApiConstances.baseUrlImg}${currentPost.imageUrl}",
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return GlobalShimmer(
-                          child: Container(
-                            height: 220,
-                            width: double.infinity,
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          color: Colors.white,
+          shadowColor: Colors.grey.withOpacity(0.2),
+          clipBehavior: Clip.antiAlias,
+          elevation: 2,
+          child: Column(
+            children: [
+              // Header
+              ListTile(
+                leading: InkWell(
+                  onTap: () {
+                    context.pushNamed(RoutesNames.sheikhProfile,
+                        arguments: widget.author.id);
+                  },
+                  child: widget.author.profilePicture != null
+                      ? Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
                             color: Colors.white,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-
-                const Divider(),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _PostAction(
-                        color: currentPost.isLiked ? Colors.blue : Colors.grey,
-                        icon: currentPost.isLiked
-                            ? Icons.lightbulb
-                            : Icons.lightbulb_outline,
-                        label: "${currentPost.likesCount}",
-                        onTap: () {
-                          debugPrint("🔄 PostWidget - Tapping like button");
-                          debugPrint(
-                              "🔄 PostWidget - Current isLiked: ${currentPost.isLiked}");
-                          debugPrint(
-                              "🔄 PostWidget - Current likesCount: ${currentPost.likesCount}");
-
-                          postCubit.toggleLike(currentPost.id);
-
-                          print("تم الضغط على إعجاب");
-                        },
-                      ),
-                      _PostAction(
-                        icon: Icons.comment_outlined,
-                        label: "${currentPost.commentsCount}",
-                        onTap: () {
-                          debugPrint(
-                              "🔄 PostWidget: Opening comments for post ${currentPost.id}");
-                          // استخدم CommentCubit الموجود بدلاً من إنشاء واحد جديد
-                          commentCubit.fetchComments(currentPost.id);
-                          showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20)),
-                              ),
-                              builder: (context) => BlocProvider.value(
-                                    value: commentCubit,
-                                    child: DraggableScrollableSheet(
-                                      expand: false,
-                                      initialChildSize: 0.8,
-                                      minChildSize: 0.5,
-                                      maxChildSize: 0.9,
-                                      builder: (_, controller) =>
-                                          CommentBottomSheet(
-                                        post: currentPost,
-                                        scrollController: ScrollController(),
-                                      ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              "${ApiConstances.baseUrlImg}${widget.author.profilePicture}",
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return GlobalShimmer(
+                                  child: Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
                                     ),
-                                  ));
-                        },
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey[300],
+                                  ),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.grey[600],
+                                    size: 24,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  "assets/images/default_avatar.jpg",
+                                ),
+                                fit: BoxFit.cover,
+                              )),
+                        ),
+                ),
+                // ...existing code...
+                title: InkWell(
+                  onTap: () {
+                    context.pushNamed(RoutesNames.sheikhProfile,
+                        arguments: widget.author.id);
+                  },
+                  child: Text(widget.author.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+
+                subtitle: Text(currentPost.createdAt.toString()),
+                trailing: isOwner
+                    ? IconButton(
+                        icon: const Icon(Icons.more_horiz),
+                        onPressed: () => _showOptionsMenu(context),
                       )
-                    ],
+                    : null,
+              ),
+              // Text Content
+              if (currentPost.content.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      currentPost.content,
+                      style: TextStyle(fontSize: 16.sp),
+                      textAlign: TextAlign.right,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        },
-      ),
+              // Image
+              if (currentPost.imageUrl != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Image.network(
+                    width: double.infinity,
+                    height: 220,
+                    fit: BoxFit.cover,
+                    "${ApiConstances.baseUrlImg}${currentPost.imageUrl}",
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return GlobalShimmer(
+                        child: Container(
+                          height: 220,
+                          width: double.infinity,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              const Divider(),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _PostAction(
+                      color: currentPost.isLiked ? Colors.blue : Colors.grey,
+                      icon: currentPost.isLiked
+                          ? Icons.lightbulb
+                          : Icons.lightbulb_outline,
+                      label: "${currentPost.likesCount}",
+                      onTap: () {
+                        debugPrint("🔄 PostWidget - Tapping like button");
+                        debugPrint(
+                            "🔄 PostWidget - Current isLiked: ${currentPost.isLiked}");
+                        debugPrint(
+                            "🔄 PostWidget - Current likesCount: ${currentPost.likesCount}");
+
+                        postCubit.toggleLike(currentPost.id);
+
+                        print("تم الضغط على إعجاب");
+                      },
+                    ),
+                    _PostAction(
+                      icon: Icons.comment_outlined,
+                      label: "${currentPost.commentsCount}",
+                      onTap: () {
+                        debugPrint(
+                            "🔄 PostWidget: Opening comments for post ${currentPost.id}");
+                        // استخدم CommentCubit الموجود بدلاً من إنشاء واحد جديد
+                        commentCubit.fetchComments(currentPost.id);
+                        showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (context) => BlocProvider.value(
+                                  value: commentCubit,
+                                  child: DraggableScrollableSheet(
+                                    expand: false,
+                                    initialChildSize: 0.8,
+                                    minChildSize: 0.5,
+                                    maxChildSize: 0.9,
+                                    builder: (_, controller) =>
+                                        CommentBottomSheet(
+                                      post: currentPost,
+                                      scrollController: ScrollController(),
+                                    ),
+                                  ),
+                                ));
+                      },
+                    )
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }

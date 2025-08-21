@@ -106,7 +106,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 builder: (BuildContext context) => const LoadingDialogWidget());
           } else if (state is PostCreatedSuccess) {
             context.pop();
-            Toast().success(context, "تم تعديل المنشور بنجاح");
+            Toast().success(context, "تم نشر المنشور بنجاح");
+            context.pop();
           } else if (state is PostCreatedError) {
             context.pop();
             Toast().error(context, state.message);

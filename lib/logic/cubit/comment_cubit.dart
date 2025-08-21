@@ -97,6 +97,18 @@ class CommentCubit extends Cubit<CommentState> {
           }
           break;
 
+        case 'deleted':
+          final commentId = commentData['commentId'] as int?;
+          if (commentId != null) {
+            comments.removeWhere((c) => c.id == commentId);
+            debugPrint(
+                "✅ CommentCubit: Comment $commentId deleted, remaining comments: ${comments.length}");
+            if (!isClosed) {
+              emit(CommentsLoaded(List.from(comments)));
+            }
+          }
+          break;
+
         default:
           debugPrint("📡 CommentCubit: Unhandled comment event type: $type");
           break;
@@ -153,9 +165,8 @@ class CommentCubit extends Cubit<CommentState> {
   }
 
   Future<void> addComment(int postId, String content) async {
-    if (!isClosed) {
-      emit(CommentLoading());
-    }
+    // لا نرسل حالة التحميل عند إضافة تعليق جديد
+    // emit(CommentLoading());
 
     try {
       debugPrint("🔄 CommentCubit: Adding comment to post $postId");
@@ -171,10 +182,7 @@ class CommentCubit extends Cubit<CommentState> {
         (newComment) {
           // لا نضيف التعليق هنا لأن Pusher سيرسله
           debugPrint("✅ CommentCubit: Comment added successfully via API");
-          // نحدث الحالة لإظهار نجاح العملية
-          if (!isClosed) {
-            emit(CommentsLoaded(List.from(comments)));
-          }
+          // لا نحتاج لإرسال حالة جديدة هنا لأن Pusher سيقوم بتحديث القائمة
         },
       );
     } catch (e) {
@@ -186,9 +194,8 @@ class CommentCubit extends Cubit<CommentState> {
   }
 
   Future<void> deleteComment(int commentId) async {
-    if (!isClosed) {
-      emit(CommentLoading());
-    }
+    // لا نرسل حالة التحميل عند حذف تعليق
+    // emit(CommentLoading());
 
     try {
       debugPrint("🔄 CommentCubit: Deleting comment $commentId");
@@ -203,10 +210,7 @@ class CommentCubit extends Cubit<CommentState> {
         },
         (_) {
           debugPrint("✅ CommentCubit: Comment deleted successfully via API");
-          // لا نحذف التعليق هنا لأن Pusher سيرسله
-          if (!isClosed) {
-            emit(CommentsLoaded(List.from(comments)));
-          }
+          // لا نحتاج لإرسال حالة جديدة هنا لأن Pusher سيقوم بتحديث القائمة
         },
       );
     } catch (e) {

@@ -26,6 +26,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final TextEditingController _commentController = TextEditingController();
   late CommentCubit commentCubit;
   bool _hasText = false;
+  bool _isSubmitting = false; // مؤشر لإظهار أن التعليق قيد الإرسال
   UserModel? user;
 
   @override
@@ -34,6 +35,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     commentCubit = context.read<CommentCubit>();
     _loadUserData();
     _commentController.addListener(_checkText);
+
+    // تحميل التعليقات عند فتح الشاشة لأول مرة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      commentCubit.fetchComments(widget.post.id);
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -59,11 +65,25 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     });
   }
 
-  void _submitComment() {
+  void _submitComment() async {
     if (_commentController.text.trim().isEmpty) return;
-    commentCubit.addComment(widget.post.id, _commentController.text.trim());
-    _commentController.clear();
-    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await commentCubit.addComment(
+          widget.post.id, _commentController.text.trim());
+      _commentController.clear();
+      FocusScope.of(context).unfocus();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   void _showDeleteDialog(int commentId) {
@@ -99,6 +119,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     return BlocBuilder<CommentCubit, CommentState>(
       builder: (context, state) {
         return Scaffold(
+          backgroundColor: Colors.white,
           resizeToAvoidBottomInset: true,
           body: SafeArea(
             child: Column(
@@ -211,11 +232,23 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         },
       );
     }
-    return const Center(child: Text("لا توجد تعليقات"));
+
+    // الحالة الأولية - إظهار رسالة "جاري التحميل"
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text("جاري تحميل التعليقات..."),
+        ],
+      ),
+    );
   }
 
   Widget _buildCommentInputField() {
     return Container(
+      
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 8,
@@ -234,8 +267,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           Expanded(
             child: TextField(
               controller: _commentController,
+              enabled: !_isSubmitting, // تعطيل الحقل أثناء الإرسال
               decoration: InputDecoration(
-                hintText: 'اكتب تعليقًا...',
+                hintText: _isSubmitting ? 'جاري الإرسال...' : 'اكتب تعليقًا...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
@@ -247,13 +281,18 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   vertical: 12,
                 ),
               ),
-              onSubmitted: (_) => _submitComment(),
+              onSubmitted: _isSubmitting ? null : (_) => _submitComment(),
             ),
           ),
           if (_hasText)
             IconButton(
-              icon: const Icon(Icons.send, color: Colors.blue),
-              onPressed: _submitComment,
+              icon: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.send, color: Colors.blue),
+              onPressed: _isSubmitting ? null : _submitComment,
             ),
         ],
       ),

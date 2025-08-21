@@ -7,7 +7,7 @@ import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/menua/menua_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/search/index.dart';
+import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
                 child: FloatingActionButton(
+                  heroTag: 'home_gemini_chat_button', // إضافة hero tag فريد
                   backgroundColor: Colors.blueAccent,
                   elevation: 4,
                   onPressed: () {
@@ -143,14 +144,5 @@ class _HomePageState extends State<HomePage>
         ),
       ),
     );
-  }
-}
-
-class LibraryBooksTab extends StatelessWidget {
-  const LibraryBooksTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('المكتبة'));
   }
 }

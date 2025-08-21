@@ -32,6 +32,11 @@ class ApiConstances {
   // Search API
   static const String searchUrl = "$baseUrl/users/search";
 
+  // Library API
+  static const String bookRequestsUrl = "$baseUrl/book-requests";
+
+  static const String libraryUrl = "$baseUrl/library/tree";
+
   // announcements
   static const String announcementsUrl = "$baseUrl/announcements";
 

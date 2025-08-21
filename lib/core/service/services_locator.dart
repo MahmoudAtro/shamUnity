@@ -11,7 +11,7 @@ import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
-import 'package:shamunity/logic/search bloc/index.dart';
+import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 
 final getit = GetIt.instance;
@@ -37,7 +37,6 @@ class ServicesLocator {
     // bloc
     getit.registerLazySingleton<RegisterBloc>(() => RegisterBloc(getit()));
   }
-}
 
 void _suggestion(){
   getit.registerLazySingleton<SuggestionApi>(
@@ -55,21 +54,21 @@ void _sheikhProfile() {
       () => VisitedUserProfileCubit(getit()));
 }
 
-void _posts() {
-  // api
-  getit.registerLazySingleton<ApiPost>(
-    () => ApiPost(dio: DioFactory.getDio()),
-  );
-}
+  void _posts() {
+    // api
+    getit.registerLazySingleton<ApiPost>(
+      () => ApiPost(dio: DioFactory.getDio()),
+    );
+  }
 
-void _comment() {
-  // api
-  getit.registerLazySingleton<ApiComment>(
-    () => ApiComment(dio: DioFactory.getDio()),
-  );
-  // bloc - تغيير إلى Factory لإنشاء نسخة جديدة لكل استخدام
-  getit.registerFactory(() => CommentCubit(getit()));
-}
+  void _comment() {
+    // api
+    getit.registerLazySingleton<ApiComment>(
+      () => ApiComment(dio: DioFactory.getDio()),
+    );
+    // bloc - تغيير إلى Factory لإنشاء نسخة جديدة لكل استخدام
+    getit.registerFactory(() => CommentCubit(getit()));
+  }
 
 void _conversation() {
   getit.registerLazySingleton<Conversation>(
@@ -88,6 +87,8 @@ void _search() {
   );
   // bloc
   getit.registerFactory(() => SearchCubit(getit()));
+}
+
 }
 
 class SingleInstanceService {

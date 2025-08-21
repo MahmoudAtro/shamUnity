@@ -10,12 +10,10 @@ import 'package:shamunity/feature/auth/signup/agreement_screen.dart';
 import 'package:shamunity/feature/auth/signup/signup_screen.dart';
 import 'package:shamunity/feature/auth/signup/university_info_screen.dart';
 import 'package:shamunity/feature/auth/verification-otp/verification_code_screen.dart';
-import 'package:shamunity/feature/chat/user/user_chat_screen.dart';
 import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/home/view/ui/home.dart';
 import 'package:shamunity/feature/library/academic_years_grid_view.dart';
 import 'package:shamunity/feature/library/department_view.dart';
-import 'package:shamunity/feature/library/library_home_screen.dart';
 import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/create_post_view.dart';
@@ -25,11 +23,12 @@ import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/feature/suggesation/suggesation_seceen.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
+import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
-import 'package:shamunity/models/college_model.dart';
-import 'package:shamunity/models/conversation_model.dart';
+import 'package:shamunity/models/library_model.dart'
+    show YearModel, DepartmentModel, SemesterModel;
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
@@ -59,26 +58,27 @@ class AppRoute {
         return MaterialPageRoute(
           builder: (_) => CreatePostScreen(user: route.arguments as UserModel),
         );
-      case RoutesNames.userChatScreen:
-        return MaterialPageRoute(
-            builder: (_) => UserChatScreen(
-                  conversation: route.arguments as ConversationResponseModel,
-                ));
-      case RoutesNames.libraryHome:
-        return MaterialPageRoute(
-          builder: (_) => const LibraryHomeScreen(),
-        );
+      // case RoutesNames.libraryHome:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const LibraryHomeScreen(),
+      //   );
+
       case RoutesNames.profile:
         return MaterialPageRoute(
-          builder: (_) => const ProfileScreen(),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => getit<PostCubit>()),
+            ],
+            child: const ProfileScreen(),
+          ),
         );
-      case RoutesNames.libraryBooksTab:
-        return MaterialPageRoute(
-          builder: (_) => const LibraryBooksTab(),
-        );
+
       case RoutesNames.editPost:
         return MaterialPageRoute(
-          builder: (_) => EditPostScreen(post: route.arguments as Post),
+          builder: (_) => BlocProvider(
+            create: (context) => getit<PostCubit>(),
+            child: EditPostScreen(post: route.arguments as Post),
+          ),
         );
       case RoutesNames.search:
         return MaterialPageRoute(
@@ -119,19 +119,25 @@ class AppRoute {
       case RoutesNames.academicYearsGrid:
         return MaterialPageRoute(
           builder: (_) => AcademicYearsGridScreen(
-            years: route.arguments as List<AcademicYearModel>,
+            years: route.arguments as List<YearModel>,
+            departmentName: route.arguments as String,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.departmentDetails:
         return MaterialPageRoute(
           builder: (_) => DepartmentsGridScreen(
             departments: route.arguments as List<DepartmentModel>,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.subjectsGrid:
         return MaterialPageRoute(
           builder: (_) => SubjectsGridScreen(
-            subjectModel: route.arguments as List<SubjectModel>,
+            semesters: route.arguments as List<SemesterModel>,
+            yearNumber: route.arguments as int,
+            departmentName: route.arguments as String,
+            libraryName: route.arguments as String,
           ),
         );
       case RoutesNames.notifications:
