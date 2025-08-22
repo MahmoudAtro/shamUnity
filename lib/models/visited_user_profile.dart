@@ -22,7 +22,6 @@ class VisitedUserProfile {
         id: profile.id,
         name: profile.name,
         email: profile.email,
-        /// The line `profilePicture: profile.profilePicture,` is part of the process of creating a new `Author` object for each post in the `VisitedUserProfile` class.
         profilePictureUrl: profile.profilePictureUrl,
         postsCount: profile.postsCount,
         commentsCount: profile.commentsCount,

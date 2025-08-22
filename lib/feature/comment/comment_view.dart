@@ -173,7 +173,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pushNamed(context, RoutesNames.sheikhProfile,
+                      Navigator.pushNamed(context, RoutesNames.profile,
                           arguments: comment.author.id);
                     },
                     child: CircleAvatar(
@@ -206,7 +206,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           InkWell(
                             onTap: () {
                               Navigator.pushNamed(
-                                  context, RoutesNames.sheikhProfile,
+                                  context, RoutesNames.profile,
                                   arguments: comment.author.id);
                             },
                             child: Text(

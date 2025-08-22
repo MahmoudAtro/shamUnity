@@ -28,7 +28,7 @@ class UserCard extends StatelessWidget {
         onTap: onTap ??
             () {
               // التنقل إلى صفحة الملف الشخصي للمستخدم
-              context.pushNamed('/sheikhProfile', arguments: user.id);
+              context.pushNamed('/profile', arguments: user.id);
             },
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         leading: CircleAvatar(

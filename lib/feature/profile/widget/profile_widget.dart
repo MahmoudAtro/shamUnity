@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/constants/api_constant.dart';
-import 'package:shamunity/core/service/services_locator.dart';
-import 'package:shamunity/core/widgets/empty_data.dart';
-import 'package:shamunity/core/widgets/global_shimmer.dart';
+import 'package:shamunity/core/widgets/connection_error.dart';
 import 'package:shamunity/core/widgets/reusable_tab_widget.dart';
-import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/profile/widget/sheikh_post_widget.dart';
+import 'package:shamunity/feature/announcements/widgets/image_preview.dart';
+import 'package:shamunity/feature/announcements/widgets/video_preview.dart';
+import 'package:shamunity/feature/post/widget/post_widget.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_state.dart';
+import 'package:shamunity/models/conversation_model.dart';
+import 'package:shamunity/models/user_message.dart';
+import 'package:shamunity/routes/extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileWidget extends StatefulWidget {
-  const ProfileWidget({super.key});
+  final int userId;
+
+  const ProfileWidget({
+    super.key,
+    required this.userId,
+  });
 
   @override
   State<ProfileWidget> createState() => _ProfileWidgetState();
@@ -20,151 +27,190 @@ class ProfileWidget extends StatefulWidget {
 
 class _ProfileWidgetState extends State<ProfileWidget> {
   late VisitedUserProfileCubit visitedUserProfileCubit;
-
   @override
   void initState() {
     super.initState();
-
-    visitedUserProfileCubit = VisitedUserProfileCubit(getit());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      visitedUserProfileCubit.getVisitedUserProfile(user!.id);
-    });
+    visitedUserProfileCubit = context.read<VisitedUserProfileCubit>();
+    visitedUserProfileCubit.getVisitedUserProfile(widget.userId);
   }
 
-  Widget buildPostShimmer() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ListView.builder(
-        itemCount: 5,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        itemBuilder: (context, index) => Card(
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: GlobalShimmer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        width: 120,
-                        height: 12,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    height: 14,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    height: 180,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: BlocProvider(
-        create: (context) => visitedUserProfileCubit,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: SingleChildScrollView(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
-                  if (user != null)
-                    CircleAvatar(
-                      radius: 80,
-                      backgroundImage: user!.profilePictureUrl != null
-                          ? NetworkImage(
-                              "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
-                          : const AssetImage('assets/images/default_avatar.jpg')
-                              as ImageProvider,
-                    ),
-                  const SizedBox(height: 16),
-                  if (user != null)
-                    Text(
-                      "${user!.firstName} ${user!.lastName}",
-                      style: const TextStyle(
-                          fontSize: 28, fontWeight: FontWeight.bold),
-                    ),
-                  if (user != null)
-                    Text(
-                      user!.college,
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  if (user != null)
-                    Text(
-                      user!.email,
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  const SizedBox(height: 32),
-                  BlocBuilder<VisitedUserProfileCubit, VisitedUserProfileState>(
-                    builder: (context, state) {
-                      if (state is VisitedUserProfileLoading) {
-                        return buildPostShimmer();
-                      } else if (state is VisitedUserProfileError) {
-                        return EmptyData(message: state.message);
-                      } else if (state is VisitedUserProfileLoaded) {
-                        return PostsAndFilesTabWidget(
-                          posts: state.profile.posts
-                              .map((post) => SheikhPostWidget(
+    return BlocListener<VisitedUserProfileCubit, VisitedUserProfileState>(
+      listener: (context, state) {
+        // يمكن إضافة منطق إضافي هنا إذا لزم الأمر
+      },
+      child: BlocBuilder<VisitedUserProfileCubit, VisitedUserProfileState>(
+        builder: (context, state) {
+          // استدعاء getVisitedUserProfile عند أول بناء للـ widget
+
+          if (state is VisitedUserProfileLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.blue,
+                strokeWidth: 3,
+              ),
+            );
+          } else if (state is VisitedUserProfileError) {
+            return ConnectionError(message: state.message);
+          } else if (state is VisitedUserProfileLoaded) {
+            final profile = state.profile;
+            final author = profile.profile;
+
+            return DefaultTabController(
+              length: 2,
+              child: Scaffold(
+                backgroundColor: Colors.white,
+                body: SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 60),
+
+                        // الصورة الشخصية مع حافة زرقاء جميلة
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.blue,
+                              width: 4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 80,
+                            backgroundColor: Colors.white,
+                            backgroundImage: author.profilePictureUrl != null
+                                ? NetworkImage(
+                                    "${ApiConstances.baseUrlImg}${author.profilePictureUrl!}")
+                                : const AssetImage(
+                                        'assets/images/default_avatar.jpg')
+                                    as ImageProvider,
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // اسم المستخدم
+                        Text(
+                          author.name,
+                          style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
+                        ),
+
+                        if (author.college != null) ...[
+                          Text(
+                            author.college!,
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.grey),
+                          ),
+                        ],
+                        if (author.major != null) ...[
+                          Text(
+                            author.major!,
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                        Text(
+                          author.email,
+                          style:
+                              const TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // زر المحادثة المصغر مع تنسيق جميل
+                        SizedBox(
+                          width: 200, // تصغير العرض
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              context.pushNamed('/userChatScreen',
+                                  arguments: ConversationResponseModel(
+                                    id: 0,
+                                    participant: UserMessage(
+                                      id: state.profile.profile.id,
+                                      name: state.profile.profile.name,
+                                      profilePictureUrl: state
+                                          .profile.profile.profilePictureUrl,
+                                    ),
+                                    updatedAt: DateTime(2004),
+                                  ));
+                            },
+                            icon: const Icon(Icons.chat_bubble_outline,
+                                color: Colors.white, size: 20),
+                            label: const Text(
+                              'ابدأ محادثة',
+                              style: TextStyle(
+                                fontSize: 16, // تصغير الخط
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.blue, // تغيير اللون إلى الأزرق
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 20), // تقليل البادينج
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    25), // حواف أكثر انسيابية
+                              ),
+                              elevation: 4,
+                              shadowColor: Colors.blue.withOpacity(0.3),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // استخدام الودجت القابلة لإعادة الاستخدام
+                        PostsAndFilesTabWidget(
+                          posts: profile.posts
+                              .map((post) => PostWidget(
                                     post: post,
-                                    author: state.profile.profile,
+                                    author: author,
                                   ))
                               .toList(),
-                          files: state.profile.libraryFiles
-                              .map((file) => _buildFilePreview(
+                          files: profile.libraryFiles
+                              .map((file) => _buildEnhancedFileCard(
                                   context, file.type!, file.filePath))
                               .toList(),
                           height: 500,
                           indicatorColor: Colors.blue,
                           labelColor: Colors.blue,
                           unselectedLabelColor: Colors.black,
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
+            );
+          }
+
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
       ),
     );
   }
@@ -176,6 +222,30 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     String cleanFileType = fileType.toLowerCase().replaceAll('.', '');
 
     switch (cleanFileType) {
+      case 'image':
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+      case 'bmp':
+      case 'tiff':
+        return HeroImageExample(
+          imageUrl: fileUrl,
+        );
+
+      case 'video':
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'wmv':
+      case 'flv':
+      case 'mkv':
+      case 'webm':
+      case '3gp':
+      case 'm4v':
+        return VideoPreview(videoUrl: '${ApiConstances.baseUrlImg}$fileUrl');
+
       case 'pdf':
       case 'document':
         return _buildPDFPreview(context, fileUrl);
@@ -204,6 +274,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       default:
         return _buildGenericFilePreview(context, fileUrl, fileType);
     }
+  }
+
+  // دالة لبناء كارد الملف المحسن (مطابق لصفحة القرارات)
+  Widget _buildEnhancedFileCard(
+      BuildContext context, String fileType, String fileUrl) {
+    // استخدام نفس التصميم من AnnouncementCard
+    return _buildFilePreview(context, fileType, fileUrl);
   }
 
   // دالة لبن

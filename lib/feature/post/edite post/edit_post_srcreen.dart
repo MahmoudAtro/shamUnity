@@ -153,16 +153,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundImage: widget.post.author.profilePictureUrl !=
+                        backgroundImage: widget
+                                    .post.author?.profilePictureUrl !=
                                 null
                             ? NetworkImage(
-                                "${ApiConstances.baseUrlImg}${widget.post.author.profilePictureUrl}")
+                                "${ApiConstances.baseUrlImg}${widget.post.author?.profilePictureUrl}")
                             : null,
                         radius: 22,
                       ),
                       SizedBox(width: 10),
                       Text(
-                        widget.post.author.name,
+                        "${widget.post.author?.name}",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),

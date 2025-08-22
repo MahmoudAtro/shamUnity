@@ -15,6 +15,7 @@ import 'package:shamunity/routes/routes_name.dart';
 
 UserModel? user;
 
+
 class PostListScreen extends StatefulWidget {
   final bool isVisited;
   const PostListScreen({super.key, this.isVisited = false});
@@ -31,8 +32,10 @@ class _PostListScreenState extends State<PostListScreen> {
   void initState() {
     super.initState();
     if (!widget.isVisited) {
+      print("isVisited is false");
       _loadUserData();
-    }else{
+    } else {
+      print("isVisited is true");
       isLoading = false;
     }
 
@@ -42,6 +45,7 @@ class _PostListScreenState extends State<PostListScreen> {
 
   Future<void> _loadUserData() async {
     user = await SecureSharedPrefHelper.getUser();
+    debugPrint("🔄 Global user reloaded: ${user?.firstName} ${user?.lastName}");
     if (user != null) {
       setState(() {
         isLoading = false;
@@ -128,7 +132,7 @@ class _PostListScreenState extends State<PostListScreen> {
               children: [
                 // صورة البروفايل
                 CircleAvatar(
-                  backgroundImage: user!.profilePictureUrl != null
+                  backgroundImage: user?.profilePictureUrl != null
                       ? NetworkImage(
                           "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
                       : const AssetImage('assets/images/default_avatar.jpg')
@@ -185,7 +189,9 @@ class _PostListScreenState extends State<PostListScreen> {
       create: (context) => postCubit,
       child: Scaffold(
         body: Column(
+          
           children: [
+            buildCreatePostCard(context),
             BlocBuilder<PostCubit, PostCubitState>(
               builder: (context, state) {
                 if (state is PostCubitLoading || isLoading) {
@@ -206,7 +212,7 @@ class _PostListScreenState extends State<PostListScreen> {
                           return PostWidget(
                             isVisited: widget.isVisited,
                             post: posts[index],
-                            author: posts[index].author,
+                            author: posts[index].author!,
                           );
                         },
                       ),

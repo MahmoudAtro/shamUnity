@@ -5,12 +5,14 @@ import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/apis/chat/conversation.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
 import 'package:shamunity/apis/post/api_post.dart';
+import 'package:shamunity/apis/profile_edit/api_profile_edit.dart';
 import 'package:shamunity/apis/suggestion_api.dart';
 import 'package:shamunity/apis/user_profile/api_search.dart';
 import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
+import 'package:shamunity/logic/profile_edit/cubit/profile_edit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
 import 'package:shamunity/logic/visited_user_profile/cubit/visited_user_profile_cubit.dart';
@@ -28,6 +30,7 @@ class ServicesLocator {
     _chats();
     _search();
     _suggestion();
+    _profileEdit();
   }
 
   void _register() {
@@ -43,6 +46,15 @@ class ServicesLocator {
     getit.registerLazySingleton<SuggestionApi>(
       () => SuggestionApi(dio: DioFactory.getDio()),
     );
+  }
+
+  void _profileEdit() {
+    // api
+    getit.registerLazySingleton<ApiProfileEdit>(
+      () => ApiProfileEdit(dio: DioFactory.getDio()),
+    );
+    // cubit
+    getit.registerFactory<ProfileEditCubit>(() => ProfileEditCubit(getit()));
   }
 
   void _sheikhProfile() {

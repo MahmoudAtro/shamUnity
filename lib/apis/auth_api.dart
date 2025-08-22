@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/error/failure.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
@@ -71,7 +72,11 @@ class AuthApi {
           "userToken", response.data['token'].toString());
       await SecureSharedPrefHelper.saveUser(
           UserModel.fromJson(response.data['user']));
+      debugPrint("AuthApi : login with response : ${response.data['user']}");
       final responseData = VerifyOtpResponse.fromJson(response.data);
+      debugPrint("AuthApi : login with response : ${response.data}");
+      debugPrint("AuthApi : login with response : ${response.data['user']}");
+        
       return Right(responseData);
     } catch (e) {
       if (e is DioException) {

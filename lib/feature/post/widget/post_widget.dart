@@ -195,7 +195,8 @@ class _PostWidgetState extends State<PostWidget>
   Widget build(BuildContext context) {
     final isOwner = widget.isVisited
         ? false
-        : widget.user!.id.toString() == widget.author.id.toString();
+        : widget.user != null &&
+            widget.user!.id.toString() == widget.author.id.toString();
 
     return BlocBuilder<PostCubit, PostCubitState>(
       builder: (context, state) {
@@ -261,7 +262,7 @@ class _PostWidgetState extends State<PostWidget>
                         // صورة البروفايل (دائرية)
                         InkWell(
                           onTap: () {
-                            context.pushNamed(RoutesNames.sheikhProfile,
+                            context.pushNamed(RoutesNames.profile,
                                 arguments: widget.author.id);
                           },
                           child: CircleAvatar(
@@ -270,7 +271,7 @@ class _PostWidgetState extends State<PostWidget>
                             backgroundImage: widget.author.profilePictureUrl !=
                                     null
                                 ? NetworkImage(
-                                    "${ApiConstances.baseUrlImg}${widget.author.profilePictureUrl}")
+                                    "${ApiConstances.baseUrlImg}${widget.author.profilePictureUrl!}")
                                 : const AssetImage(
                                         "assets/images/default_avatar.jpg")
                                     as ImageProvider,
@@ -288,8 +289,7 @@ class _PostWidgetState extends State<PostWidget>
                                 children: [
                                   InkWell(
                                     onTap: () {
-                                      context.pushNamed(
-                                          RoutesNames.sheikhProfile,
+                                      context.pushNamed(RoutesNames.profile,
                                           arguments: widget.author.id);
                                     },
                                     child: Text(
@@ -423,12 +423,11 @@ class _PostWidgetState extends State<PostWidget>
                         // زر أبدعت (بديل إعجاب)
                         Expanded(
                           child: InkWell(
-                            onTap:
-                                widget.isVisited
-                                    ? null
-                                    : () {
-                              postCubit.toggleLike(currentPost.id);
-                            },
+                            onTap: widget.isVisited
+                                ? null
+                                : () {
+                                    postCubit.toggleLike(currentPost.id);
+                                  },
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: 10.h),
                               child: Row(

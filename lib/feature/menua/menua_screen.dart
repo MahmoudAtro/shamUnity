@@ -37,16 +37,25 @@ class _MenuScreenState extends State<MenuScreen> {
                         "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
                     : const AssetImage('assets/images/default_avatar.jpg'),
               ),
-              title: Text("${user?.firstName} ${user?.lastName}",
+              title: Text("${user!.firstName} ${user!.lastName}",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 18)),
-              subtitle: Text(user?.college ?? ''),
+              subtitle: Text(user!.college ?? ''),
               onTap: () {
-                context.pushNamed(RoutesNames.profile);
+                context.pushNamed(RoutesNames.profile,
+                    arguments: user!.id);
               },
             ),
           ),
           const SizedBox(height: 10),
+          MenuCard(
+            icon: Icons.person_outline,
+            title: 'تعديل المعلومات الشخصية',
+            iconColor: const Color.fromARGB(255, 52, 75, 94),
+            onTap: () {
+              context.pushNamed('/profileEdit');
+            },
+          ),
           MenuCard(
             icon: Icons.settings,
             title: 'الإعدادات',

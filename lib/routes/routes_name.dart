@@ -19,7 +19,6 @@ class RoutesNames {
   static const String forgetPassword = "/forget-password";
   static const String restPassword = "/reset-password";
   static const String geminiChat = "/geminiChat";
-  static const String sheikhProfile = "/sheikhProfile";
   static const String checkOtp = "/check-otp-password";
   static const String userChatScreen = "/userChatScreen";
   static const String search = "/search";

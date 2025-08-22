@@ -55,6 +55,7 @@ class SecureSharedPrefHelper {
     debugPrint("SharedPrefHelper : setData with key : user and value : $user");
     final prefs = await SharedPreferences.getInstance();
     String userJson = jsonEncode(user.toJson());
+    debugPrint("SharedPrefHelper : saveUser with key : user and value : $userJson");
     await prefs.setString('user', userJson);
   }
 

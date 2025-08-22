@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String baseUrl =
-      "https://last-acoustic-acre-canal.trycloudflare.com/api";
+      "https://comics-reliance-venue-packages.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://last-acoustic-acre-canal.trycloudflare.com";
+      "https://comics-reliance-venue-packages.trycloudflare.com";
 
   /// ----------Outside Application---------
 
@@ -16,6 +16,8 @@ class ApiConstances {
   static const String forgetPassword = "$baseUrl/password/email";
   static const String checkOtpPassword = "$baseUrl/password/code/check";
   static const String restPassword = "$baseUrl/password/reset";
+  static const String updateProfile = "$baseUrl/profile/update";
+  static const String changePassword = "$baseUrl/profile/change-password";
 
   // Post APIs
   static const String postsUrl = "$baseUrl/posts";

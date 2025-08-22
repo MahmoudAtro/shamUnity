@@ -18,8 +18,10 @@ import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
+import 'package:shamunity/feature/post/post_list_view.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
-import 'package:shamunity/feature/profile/sheikh_profile_view.dart';
+import 'package:shamunity/feature/profile/profile_view.dart';
+import 'package:shamunity/feature/profile_edit/profile_edit_screen.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/suggesation/suggesation_seceen.dart';
@@ -65,16 +67,21 @@ class AppRoute {
       //     builder: (_) => const LibraryHomeScreen(),
       //   );
 
-      case RoutesNames.profile:
+      // case RoutesNames.profile:
+      //   return MaterialPageRoute(
+      //     builder: (_) => MultiBlocProvider(
+      //       providers: [
+      //         BlocProvider(
+      //             create: (context) => getit<VisitedUserProfileCubit>()),
+      //         BlocProvider(create: (context) => getit<PostCubit>()),
+      //       ],
+      //       child: ProfileScreen(user: user!),
+      //     ),
+      //   );
+
+      case '/profileEdit':
         return MaterialPageRoute(
-          builder: (_) => MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                  create: (context) => getit<VisitedUserProfileCubit>()),
-              BlocProvider(create: (context) => getit<PostCubit>()),
-            ],
-            child: const ProfileScreen(),
-          ),
+          builder: (_) => const ProfileEditScreen(),
         );
 
       case RoutesNames.editPost:
@@ -108,7 +115,7 @@ class AppRoute {
           );
         });
 
-      case RoutesNames.sheikhProfile:
+      case RoutesNames.profile:
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
@@ -117,7 +124,7 @@ class AppRoute {
               BlocProvider(create: (context) => getit<CommentCubit>()),
               BlocProvider(create: (context) => getit<PostCubit>()),
             ],
-            child: SheikhProfileScreen(userId: route.arguments as int),
+            child: ProfileScreen(userId: route.arguments as int),
           ),
         );
 
