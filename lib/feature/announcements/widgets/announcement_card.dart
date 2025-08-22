@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shamunity/constants/api_constant.dart';
-import 'package:shamunity/core/network/download_pdf.dart';
 import 'package:shamunity/feature/announcements/widgets/image_preview.dart';
 import 'package:shamunity/feature/announcements/widgets/video_preview.dart';
 import 'package:shamunity/models/announcement.dart';
@@ -260,7 +259,9 @@ class _AnnouncementCardState extends State<AnnouncementCard> {
     final fileName = pdfUrl.split('/').last; // استخراج اسم الملف من الرابط
 
     return GestureDetector(
-      onTap: () => downloadPDF(context, pdfUrl),
+      // onTap: () => downloadPDF(context, pdfUrl),
+      onTap: () {},
+
       child: Container(
         margin: const EdgeInsets.all(8),
         padding: const EdgeInsets.all(12),

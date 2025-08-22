@@ -19,6 +19,7 @@ import 'package:shamunity/routes/routes_name.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostWidget extends StatefulWidget {
+  final bool isVisited;
   final Post post;
   final Author author;
 
@@ -29,6 +30,7 @@ class PostWidget extends StatefulWidget {
     required this.post,
     required this.author,
     this.user,
+    this.isVisited = false,
   });
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -191,11 +193,12 @@ class _PostWidgetState extends State<PostWidget>
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = widget.user!.id.toString() == widget.author.id.toString();
+    final isOwner = widget.isVisited
+        ? false
+        : widget.user!.id.toString() == widget.author.id.toString();
 
     return BlocBuilder<PostCubit, PostCubitState>(
       builder: (context, state) {
-        // البحث عن المنشور الحالي في قائمة المنشورات المحدثة
         Post currentPost = widget.post;
         if (state is PostCubitLoaded) {
           final updatedPost = state.posts.firstWhere(
@@ -285,7 +288,8 @@ class _PostWidgetState extends State<PostWidget>
                                 children: [
                                   InkWell(
                                     onTap: () {
-                                      context.pushNamed(RoutesNames.sheikhProfile,
+                                      context.pushNamed(
+                                          RoutesNames.sheikhProfile,
                                           arguments: widget.author.id);
                                     },
                                     child: Text(
@@ -419,7 +423,10 @@ class _PostWidgetState extends State<PostWidget>
                         // زر أبدعت (بديل إعجاب)
                         Expanded(
                           child: InkWell(
-                            onTap: () {
+                            onTap:
+                                widget.isVisited
+                                    ? null
+                                    : () {
                               postCubit.toggleLike(currentPost.id);
                             },
                             child: Padding(
@@ -549,15 +556,17 @@ class _PostWidgetState extends State<PostWidget>
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          debugPrint("🔄 PostWidget - Tapping like button");
-          if (isLiked) {
-            _likeController.reverse();
-          } else {
-            _likeController.forward(from: 0.0);
-          }
-          postCubit.toggleLike(post.id);
-        },
+        onTap: widget.isVisited
+            ? null
+            : () {
+                debugPrint("🔄 PostWidget - Tapping like button");
+                if (isLiked) {
+                  _likeController.reverse();
+                } else {
+                  _likeController.forward(from: 0.0);
+                }
+                postCubit.toggleLike(post.id);
+              },
         borderRadius: BorderRadius.circular(30.r),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
@@ -614,6 +623,7 @@ class _PostWidgetState extends State<PostWidget>
                 builder: (_, controller) => CommentBottomSheet(
                   post: post,
                   scrollController: ScrollController(),
+                  isVisited: widget.isVisited,
                 ),
               ),
             ),

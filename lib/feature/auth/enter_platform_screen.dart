@@ -53,7 +53,7 @@ class EnterPlatformScreen extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      context.pushNamed("/home");
+                      context.pushNamed("/home", arguments: true);
                     },
                     child: Container(
                       width: 180.w,

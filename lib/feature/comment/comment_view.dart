@@ -13,8 +13,10 @@ import 'package:shamunity/routes/routes_name.dart';
 class CommentBottomSheet extends StatefulWidget {
   final ScrollController scrollController;
   final Post post;
+  final bool isVisited;
 
   const CommentBottomSheet({
+    this.isVisited = false,
     super.key,
     required this.scrollController,
     required this.post,
@@ -129,7 +131,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 Expanded(
                   child: _buildCommentList(state),
                 ),
-                _buildCommentInputField(),
+                widget.isVisited ? _buildCommentInputField() : const SizedBox(),
               ],
             ),
           ),

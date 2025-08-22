@@ -7,6 +7,7 @@ import 'package:shamunity/core/widgets/loading_dialog_widget.dart';
 import 'package:shamunity/models/login_model.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
 import 'package:shamunity/routes/extension.dart';
+import 'package:shamunity/routes/routes_name.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -37,7 +38,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           emit(LoginSuccess(verifyOtpResponse: data));
           Toast().success(context, data.message);
           context.pushNamedAndRemoveUntil(
-            '/home',
+            RoutesNames.homePage,
+            arguments: false,
             predicate: (route) => false,
           );
         },

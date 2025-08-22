@@ -16,7 +16,8 @@ import 'package:shamunity/routes/routes_name.dart';
 UserModel? user;
 
 class PostListScreen extends StatefulWidget {
-  const PostListScreen({super.key});
+  final bool isVisited;
+  const PostListScreen({super.key, this.isVisited = false});
 
   @override
   State<PostListScreen> createState() => _PostListScreenState();
@@ -29,10 +30,13 @@ class _PostListScreenState extends State<PostListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    postCubit = PostCubit(getit());
+    if (!widget.isVisited) {
+      _loadUserData();
+    }else{
+      isLoading = false;
+    }
 
-    // لا حاجة لاستدعاء listenToNewPosts هنا لأن PostCubit يتعامل معه تلقائياً
+    postCubit = PostCubit(getit());
     postCubit.fetchPosts();
   }
 
@@ -111,67 +115,68 @@ class _PostListScreenState extends State<PostListScreen> {
     BuildContext context,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
-      child: Card(
-  color: Colors.white,
-  elevation: 2,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    child: Row(
-      children: [
-        // صورة البروفايل
-        CircleAvatar(
-          backgroundImage: user!.profilePictureUrl != null
-              ? NetworkImage("${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
-              : const AssetImage('assets/images/default_avatar.jpg')
-                  as ImageProvider,
-          radius: 22,
-        ),
-        const SizedBox(width: 10),
-
-        // زر "بماذا تفكر؟" (يشبه فيسبوك)
-        Expanded(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              context.pushNamed(RoutesNames.createPost, arguments: user);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade300),
-                color: Colors.grey.shade100,
-              ),
-              child: const Text(
-                "بماذا تفكر؟",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
+        padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
+        child: Card(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                // صورة البروفايل
+                CircleAvatar(
+                  backgroundImage: user!.profilePictureUrl != null
+                      ? NetworkImage(
+                          "${ApiConstances.baseUrlImg}${user!.profilePictureUrl!}")
+                      : const AssetImage('assets/images/default_avatar.jpg')
+                          as ImageProvider,
+                  radius: 22,
                 ),
-              ),
+                const SizedBox(width: 10),
+
+                // زر "بماذا تفكر؟" (يشبه فيسبوك)
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      context.pushNamed(RoutesNames.createPost,
+                          arguments: user);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.grey.shade100,
+                      ),
+                      child: const Text(
+                        "بماذا تفكر؟",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // لمسة خاصة بالتطبيق (أيقونة إضافة صورة)
+                IconButton(
+                  onPressed: () {
+                    context.pushNamed(RoutesNames.createPost, arguments: user);
+                  },
+                  icon: const Icon(Icons.edit, color: Colors.green, size: 24),
+                  tooltip: "إضافة صورة",
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-
-        // لمسة خاصة بالتطبيق (أيقونة إضافة صورة)
-        IconButton(
-          onPressed: () {
-            context.pushNamed(RoutesNames.createPost, arguments: user);
-          },
-          icon: const Icon(Icons.edit,
-              color: Colors.green, size: 24),
-          tooltip: "إضافة صورة",
-        ),
-      ],
-    ),
-  ),
-)
- );
+        ));
   }
 
   @override
@@ -181,7 +186,6 @@ class _PostListScreenState extends State<PostListScreen> {
       child: Scaffold(
         body: Column(
           children: [
-            if (user != null) buildCreatePostCard(context),
             BlocBuilder<PostCubit, PostCubitState>(
               builder: (context, state) {
                 if (state is PostCubitLoading || isLoading) {
@@ -200,9 +204,9 @@ class _PostListScreenState extends State<PostListScreen> {
                         itemCount: posts.length,
                         itemBuilder: (context, index) {
                           return PostWidget(
+                            isVisited: widget.isVisited,
                             post: posts[index],
                             author: posts[index].author,
-                            user: user,
                           );
                         },
                       ),
