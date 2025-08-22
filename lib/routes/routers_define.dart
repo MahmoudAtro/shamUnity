@@ -49,7 +49,7 @@ class AppRoute {
                   create: (context) => getit<VisitedUserProfileCubit>()),
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
-            child: HomePage(isNotVisited: route.arguments as bool? ?? false),
+            child: HomePage(isVisited: route.arguments as bool? ?? false),
           ),
         );
       case RoutesNames.suggesation:

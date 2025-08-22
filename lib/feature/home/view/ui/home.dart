@@ -10,9 +10,9 @@ import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/routes/extension.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.currentIndex, this.isNotVisited = false});
+  const HomePage({super.key, this.currentIndex, this.isVisited = false});
   final int? currentIndex;
-  final bool isNotVisited;
+  final bool isVisited;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     // عدد التابات عندك = 6
-    _tabController = widget.isNotVisited
+    _tabController = widget.isVisited
         ? TabController(length: 2, vsync: this)
         : TabController(length: 6, vsync: this);
     if (widget.currentIndex != null) {
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: widget.isNotVisited ? 2 : 6,
+      length: widget.isVisited ? 2 : 6,
       child: SafeArea(
         child: WillPopScope(
           onWillPop: () async => false,
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage>
               automaticallyImplyLeading: false,
               backgroundColor: Colors.blueAccent,
               elevation: 1,
-              leading: widget.isNotVisited
+              leading: widget.isVisited
                   ? null
                   : IconButton(
                       icon: const Icon(
@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage>
                     indicatorColor: Colors.blue,
                     unselectedLabelColor: Colors.grey,
                     labelColor: Colors.blue,
-                    tabs: widget.isNotVisited
+                    tabs: widget.isVisited
                         ? const [
                             Tab(icon: Icon(Icons.home, size: 30)),
                             Tab(icon: Icon(Icons.article, size: 30)),
@@ -136,7 +136,7 @@ class _HomePageState extends State<HomePage>
                           ],
                   ),
                 ),
-                widget.isNotVisited
+                widget.isVisited
                     ? Expanded(
                         child: TabBarView(
                           controller: _tabController,
@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage>
                             PostListScreen(
                               isVisited: true,
                             ),
-                            AnnouncementsDemo(),
+                             AnnouncementsDemo(),
                           ],
                         ),
                       )
