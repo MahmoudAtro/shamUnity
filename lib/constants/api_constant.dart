@@ -1,9 +1,9 @@
 class ApiConstances {
   static const String baseUrl =
-      "https://comics-reliance-venue-packages.trycloudflare.com/api";
+      "https://emails-cho-mali-hunter.trycloudflare.com/api";
 
   static const String baseUrlImg =
-      "https://comics-reliance-venue-packages.trycloudflare.com";
+      "https://emails-cho-mali-hunter.trycloudflare.com/";
 
   /// ----------Outside Application---------
 
@@ -59,4 +59,7 @@ class ApiConstances {
       '$baseUrl/conversations/$conversationId';
   static String checkConversation(int conversationId) =>
       '$baseUrl/users/$conversationId/conversation';
+
+  // notifications
+  static const String notificationsUrl = "$baseUrl/notifications";
 }

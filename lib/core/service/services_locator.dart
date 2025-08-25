@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shamunity/apis/announcement/api_announcement.dart';
 import 'package:shamunity/apis/auth_api.dart';
 import 'package:shamunity/apis/chat/chat.dart';
 import 'package:shamunity/apis/chat/conversation.dart';
 import 'package:shamunity/apis/comment/api_comment.dart';
+import 'package:shamunity/apis/notification/api_notification.dart';
 import 'package:shamunity/apis/post/api_post.dart';
 import 'package:shamunity/apis/profile_edit/api_profile_edit.dart';
 import 'package:shamunity/apis/suggestion_api.dart';
 import 'package:shamunity/apis/user_profile/api_search.dart';
 import 'package:shamunity/apis/user_profile/api_visited_user_profile.dart';
 import 'package:shamunity/core/network/dio_factory.dart';
+import 'package:shamunity/logic/announcements%20bloc/cubit/announcements_cubit.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
+import 'package:shamunity/logic/notification%20bloc/cubit/notification_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/profile_edit/cubit/profile_edit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
@@ -31,6 +35,8 @@ class ServicesLocator {
     _search();
     _suggestion();
     _profileEdit();
+    _notification();
+    _announcements();
   }
 
   void _register() {
@@ -46,6 +52,14 @@ class ServicesLocator {
     getit.registerLazySingleton<SuggestionApi>(
       () => SuggestionApi(dio: DioFactory.getDio()),
     );
+  }
+
+  void _notification() {
+    getit.registerLazySingleton<ApiNotification>(
+      () => ApiNotification(dio: DioFactory.getDio()),
+    );
+    getit.registerFactory<NotificationCubit>(
+        () => NotificationCubit(notificationApi: getit()));
   }
 
   void _profileEdit() {
@@ -72,6 +86,7 @@ class ServicesLocator {
     getit.registerLazySingleton<ApiPost>(
       () => ApiPost(dio: DioFactory.getDio()),
     );
+
     // bloc
     getit.registerFactory<PostCubit>(() => PostCubit(getit()));
   }
@@ -103,6 +118,13 @@ class ServicesLocator {
     );
     // bloc
     getit.registerFactory(() => SearchCubit(getit()));
+  }
+
+  void _announcements() {
+    getit.registerLazySingleton<ApiAnnouncement>(
+      () => ApiAnnouncement(dio: DioFactory.getDio()),
+    );
+    getit.registerFactory<AnnouncementsCubit>(() => AnnouncementsCubit(announcementsApi: getit()));
   }
 }
 

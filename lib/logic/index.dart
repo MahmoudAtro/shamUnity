@@ -1,6 +1,7 @@
 export 'announcements bloc/index.dart';
 export 'cubit/index.dart';
 export 'login bloc/index.dart';
+export 'notification bloc/index.dart';
 export 'post bloc/index.dart';
 export 'register bloc/index.dart';
 export 'rest-password cubit/index.dart';

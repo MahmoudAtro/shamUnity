@@ -24,4 +24,5 @@ class RoutesNames {
   static const String search = "/search";
   static const String suggesation = "/suggesation";
   static const String library = "/library";
+  static const String announcements = "/announcements";
 }

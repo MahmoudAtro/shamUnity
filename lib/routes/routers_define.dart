@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shamunity/core/service/services_locator.dart';
+import 'package:shamunity/feature/announcements/announcements_screen.dart';
 import 'package:shamunity/feature/auth/enter_platform_screen.dart';
 import 'package:shamunity/feature/auth/forget-password/check_otp_password.dart';
 import 'package:shamunity/feature/auth/forget-password/forget_password.dart';
@@ -18,14 +19,15 @@ import 'package:shamunity/feature/library/subjects_grid_screen.dart';
 import 'package:shamunity/feature/notification/notification_srcreen.dart';
 import 'package:shamunity/feature/post/create_post_view.dart';
 import 'package:shamunity/feature/post/edite%20post/edit_post_srcreen.dart';
-import 'package:shamunity/feature/post/post_list_view.dart';
-import 'package:shamunity/feature/profile/profile_view.dart';
+import 'package:shamunity/feature/post/post_detail_screen.dart';
 import 'package:shamunity/feature/profile/profile_view.dart';
 import 'package:shamunity/feature/profile_edit/profile_edit_screen.dart';
 import 'package:shamunity/feature/search/search_screen.dart';
 import 'package:shamunity/feature/shamunityAi/chat_app.dart';
 import 'package:shamunity/feature/suggesation/suggesation_seceen.dart';
+import 'package:shamunity/logic/announcements%20bloc/cubit/announcements_cubit.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
+import 'package:shamunity/logic/notification%20bloc/cubit/notification_cubit.dart';
 import 'package:shamunity/logic/post%20bloc/cubit/post_cubit_cubit.dart';
 import 'package:shamunity/logic/register%20bloc/register_bloc.dart';
 import 'package:shamunity/logic/search%20bloc/search_cubit.dart';
@@ -44,14 +46,34 @@ class AppRoute {
     // final argument = route.arguments;
     switch (route.name) {
       case RoutesNames.homePage:
+        final arguments = route.arguments;
+        int? currentIndex;
+        bool isVisited = false;
+
+        if (arguments is int) {
+          // إذا كان argument رقم، فهو currentIndex
+          currentIndex = arguments;
+        } else if (arguments is bool) {
+          // إذا كان argument boolean، فهو isVisited
+          isVisited = arguments;
+        } else if (arguments is Map) {
+          // إذا كان argument خريطة، نستخرج القيم
+          currentIndex = arguments['currentIndex'] as int?;
+          isVisited = arguments['isVisited'] as bool? ?? false;
+        }
+
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
+              BlocProvider(create: (context) => getit<NotificationCubit>()),
               BlocProvider(
                   create: (context) => getit<VisitedUserProfileCubit>()),
               BlocProvider(create: (context) => getit<CommentCubit>()),
             ],
-            child: HomePage(isVisited: route.arguments as bool? ?? false),
+            child: HomePage(
+              currentIndex: currentIndex,
+              isVisited: isVisited,
+            ),
           ),
         );
       case RoutesNames.suggesation:
@@ -61,6 +83,13 @@ class AppRoute {
       case RoutesNames.createPost:
         return MaterialPageRoute(
           builder: (_) => CreatePostScreen(user: route.arguments as UserModel),
+        );
+      case RoutesNames.postDetails:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => getit<PostCubit>(),
+            child: PostDetailScreen(post: route.arguments as Post),
+          ),
         );
       // case RoutesNames.libraryHome:
       //   return MaterialPageRoute(
@@ -162,6 +191,13 @@ class AppRoute {
       case RoutesNames.notifications:
         return MaterialPageRoute(
           builder: (_) => const NotificationsScreen(),
+        );
+      case RoutesNames.announcements:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => getit<AnnouncementsCubit>(),
+            child: const AnnouncementsScreen(),
+          ),
         );
 
       case RoutesNames.enterPlatform:

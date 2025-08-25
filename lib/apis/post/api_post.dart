@@ -155,6 +155,29 @@ class ApiPost {
     }
   }
 
+  Future<Either<Failure, Post>> getPostWithComments(int postId) async {
+    try {
+      final response = await _dio.get(
+        "${ApiConstances.baseUrl}/posts/$postId",
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization':
+                'Bearer ${await SecureSharedPrefHelper.getString("userToken")}',
+          },
+        ),
+      );
+
+      final postWithCommentsResponse = Post.fromJson(response.data['data']);
+      return Right(postWithCommentsResponse);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(message: e.toString()));
+    }
+  }
+
   // Alternative implementation without port parameter
   Future<void> listenToNewPostsAlternative(
       void Function(Post) onNewPost) async {

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shamunity/constants/api_constant.dart';
 import 'package:shamunity/core/helpers/shared_helpers.dart';
 import 'package:shamunity/core/widgets/empty_data.dart';
+import 'package:shamunity/feature/comment/comments_widget.dart'
+    show CommentItem;
 import 'package:shamunity/feature/comment/shimmer_comments_view.dart';
 import 'package:shamunity/logic/cubit/comment_cubit.dart';
 import 'package:shamunity/logic/cubit/comment_state.dart';
 import 'package:shamunity/models/post.dart';
 import 'package:shamunity/models/verify_otp_model.dart';
-import 'package:shamunity/routes/routes_name.dart';
 
 class CommentBottomSheet extends StatefulWidget {
   final ScrollController scrollController;
@@ -131,7 +131,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 Expanded(
                   child: _buildCommentList(state),
                 ),
-                widget.isVisited ? _buildCommentInputField() : const SizedBox(),
+                !widget.isVisited
+                    ? _buildCommentInputField()
+                    : const SizedBox(),
               ],
             ),
           ),
@@ -166,70 +168,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 _showDeleteDialog(comment.id);
               }
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pushNamed(context, RoutesNames.profile,
-                          arguments: comment.author.id);
-                    },
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundImage: comment.author.profilePictureUrl != null
-                          ? NetworkImage(
-                              "${ApiConstances.baseUrlImg}${comment.author.profilePictureUrl}")
-                          : const AssetImage(
-                              "assets/images/default_avatar.jpg"),
-                      child: comment.author.name.isEmpty
-                          ? Text(
-                              comment.author.name,
-                              style: const TextStyle(color: Colors.white),
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.grey[200],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                  context, RoutesNames.profile,
-                                  arguments: comment.author.id);
-                            },
-                            child: Text(
-                              softWrap: true,
-                              maxLines: 1,
-                              comment.author.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(comment.content),
-                          Text(
-                            comment.createdAt,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: CommentItem(
+              comment: comment,
+              onTap: () {},
+              onLongPress: () {
+                if (user != null &&
+                    user!.id.toString() == comment.author.id.toString()) {
+                  _showDeleteDialog(comment.id);
+                }
+              },
+              showReplyButton: true,
             ),
           );
         },

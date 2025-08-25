@@ -24,6 +24,7 @@ class PostWidget extends StatefulWidget {
   final Author author;
 
   final UserModel? user;
+  final bool showFooter;
 
   const PostWidget({
     super.key,
@@ -31,6 +32,7 @@ class PostWidget extends StatefulWidget {
     required this.author,
     this.user,
     this.isVisited = false,
+    this.showFooter = true,
   });
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -48,7 +50,7 @@ class _PostWidgetState extends State<PostWidget>
   @override
   void initState() {
     super.initState();
-
+    postCubit = getit<PostCubit>();
     commentCubit = getit<CommentCubit>();
 
     // إضافة التحريك للإعجاب
@@ -248,7 +250,6 @@ class _PostWidgetState extends State<PostWidget>
             elevation: 1,
             color: Colors.white,
             child: Padding(
-              // ✅ إرجاع البادينغ للـ Card
               padding: EdgeInsets.all(8.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,134 +412,136 @@ class _PostWidgetState extends State<PostWidget>
                       ],
                     ),
                   ),
-
-                  Divider(height: 1, color: Colors.grey[300]),
+                  if (widget.showFooter)
+                    Divider(height: 1, color: Colors.grey[300]),
 
                   // ====== أزرار التفاعل ======
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // زر أبدعت (بديل إعجاب)
-                        Expanded(
-                          child: InkWell(
-                            onTap: widget.isVisited
-                                ? null
-                                : () {
-                                    postCubit.toggleLike(currentPost.id);
-                                  },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10.h),
-                              child: Row(
-                                // mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.lightbulb_outline,
-                                    size: 20.sp,
-                                    color: currentPost.isLiked
-                                        ? ColorsManager.gold
-                                        : Colors.grey[700],
-                                  ),
-                                  SizedBox(width: 6.w),
-                                  Text(
-                                    "أبدعت",
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
+
+                  if (widget.showFooter)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // زر أبدعت (بديل إعجاب)
+                          Expanded(
+                            child: InkWell(
+                              onTap: widget.isVisited
+                                  ? null
+                                  : () {
+                                      postCubit.toggleLike(currentPost.id);
+                                    },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10.h),
+                                child: Row(
+                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.lightbulb_outline,
+                                      size: 20.sp,
                                       color: currentPost.isLiked
                                           ? ColorsManager.gold
                                           : Colors.grey[700],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              debugPrint("💾 حفظ البوست ${currentPost.id}");
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10.h),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.bookmark_border,
-                                      size: 20.sp, color: Colors.grey[700]),
-                                  SizedBox(width: 6.w),
-                                  Text(
-                                    "حفظ",
-                                    style: TextStyle(
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      "أبدعت",
+                                      style: TextStyle(
                                         fontSize: 13.sp,
-                                        color: Colors.grey[700]),
-                                  ),
-                                ],
+                                        color: currentPost.isLiked
+                                            ? ColorsManager.gold
+                                            : Colors.grey[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-
-                        // زر تعليق (بديل مشاركة)
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              commentCubit.fetchComments(currentPost.id);
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor:
-                                    Colors.transparent, // خليها شفاف
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20.r)),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                debugPrint("💾 حفظ البوست ${currentPost.id}");
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10.h),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.bookmark_border,
+                                        size: 20.sp, color: Colors.grey[700]),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      "حفظ",
+                                      style: TextStyle(
+                                          fontSize: 13.sp,
+                                          color: Colors.grey[700]),
+                                    ),
+                                  ],
                                 ),
-                                builder: (context) => BlocProvider.value(
-                                  value: commentCubit,
-                                  child: DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.85,
-                                    minChildSize: 0.5,
-                                    maxChildSize: 0.9,
-                                    builder: (_, controller) => ClipRRect(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(20.r)),
-                                      child: Container(
-                                        color: Colors
-                                            .white, // لازم تعطي لون الخلفية هنا
-                                        child: CommentBottomSheet(
-                                          post: currentPost,
-                                          scrollController: controller,
+                              ),
+                            ),
+                          ),
+
+                          // زر تعليق (بديل مشاركة)
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                commentCubit.fetchComments(currentPost.id);
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor:
+                                      Colors.transparent, // خليها شفاف
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20.r)),
+                                  ),
+                                  builder: (context) => BlocProvider.value(
+                                    value: commentCubit,
+                                    child: DraggableScrollableSheet(
+                                      expand: false,
+                                      initialChildSize: 0.85,
+                                      minChildSize: 0.5,
+                                      maxChildSize: 0.9,
+                                      builder: (_, controller) => ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(20.r)),
+                                        child: Container(
+                                          color: Colors
+                                              .white, // لازم تعطي لون الخلفية هنا
+                                          child: CommentBottomSheet(
+                                            post: currentPost,
+                                            scrollController: controller,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
+                                );
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10.h),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(Icons.comment_outlined,
+                                        size: 20.sp, color: Colors.grey[700]),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      "تعليق",
+                                      style: TextStyle(
+                                          fontSize: 13.sp,
+                                          color: Colors.grey[700]),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10.h),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Icon(Icons.comment_outlined,
-                                      size: 20.sp, color: Colors.grey[700]),
-                                  SizedBox(width: 6.w),
-                                  Text(
-                                    "تعليق",
-                                    style: TextStyle(
-                                        fontSize: 13.sp,
-                                        color: Colors.grey[700]),
-                                  ),
-                                ],
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

@@ -150,7 +150,7 @@ class PostCubit extends Cubit<PostCubitState> {
       final postId = likeData['postId'] as int?;
       final likesCount = likeData['likesCount'] as int?;
       final isLiked = likeData['isLiked'] as bool?;
-      
+
       debugPrint("isLiked Post $isLiked");
 
       if (postId == null) {
@@ -458,6 +458,38 @@ class PostCubit extends Cubit<PostCubitState> {
         if (posts.isNotEmpty) {
           emit(PostCubitLoaded(List.from(posts)));
         }
+      }
+    }
+  }
+
+  Future<void> fetchPostDetail(int postId) async {
+    debugPrint("🔄 PostDetailCubit: Fetching post detail for ID: $postId");
+
+    if (!isClosed) {
+      emit(PostCubitLoading());
+    }
+
+    try {
+      final result = await apiPost.getPostWithComments(postId);
+
+      result.fold(
+        (failure) {
+          debugPrint(
+              "❌ PostDetailCubit: Failed to fetch post detail: ${failure.message}");
+          if (!isClosed) {
+            emit(PostDetailError(failure.message));
+          }
+        },
+        (post) {
+          if (!isClosed) {
+            emit(PostDetailLoaded(post: post));
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint("❌ PostDetailCubit: Unexpected error: $e");
+      if (!isClosed) {
+        emit(PostDetailError("حدث خطأ غير متوقع: $e"));
       }
     }
   }

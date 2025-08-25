@@ -1,3 +1,4 @@
+import 'package:shamunity/models/notification_model.dart';
 import 'package:shamunity/models/post.dart';
 
 abstract class PostCubitState {}
@@ -73,4 +74,16 @@ final class PostLikeToggled extends PostCubitState {}
 final class PostLikeToggleError extends PostCubitState {
   final String message;
   PostLikeToggleError(this.message);
+}
+
+class PostDetailLoaded extends PostCubitState {
+  final Post post;
+
+  PostDetailLoaded({required this.post});
+}
+
+class PostDetailError extends PostCubitState {
+  final String message;
+
+  PostDetailError(this.message);
 }
